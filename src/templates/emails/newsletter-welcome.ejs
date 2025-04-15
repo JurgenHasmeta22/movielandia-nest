@@ -1,0 +1,34 @@
+<%- include('layout', { 
+    title: 'Welcome to MovieLandia24 Newsletter',
+    automated: true 
+}) %>
+
+<h1 class="heading">Welcome to Our Newsletter! 🎬</h1>
+
+<div class="content">
+    <p>Hi <%= userName %>, thank you for subscribing to our newsletter!</p>
+    
+    <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin: 24px 0;">
+        <p style="margin-top: 0;"><strong>Here's what you can expect:</strong></p>
+        <ul style="padding-left: 20px; margin-bottom: 0;">
+            <li>Latest movie releases and reviews</li>
+            <li>Exclusive behind-the-scenes content</li>
+            <li>Special features and interviews</li>
+            <li>Community highlights and discussions</li>
+            <li>Movie recommendations tailored for you</li>
+        </ul>
+    </div>
+
+    <p>You'll receive our updates <%= frequency || 'weekly' %>, keeping you in the loop with everything happening in the world of cinema.</p>
+
+    <div style="text-align: center;">
+        <a href="<%= profileSettingsUrl %>" class="button">Manage Email Preferences</a>
+    </div>
+
+    <p style="margin-top: 24px; font-size: 14px;">
+        Want to get started right away? Check out our latest movie recommendations!
+    </p>
+    <p style="text-align: center;">
+        <a href="<%= recommendationsUrl %>" class="button" style="background-color: #4f46e5;">Browse Movies</a>
+    </p>
+</div>

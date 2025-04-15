@@ -1,0 +1,25 @@
+<%- include('layout', { 
+    title: 'Welcome to MovieLandia24!',
+    automated: true 
+}) %>
+
+<h1 class="heading">Welcome to MovieLandia24, <%= userName %>! 👋</h1>
+
+<div class="content">
+    <p>Thank you for joining our community of movie enthusiasts! To start exploring, please verify your email address by clicking the button below.</p>
+    
+    <div style="text-align: center;">
+        <a href="<%= verificationLink %>" class="button">Verify Your Email</a>
+    </div>
+
+    <p style="margin-top: 24px; font-size: 14px; color: #666666;">
+        If the button doesn't work, you can copy and paste this link into your browser:
+    </p>
+    <p>
+        <a href="<%= verificationLink %>" class="link"><%= verificationLink %></a>
+    </p>
+
+    <p style="margin-top: 24px;">
+        If you didn't create an account with MovieLandia24, you can safely ignore this email.
+    </p>
+</div>

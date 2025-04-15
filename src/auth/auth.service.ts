@@ -4,12 +4,14 @@ import { PrismaService } from "../prisma.service";
 import * as bcrypt from "bcrypt";
 import { SignUpDto, SignInDto, ForgotPasswordDto, ResetPasswordDto, ActivateAccountDto } from "./dtos/auth.dto";
 import { randomBytes } from "crypto";
+import { EmailService } from "./services/email.service";
 
 @Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
+        private emailService: EmailService,
     ) {}
 
     async signUp(signUpDto: SignUpDto) {
@@ -46,7 +48,7 @@ export class AuthService {
             return newUser;
         });
 
-        // TODO: Send activation email
+        await this.emailService.sendActivationEmail(email, userName, activationToken);
 
         return { message: "User created successfully. Please check your email to activate your account." };
     }
@@ -59,18 +61,16 @@ export class AuthService {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        // Check if user is active
         if (!user.active) {
             throw new UnauthorizedException("Please activate your account first");
         }
 
-        // Verify password
         const isPasswordValid = await bcrypt.compare(password, user.password);
+        
         if (!isPasswordValid) {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        // Generate JWT
         const payload = { id: user.id, email: user.email };
         const accessToken = this.jwtService.sign(payload);
 
@@ -89,7 +89,6 @@ export class AuthService {
             throw new NotFoundException("Invalid or expired activation token");
         }
 
-        // Activate user and mark token as used in transaction
         await this.prisma.$transaction(async (prisma) => {
             await prisma.user.update({
                 where: { id: activateToken.userId },
@@ -123,7 +122,7 @@ export class AuthService {
             },
         });
 
-        // TODO: Send reset password email
+        await this.emailService.sendPasswordResetEmail(email, resetToken);
 
         return { message: "Password reset instructions have been sent to your email" };
     }

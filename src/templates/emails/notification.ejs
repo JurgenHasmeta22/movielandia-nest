@@ -1,0 +1,47 @@
+<%- include('layout', { 
+    title: 'MovieLandia24 Notification',
+    automated: true 
+}) %>
+
+<div class="content">
+    <% if (notificationType === 'follow') { %>
+        <h1 class="heading">New Follower!</h1>
+        <p><strong><%= senderName %></strong> started following you on MovieLandia24.</p>
+        <div style="text-align: center;">
+            <a href="<%= profileUrl %>" class="button">View Profile</a>
+        </div>
+
+    <% } else if (notificationType === 'review') { %>
+        <h1 class="heading">New Review on Your <%= contentType %></h1>
+        <p><strong><%= senderName %></strong> left a review on your <%= contentType.toLowerCase() %>:</p>
+        <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0; font-style: italic;">"<%= preview %>"</p>
+        </div>
+        <div style="text-align: center;">
+            <a href="<%= contentUrl %>" class="button">Read Full Review</a>
+        </div>
+
+    <% } else if (notificationType === 'forum_reply') { %>
+        <h1 class="heading">New Reply to Your Forum Post</h1>
+        <p><strong><%= senderName %></strong> replied to your post in "<%= topicTitle %>":</p>
+        <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0; font-style: italic;">"<%= preview %>"</p>
+        </div>
+        <div style="text-align: center;">
+            <a href="<%= forumUrl %>" class="button">View Discussion</a>
+        </div>
+
+    <% } else if (notificationType === 'list_mention') { %>
+        <h1 class="heading">Added to a Movie List</h1>
+        <p><strong><%= senderName %></strong> added your <%= contentType.toLowerCase() %> to their list "<%= listTitle %>".</p>
+        <div style="text-align: center;">
+            <a href="<%= listUrl %>" class="button">View List</a>
+        </div>
+    <% } %>
+
+    <p style="margin-top: 24px; font-size: 14px; text-align: center;">
+        <a href="<%= notificationSettingsUrl %>" style="color: #6366f1; text-decoration: none;">
+            Manage notification settings
+        </a>
+    </p>
+</div>
