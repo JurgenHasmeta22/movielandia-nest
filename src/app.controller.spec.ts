@@ -12,10 +12,10 @@ describe("AppController", () => {
         }).compile();
     });
 
-    describe("getHello", () => {
-        it('should return "Hello World!"', () => {
+    describe("getIntro", () => {
+        it('should return "Movielandia24 REST API"', () => {
             const appController = app.get(AppController);
-            expect(appController.getHello()).toBe("Hello World!");
+            expect(appController.getIntro()).toBe("Movielandia24 REST API");
         });
     });
 });
