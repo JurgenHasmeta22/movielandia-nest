@@ -11,6 +11,7 @@ import {
     HttpStatus,
     HttpCode,
     UseGuards,
+    BadRequestException,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { MovieService } from "./movie.service";
@@ -32,8 +33,17 @@ export class MovieController {
     @Get()
     @ApiOperation({ summary: "Get all movies with filters and pagination" })
     @ApiResponse({ status: HttpStatus.OK, description: "Movies retrieved successfully", type: MovieListResponseDto })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
     async findAll(@Query() query: MovieQueryDto, @CurrentUser() user?: User): Promise<MovieListResponseDto> {
-        return this.movieService.findAll(query, user?.id);
+        try {
+            return await this.movieService.findAll(query, user?.id);
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            
+            throw new BadRequestException('Failed to fetch movies. Please check your query parameters.');
+        }
     }
 
     @Get("latest")
@@ -54,12 +64,21 @@ export class MovieController {
         description: "Movies search results retrieved successfully",
         type: MovieListResponseDto,
     })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
     async search(
         @Query("title") title: string,
         @Query() query: MovieQueryDto,
         @CurrentUser() user?: User,
     ): Promise<MovieListResponseDto> {
-        return this.movieService.search(title, query, user?.id);
+        try {
+            return await this.movieService.search(title, query, user?.id);
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+
+            throw new BadRequestException('Failed to search movies. Please check your query parameters.');
+        }
     }
 
     @Get("count")
@@ -75,7 +94,14 @@ export class MovieController {
     @ApiResponse({ status: HttpStatus.OK, description: "Movie retrieved successfully", type: MovieDetailsDto })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Movie not found" })
     async findOne(@Param("id", ParseIntPipe) id: number, @CurrentUser() user?: User): Promise<MovieDetailsDto> {
-        return this.movieService.findOne(id, user?.id);
+        try {
+            return await this.movieService.findOne(id, user?.id);
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException('Failed to fetch movie. Please check the movie ID.');
+        }
     }
 
     @Get(":id/related")
@@ -86,13 +112,21 @@ export class MovieController {
         type: RelatedMoviesResponseDto,
     })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Movie not found" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
     async findRelated(
         @Param("id", ParseIntPipe) id: number,
         @Query("page", ParseIntPipe) page: number = 1,
         @Query("perPage", ParseIntPipe) perPage: number = 6,
         @CurrentUser() user?: User,
     ): Promise<RelatedMoviesResponseDto> {
-        return this.movieService.findRelated(id, user?.id, page, perPage);
+        try {
+            return await this.movieService.findRelated(id, user?.id, page, perPage);
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException('Failed to fetch related movies. Please check your query parameters.');
+        }
     }
 
     @Post()
@@ -102,7 +136,14 @@ export class MovieController {
     @ApiResponse({ status: HttpStatus.CREATED, description: "Movie created successfully", type: MovieDetailsDto })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid input" })
     async create(@Body() createMovieDto: CreateMovieDto): Promise<MovieDetailsDto> {
-        return this.movieService.create(createMovieDto);
+        try {
+            return await this.movieService.create(createMovieDto);
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException('Failed to create movie. Please check your input.');
+        }
     }
 
     @Put(":id")
@@ -116,7 +157,14 @@ export class MovieController {
         @Param("id", ParseIntPipe) id: number,
         @Body() updateMovieDto: UpdateMovieDto,
     ): Promise<MovieDetailsDto> {
-        return this.movieService.update(id, updateMovieDto);
+        try {
+            return await this.movieService.update(id, updateMovieDto);
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException('Failed to update movie. Please check your input.');
+        }
     }
 
     @Delete(":id")
@@ -127,6 +175,13 @@ export class MovieController {
     @ApiResponse({ status: HttpStatus.NO_CONTENT, description: "Movie deleted successfully" })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Movie not found" })
     async remove(@Param("id", ParseIntPipe) id: number): Promise<void> {
-        await this.movieService.remove(id);
+        try {
+            await this.movieService.remove(id);
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException('Failed to delete movie. Please check the movie ID.');
+        }
     }
 }

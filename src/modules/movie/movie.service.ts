@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "../../prisma.service";
 import { MovieQueryDto, SortOrder } from "./dtos/movie-query.dto";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
@@ -13,60 +13,72 @@ export class MovieService {
 
     // #region Public API Methods
     async findAll(query: MovieQueryDto, userId?: number): Promise<MovieListResponseDto> {
-        const {
-            sortBy,
-            ascOrDesc = SortOrder.ASC,
-            perPage = 12,
-            page = 1,
-            title,
-            filterValue,
-            filterNameString,
-            filterOperatorString,
-        } = query;
+        try {
+            const {
+                sortBy,
+                ascOrDesc = SortOrder.ASC,
+                perPage = 12,
+                page = 1,
+                title,
+                filterValue,
+                filterNameString,
+                filterOperatorString,
+            } = query;
 
-        const filters: any = {};
-        const orderByObject: any = {};
+            const filters: any = {};
+            const orderByObject: any = {};
 
-        const skip = (page - 1) * perPage;
-        const take = perPage;
+            const skip = (page - 1) * perPage;
+            const take = perPage;
 
-        if (title) {
-            filters.title = { contains: title.toLowerCase() };
-        }
-
-        if (filterValue !== undefined && filterNameString && filterOperatorString) {
-            if (typeof filterValue === "string" && filterOperatorString === "contains") {
-                filters[filterNameString] = { contains: filterValue.toLowerCase() };
-            } else {
-                const operator = filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
-                filters[filterNameString] = { [operator]: Number(filterValue) };
+            if (title) {
+                filters.title = { contains: title.toLowerCase() };
             }
+
+            if (filterValue !== undefined && filterNameString && filterOperatorString) {
+                if (typeof filterValue === "string" && filterOperatorString === "contains") {
+                    filters[filterNameString] = { contains: filterValue.toLowerCase() };
+                } else {
+                    const operator = filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
+                    filters[filterNameString] = { [operator]: Number(filterValue) };
+                }
+            }
+
+            orderByObject[sortBy || "title"] = ascOrDesc || SortOrder.ASC;
+
+            const movies = await this.prisma.movie.findMany({
+                where: filters,
+                orderBy: orderByObject,
+                skip,
+                take,
+            });
+
+            const movieIds = movies.map((movie) => movie.id);
+            const ratingsInfo = await this.getMovieRatings(movieIds);
+
+            const moviesWithDetails = await Promise.all(
+                movies.map(async (movie) => {
+                    const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
+                    return {
+                        ...movie,
+                        ...ratingsInfo[movie.id],
+                        ...bookmarkInfo,
+                    };
+                }),
+            );
+
+            const totalCount = await this.prisma.movie.count({ where: filters });
+
+            return { 
+                movies: moviesWithDetails,
+                count: totalCount
+            };
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException('Invalid query parameters or database error occurred');
         }
-
-        orderByObject[sortBy || "title"] = ascOrDesc || SortOrder.ASC;
-
-        const movies = await this.prisma.movie.findMany({
-            where: filters,
-            orderBy: orderByObject,
-            skip,
-            take,
-        });
-
-        const movieIds = movies.map((movie) => movie.id);
-        const ratingsInfo = await this.getMovieRatings(movieIds);
-
-        const moviesWithDetails = await Promise.all(
-            movies.map(async (movie) => {
-                const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
-                return {
-                    ...movie,
-                    ...ratingsInfo[movie.id],
-                    ...bookmarkInfo,
-                };
-            }),
-        );
-
-        return { movies: moviesWithDetails };
     }
 
     async findOne(id: number, userId?: number): Promise<MovieDetailsDto> {

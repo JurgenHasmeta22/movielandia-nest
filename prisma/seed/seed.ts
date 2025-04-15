@@ -119,10 +119,13 @@ async function baseSeeding() {
         await prisma.user.create({ data: user });
     }
 
-    // Create main entities
+    console.log("Users created successfully");
+
     for (const genre of genres) {
         await prisma.genre.create({ data: genre });
     }
+
+    console.log("Genres created successfully");
 
     for (const serie of series) {
         await prisma.serie.create({ data: serie });
@@ -131,6 +134,8 @@ async function baseSeeding() {
     for (const movie of movies) {
         await prisma.movie.create({ data: movie });
     }
+    
+    console.log("Movies created successfully");
 
     for (const season of seasons) {
         await prisma.season.create({ data: season });
@@ -148,7 +153,6 @@ async function baseSeeding() {
         await prisma.crew.create({ data: crewMember });
     }
 
-    // Create relationships
     for (const movieGenre of movieGenres) {
         await prisma.movieGenre.create({ data: movieGenre });
     }
@@ -173,9 +177,22 @@ async function baseSeeding() {
         await prisma.crewSerie.create({ data: crewSerie });
     }
 
-    // Create reviews and interactions
     for (const movieReviewsData of movieReviews) {
-        await prisma.movieReview.create({ data: movieReviewsData });
+        try {
+            console.log(`Creating review for movie ${movieReviewsData.movieId} by user ${movieReviewsData.userId}`);
+
+            await prisma.movieReview.create({ 
+                data: movieReviewsData,
+                include: {
+                    user: true,
+                    movie: true
+                }
+            });
+        } catch (error) {
+            console.error(`Failed to create movie review:`, error);
+            console.error('Review data:', movieReviewsData);
+            throw error;
+        }
     }
 
     for (const upvoteMovieReviewsData of upvoteMovieReviews) {
@@ -204,7 +221,7 @@ async function baseSeeding() {
 
 const config = {
     useDynamicSeeding: false,
-    deleteBeforeSeeding: false,
+    deleteBeforeSeeding: true,
     dynamicSeedingStartStep: SeedStep.Reviews
 };
 

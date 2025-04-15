@@ -15,55 +15,5 @@ generator client {
 
 datasource db {
     provider = "sqlite"
-    url      = "file:../database/movielandia24.db"
+    url      = env("DATABASE_URL")
 }
-
-/**
- * MovieLandia24 Database Schema Statistics & Overview
- * ------------------------------------------------
- * Total Tables: 60
- * Schema Breakdown by Domain:
- * 1. User & Authentication (7 tables)
- * - Core: User, Account, Session
- * - Security: VerificationToken, ActivateToken, ResetPasswordToken
- * - Stats: UserListStats
- * 2. Content Management (4 tables)
- * - Movie, Serie, Season, Episode
- * - Hierarchical content structure for media management
- * 3. People (2 tables)
- * - Actor, Crew
- * - Comprehensive talent management
- * 4. Genre System (1 table)
- * - Genre
- * - Content categorization
- * 5. Forum System (11 tables)
- * - Core: ForumCategory, ForumTopic, ForumPost, ForumReply
- * - Management: ForumTag, ForumUserStats, UserForumModerator
- * - User Interaction: UserForumTopicWatch, UserForumTopicFavorite
- * - Support: Attachment, ForumPostHistory
- * 6. Review & Rating System (12 tables)
- * - Reviews: MovieReview, SerieReview, SeasonReview, EpisodeReview, ActorReview, CrewReview
- * - Ratings: UserMovieRating, UserSerieRating, UserSeasonRating, UserEpisodeRating, UserActorRating, UserCrewRating
- * 7. List System (8 tables)
- * - Core: List
- * - Content Links: ListMovie, ListSerie, ListSeason, ListEpisode, ListActor, ListCrew
- * - Sharing: ListShare
- * 8. Cast & Crew Relations (4 tables)
- * - Movie Relations: CastMovie, CrewMovie
- * - Series Relations: CastSerie, CrewSerie
- * 9. Voting System (12 tables)
- * - Movie: UpvoteMovieReview, DownvoteMovieReview
- * - Series: UpvoteSerieReview, DownvoteSerieReview
- * - Season: UpvoteSeasonReview, DownvoteSeasonReview
- * - Episode: UpvoteEpisodeReview, DownvoteEpisodeReview
- * - People: UpvoteActorReview, DownvoteActorReview, UpvoteCrewReview, DownvoteCrewReview
- * Key Design Principles:
- * - Comprehensive content management
- * - Rich user interaction capabilities
- * - Extensive social features
- * - Robust review and rating system
- * - Flexible list management
- * - Advanced forum functionality
- * Note: All tables include appropriate indexes and relations
- * for optimal query performance and data integrity.
- */
