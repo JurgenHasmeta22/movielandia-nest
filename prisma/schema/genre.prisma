@@ -1,0 +1,11 @@
+model Genre {
+    id   Int     @id @default(autoincrement())
+    name String
+
+    // Relations
+    movies               MovieGenre[]
+    series               SerieGenre[]
+    usersWhoBookmarkedIt UserGenreFavorite[]
+
+    @@index([name])
+}

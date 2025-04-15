@@ -1,0 +1,121 @@
+model Serie {
+    id              Int      @id @default(autoincrement())
+    title           String
+    photoSrc        String
+    photoSrcProd    String
+    trailerSrc      String
+    description     String 
+    dateAired       DateTime?
+    ratingImdb      Float
+
+    // Relations
+    cast                 CastSerie[]
+    crew                 CrewSerie[]
+    seasons              Season[]
+    reviews              SerieReview[]
+    genres               SerieGenre[]
+    usersWhoBookmarkedIt UserSerieFavorite[]
+    usersWhoRatedIt      UserSerieRating[]
+    upvoteSerieReviews   UpvoteSerieReview[]
+    downvoteSerieReviews DownvoteSerieReview[]
+    listItems        ListSerie[]
+    listActivities   ListActivitySerie[]
+
+    @@index([title(sort: Asc)])
+    @@index([dateAired])
+    @@index([ratingImdb])
+}
+
+model UpvoteSerieReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId        Int
+    serieId       Int
+    serieReviewId Int
+
+    // Relations
+    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    serie       Serie        @relation(fields: [serieId], references: [id], onDelete: Cascade)
+    serieReview SerieReview? @relation(fields: [serieReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, serieId, serieReviewId])
+}
+
+model DownvoteSerieReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId        Int
+    serieId       Int
+    serieReviewId Int
+
+    // Relations
+    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    serie       Serie        @relation(fields: [serieId], references: [id], onDelete: Cascade)
+    serieReview SerieReview? @relation(fields: [serieReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, serieId, serieReviewId])
+}
+
+model SerieReview {
+    id        Int       @id @default(autoincrement())
+    content   String?
+    rating    Float?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    // FK Keys
+    userId  Int
+    serieId Int
+
+    // Relations
+    user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    serie     Serie                 @relation(fields: [serieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    upvotes   UpvoteSerieReview[]
+    downvotes DownvoteSerieReview[]
+
+    @@unique([userId, serieId])
+}
+
+model SerieGenre {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    serieId Int
+    genreId Int
+
+    // Relations
+    serie Serie @relation(fields: [serieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([serieId, genreId])
+}
+
+model CastSerie {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    serieId Int
+    actorId Int
+
+    // Relations
+    serie Serie @relation(fields: [serieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([serieId, actorId])
+}
+
+model CrewSerie {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    serieId Int
+    crewId  Int
+
+    // Relations
+    serie Serie @relation(fields: [serieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    crew  Crew  @relation(fields: [crewId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([serieId, crewId])
+}

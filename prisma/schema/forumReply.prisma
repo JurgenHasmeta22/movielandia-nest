@@ -1,0 +1,68 @@
+model ForumReply {
+    id          Int       @id @default(autoincrement())
+    content     String    
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime? @updatedAt
+    isEdited    Boolean   @default(false)
+    editCount   Int       @default(0)
+    lastEditAt  DateTime?
+    isModerated Boolean   @default(false)
+
+    // FK Keys
+    postId Int
+    userId Int
+
+    // Relations
+    post      ForumPost            @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    upvotes   UpvoteForumReply[]
+    downvotes DownvoteForumReply[]
+    history   ForumReplyHistory[]
+
+    @@index([createdAt])
+    @@index([isModerated])
+}
+
+model UpvoteForumReply {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId  Int
+    replyId Int
+
+    // Relations
+    user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    reply ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, replyId])
+}
+
+model DownvoteForumReply {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId  Int
+    replyId Int
+
+    // Relations
+    user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    reply ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, replyId])
+}
+
+model ForumReplyHistory {
+    id       Int      @id @default(autoincrement())
+    content  String   
+    editedAt DateTime @default(now())
+
+    // FK Keys
+    replyId    Int
+    editedById Int
+
+    // Relations
+    reply ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+    editedBy User @relation("ReplyEditor", fields: [editedById], references: [id])
+
+    @@index([editedAt])
+}

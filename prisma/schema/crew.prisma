@@ -1,0 +1,76 @@
+model Crew {
+    id           Int     @id @default(autoincrement())
+    fullname     String
+    photoSrc     String
+    role         String
+    photoSrcProd String
+    description  String 
+    debut        String
+
+    // New relation field for ListCrew
+    listItems ListCrew[]
+    listActivities ListActivityCrew[]
+
+    // Relations
+    producedMovies       CrewMovie[]
+    producedSeries       CrewSerie[]
+    reviews              CrewReview[]
+    usersWhoRatedIt      UserCrewRating[]
+    usersWhoBookmarkedIt UserCrewFavorite[]
+    upvoteCrewReviews    UpvoteCrewReview[]
+    downvoteCrewReviews  DownvoteCrewReview[]
+
+    @@index([fullname(sort: Asc)])
+}
+
+model CrewReview {
+    id        Int       @id @default(autoincrement())
+    content   String?
+    rating    Float?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    // FK Keys
+    userId Int
+    crewId Int
+
+    // Relations
+    user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    crew      Crew                 @relation(fields: [crewId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    upvotes   UpvoteCrewReview[]
+    downvotes DownvoteCrewReview[]
+
+    @@unique([userId, crewId])
+}
+
+model UpvoteCrewReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId       Int
+    crewId       Int
+    crewReviewId Int
+
+    // Relations
+    user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    crew       Crew        @relation(fields: [crewId], references: [id], onDelete: Cascade)
+    crewReview CrewReview? @relation(fields: [crewReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, crewId, crewReviewId])
+}
+
+model DownvoteCrewReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId       Int
+    crewId       Int
+    crewReviewId Int
+
+    // Relations
+    user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    crew       Crew        @relation(fields: [crewId], references: [id], onDelete: Cascade)
+    crewReview CrewReview? @relation(fields: [crewReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, crewId, crewReviewId])
+}

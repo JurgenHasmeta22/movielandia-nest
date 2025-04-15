@@ -1,0 +1,80 @@
+model Season {
+    id           Int     @id @default(autoincrement())
+    title        String
+    photoSrc     String
+    photoSrcProd String
+    trailerSrc   String
+    description  String 
+    dateAired    DateTime?
+    ratingImdb   Float
+
+    // FK Keys
+    serieId Int
+
+    // Relations
+    serie                 Serie                  @relation(fields: [serieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    episodes              Episode[]
+    usersWhoBookmarkedIt  UserSeasonFavorite[]
+    usersWhoRatedIt       UserSeasonRating[]
+    reviews               SeasonReview[]
+    upvoteSeasonReviews   UpvoteSeasonReview[]
+    downvoteSeasonReviews DownvoteSeasonReview[]
+    listItems         ListSeason[]
+    listActivities    ListActivitySeason[]
+
+    @@index([title(sort: Asc)])
+    @@index([ratingImdb])
+    @@index([dateAired])
+}
+
+model SeasonReview {
+    id        Int       @id @default(autoincrement())
+    content   String?
+    rating    Float?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    // FK Keys
+    userId   Int
+    seasonId Int
+
+    // Relations
+    user      User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    season    Season                 @relation(fields: [seasonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    upvotes   UpvoteSeasonReview[]
+    downvotes DownvoteSeasonReview[]
+
+    @@unique([userId, seasonId])
+}
+
+model UpvoteSeasonReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId         Int
+    seasonId       Int
+    seasonReviewId Int
+
+    // Relations
+    user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    season       Season        @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+    seasonReview SeasonReview? @relation(fields: [seasonReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, seasonId, seasonReviewId])
+}
+
+model DownvoteSeasonReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId         Int
+    seasonId       Int
+    seasonReviewId Int
+
+    // Relations
+    user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    season       Season        @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+    seasonReview SeasonReview? @relation(fields: [seasonReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, seasonId, seasonReviewId])
+}

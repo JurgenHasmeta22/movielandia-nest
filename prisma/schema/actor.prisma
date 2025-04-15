@@ -1,0 +1,74 @@
+model Actor {
+    id           Int     @id @default(autoincrement())
+    fullname     String
+    photoSrc     String
+    photoSrcProd String
+    description  String  
+    debut        String
+
+    // Relations
+    listItems        ListActor[]
+    listActivities   ListActivityActor[]
+    starredMovies        CastMovie[]
+    starredSeries        CastSerie[]
+    reviews              ActorReview[]
+    usersWhoRatedIt      UserActorRating[]
+    usersWhoBookmarkedIt UserActorFavorite[]
+    upvoteActorReviews   UpvoteActorReview[]
+    downvoteActorReviews DownvoteActorReview[]
+
+    @@index([fullname(sort: Asc)])
+    @@index([debut])
+}
+
+model ActorReview {
+    id        Int       @id @default(autoincrement())
+    content   String?
+    rating    Float?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    // FK Keys
+    userId  Int
+    actorId Int
+
+    // Relations
+    user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    actor     Actor                 @relation(fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    upvotes   UpvoteActorReview[]
+    downvotes DownvoteActorReview[]
+
+    @@unique([userId, actorId])
+}
+
+model UpvoteActorReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId        Int
+    actorId       Int
+    actorReviewId Int
+
+    // Relations
+    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    actor       Actor        @relation(fields: [actorId], references: [id], onDelete: Cascade)
+    actorReview ActorReview? @relation(fields: [actorReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, actorId, actorReviewId])
+}
+
+model DownvoteActorReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId        Int
+    actorId       Int
+    actorReviewId Int
+
+    // Relations
+    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    actor       Actor        @relation(fields: [actorId], references: [id], onDelete: Cascade)
+    actorReview ActorReview? @relation(fields: [actorReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, actorId, actorReviewId])
+}

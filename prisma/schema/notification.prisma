@@ -1,0 +1,27 @@
+model Notification {
+    id        Int                @id @default(autoincrement())
+    type      NotificationType
+    content   String             
+    status    NotificationStatus @default(unread)
+    createdAt DateTime           @default(now())
+
+    // FK Keys
+    userId   Int
+    senderId Int
+
+    // Relations
+    user   User @relation("NotificationReceiver", fields: [userId], references: [id], onDelete: Cascade)
+    sender User @relation("NotificationSender", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationStatus {
+    read
+    unread
+}
+
+enum NotificationType {
+    follow_request
+    message_received
+    liked_review
+    disliked_review
+}

@@ -1,0 +1,81 @@
+model Episode {
+    id              Int      @id @default(autoincrement())
+    title           String
+    photoSrc        String
+    photoSrcProd    String
+    trailerSrc      String
+    description     String    
+    duration        Int
+    dateAired       DateTime?
+    ratingImdb      Float
+
+    // FK Keys
+    seasonId Int
+
+    // Relations
+    season               Season                   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+    listItems        ListEpisode[]
+    listActivities   ListActivityEpisode[]
+    usersWhoBookmarkedIt   UserEpisodeFavorite[]
+    usersWhoRatedIt        UserEpisodeRating[]
+    reviews                EpisodeReview[]
+    upvoteEpisodeReviews   UpvoteEpisodeReview[]
+    downvoteEpisodeReviews DownvoteEpisodeReview[]
+
+    @@index([title(sort: Asc)])
+    @@index([duration])
+    @@index([ratingImdb])
+    @@index([dateAired])
+}
+
+model EpisodeReview {
+    id        Int       @id @default(autoincrement())
+    content   String?
+    rating    Float?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    // FK Keys
+    userId    Int
+    episodeId Int
+
+    // Relations
+    user      User                    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    episode   Episode                 @relation(fields: [episodeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    upvotes   UpvoteEpisodeReview[]
+    downvotes DownvoteEpisodeReview[]
+
+    @@unique([userId, episodeId])
+}
+
+model UpvoteEpisodeReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId          Int
+    episodeId       Int
+    episodeReviewId Int
+
+    // Relations
+    user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    episode       Episode        @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+    episodeReview EpisodeReview? @relation(fields: [episodeReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, episodeId, episodeReviewId])
+}
+
+model DownvoteEpisodeReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId          Int
+    episodeId       Int
+    episodeReviewId Int
+
+    // Relations
+    user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    episode       Episode        @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+    episodeReview EpisodeReview? @relation(fields: [episodeReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, episodeId, episodeReviewId])
+}

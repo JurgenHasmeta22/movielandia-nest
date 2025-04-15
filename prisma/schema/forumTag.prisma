@@ -1,0 +1,12 @@
+model ForumTag {
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?  
+    color       String?
+    createdAt   DateTime @default(now())
+
+    // Relations
+    topics ForumTopic[]
+
+    @@index([name])
+}

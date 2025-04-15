@@ -1,0 +1,39 @@
+model Inbox {
+    id Int @id @default(autoincrement())
+
+    // Relations
+    participants UserInbox[]
+    messages     Message[]
+}
+
+model Message {
+    id        Int      @id @default(autoincrement())
+    text      String   
+    createdAt DateTime @default(now())
+    read      Boolean  @default(false)
+    editedAt  DateTime? @updatedAt
+
+    // FK Keys
+    senderId   Int
+    receiverId Int
+    inboxId    Int
+
+    // Relations
+    receiver User  @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    sender   User  @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    inbox    Inbox @relation(fields: [inboxId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model UserInbox {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId  Int
+    inboxId Int
+
+    // Relations
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    inbox Inbox @relation(fields: [inboxId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, inboxId])
+}

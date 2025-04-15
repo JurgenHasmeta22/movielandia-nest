@@ -1,0 +1,41 @@
+model ForumCategory {
+    id          Int       @id @default(autoincrement())
+    name        String
+    description String    
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    order       Int       @default(0)
+    isActive    Boolean   @default(true)
+    slug        String    @unique
+    topicCount  Int       @default(0)
+    postCount   Int       @default(0)
+    lastPostAt  DateTime?
+
+    // FK Keys
+    lastPostId Int? @unique
+
+    // Relations
+    lastPost   ForumPost?           @relation("CategoryLastPost", fields: [lastPostId], references: [id], onDelete: SetNull)
+    topics     ForumTopic[]
+    moderators UserForumModerator[]
+
+    @@index([name(sort: Asc)])
+    @@index([order])
+    @@index([lastPostId])
+    @@index([isActive, order])
+}
+
+model UserForumModerator {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+
+    // FK Keys
+    userId     Int
+    categoryId Int
+
+    // Relations
+    user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    category ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, categoryId])
+}

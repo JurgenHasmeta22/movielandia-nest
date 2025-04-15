@@ -1,0 +1,97 @@
+model UserMovieFavorite {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId  Int
+    movieId Int
+
+    // Relations
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, movieId])
+}
+
+model UserGenreFavorite {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId  Int
+    genreId Int
+
+    // Relations
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, genreId])
+}
+
+model UserSerieFavorite {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId  Int
+    serieId Int
+
+    // Relations
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    serie Serie @relation(fields: [serieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, serieId])
+}
+
+model UserEpisodeFavorite {
+    id Int @id @default(autoincrement())
+
+    // FK Keys 
+    userId    Int
+    episodeId Int
+
+    // Relations
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, episodeId])
+}
+
+model UserSeasonFavorite {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId   Int
+    seasonId Int
+
+    // Relations
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    season Season @relation(fields: [seasonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, seasonId])
+}
+
+model UserActorFavorite {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId  Int
+    actorId Int
+
+    // Relations
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, actorId])
+}
+
+model UserCrewFavorite {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId Int
+    crewId Int
+
+    // Relations
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    crew Crew @relation(fields: [crewId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([userId, crewId])
+}

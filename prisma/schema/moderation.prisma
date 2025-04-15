@@ -1,0 +1,59 @@
+model ReportedContent {
+    id                Int          @id @default(autoincrement())
+    reportType        ReportType
+    reason            String?
+    createdAt         DateTime     @default(now())
+    status            ReportStatus @default(Pending)
+    resolutionDetails String?
+
+    // FK Keys
+    contentId       Int
+    reportingUserId Int
+    reportedUserId  Int?
+
+    // Relations
+    reportingUser User  @relation(fields: [reportingUserId], references: [id], name: "ReportingUser")
+    reportedUser  User? @relation(fields: [reportedUserId], references: [id], name: "ReportedUser")
+
+    @@index([contentId])
+}
+
+model ModerationLog {
+    id         Int              @id @default(autoincrement())
+    actionType ModerationAction
+    timestamp  DateTime         @default(now())
+    details    String?
+
+    // FK Keys
+    moderatorUserId Int
+    targetUserId    Int?
+    targetContentId Int?
+
+    // Relations
+    moderatorUser User  @relation(fields: [moderatorUserId], references: [id], name: "ModeratorUser")
+    targetUser    User? @relation(fields: [targetUserId], references: [id], name: "TargetUser")
+
+    @@index([targetUserId])
+    @@index([targetContentId])
+}
+
+enum ModerationAction {
+    DeleteReview
+    DeleteComment
+    BanUser
+    WarnUser
+}
+
+enum ReportType {
+    Review
+    Comment
+    User
+    Message
+    Other
+}
+
+enum ReportStatus {
+    Pending
+    Resolved
+    Rejected
+}

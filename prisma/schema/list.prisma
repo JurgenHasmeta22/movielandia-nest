@@ -1,0 +1,349 @@
+/**
+ * List Models - Core entities for managing user content collections
+ * List System Capabilities:
+ * 1. List Types & Management
+ * - Create custom lists
+ * - Automatic system lists (Watchlist, Favorites, Watched)
+ * - Public/Private visibility settings
+ * - Archive functionality
+ * - Default list designation
+ * - Track item counts and view history
+ * 2. Content Organization
+ * - Add/remove multiple content types:
+ * • Movies
+ * • TV Series
+ * • Seasons
+ * • Episodes
+ * • Actors
+ * • Crew Members
+ * - Custom ordering of items (orderIndex)
+ * - Add notes to list items
+ * - Track addition dates
+ * 3. Sharing & Collaboration
+ * - Share lists with other users
+ * - Control edit permissions for shared lists
+ * - Track sharing history
+ * 4. Activity Tracking
+ * - Log all list actions:
+ * • Creation/Updates/Deletion
+ * • Item additions/removals
+ * • Sharing/Unsharing
+ * - Store metadata for each action
+ * - Track user responsibility for actions
+ * Integration Points:
+ * - User system (ownership, sharing, activity tracking)
+ * - Content systems (movies, series, seasons, episodes)
+ * - People systems (actors, crew)
+ */
+
+enum ListActionType {
+    Created
+    Updated
+    Deleted
+    ItemAdded
+    ItemRemoved
+    Shared
+    Unshared
+}
+
+enum ContentType {
+    movie
+    serie
+    season
+    episode
+    actor
+    crew
+    user
+}
+
+model List {
+    id           Int          @id @default(autoincrement())
+    name         String
+    description  String?      
+    isPrivate    Boolean      @default(false)
+    isArchived   Boolean      @default(false)
+    isDefault    Boolean      @default(false)
+    createdAt    DateTime     @default(now())
+    contentType  ContentType?
+    updatedAt    DateTime     @updatedAt
+    lastViewedAt DateTime?
+
+    // FK Keys
+    userId Int
+
+    // Relations
+    user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    movieItems        ListMovie[]
+    serieItems        ListSerie[]
+    seasonItems       ListSeason[]
+    episodeItems      ListEpisode[]
+    actorItems        ListActor[]
+    crewItems         ListCrew[]
+    sharedWith        ListShare[]
+    movieActivities   ListActivityMovie[]
+    serieActivities   ListActivitySerie[]
+    seasonActivities  ListActivitySeason[]
+    episodeActivities ListActivityEpisode[]
+    actorActivities   ListActivityActor[]
+    crewActivities    ListActivityCrew[]
+
+    @@index([userId])
+    @@index([createdAt])
+    @@index([isDefault])
+}
+
+model ListShare {
+    id       Int      @id @default(autoincrement())
+    canEdit  Boolean  @default(false)
+    sharedAt DateTime @default(now())
+
+    // FK Keys
+    listId Int
+    userId Int
+
+    // Relations
+    list List @relation(fields: [listId], references: [id], onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([listId, userId])
+}
+
+model ListMovie {
+    id         Int      @id @default(autoincrement())
+    addedAt    DateTime @default(now())
+    note       String?  
+    orderIndex Int      @default(0)
+
+    // FK Keys
+    listId  Int
+    movieId Int
+    userId  Int
+
+    // Relations
+    list  List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+    movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+    user  User  @relation("AddedByUser", fields: [userId], references: [id])
+
+    @@unique([listId, movieId])
+    @@index([listId, orderIndex])
+}
+
+model ListSerie {
+    id         Int      @id @default(autoincrement())
+    addedAt    DateTime @default(now())
+    note       String?  
+    orderIndex Int      @default(0)
+
+    // FK Keys
+    listId  Int
+    serieId Int
+    userId  Int
+
+    // Relations
+    list  List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+    serie Serie @relation(fields: [serieId], references: [id], onDelete: Cascade)
+    user  User  @relation("AddedBySerieUser", fields: [userId], references: [id])
+
+    @@unique([listId, serieId])
+    @@index([listId, orderIndex])
+}
+
+model ListSeason {
+    id         Int      @id @default(autoincrement())
+    addedAt    DateTime @default(now())
+    note       String?  
+    orderIndex Int      @default(0)
+
+    // FK Keys
+    listId   Int
+    seasonId Int
+    userId   Int
+
+    // Relations
+    list   List   @relation(fields: [listId], references: [id], onDelete: Cascade)
+    season Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+    user   User   @relation("AddedBySeasonUser", fields: [userId], references: [id])
+
+    @@unique([listId, seasonId])
+    @@index([listId, orderIndex])
+}
+
+model ListEpisode {
+    id         Int      @id @default(autoincrement())
+    addedAt    DateTime @default(now())
+    note       String?  
+    orderIndex Int      @default(0)
+
+    // FK Keys
+    listId    Int
+    episodeId Int
+    userId    Int
+
+    // Relations
+    list    List    @relation(fields: [listId], references: [id], onDelete: Cascade)
+    episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+    user    User    @relation("AddedByEpisodeUser", fields: [userId], references: [id])
+
+    @@unique([listId, episodeId])
+    @@index([listId, orderIndex])
+}
+
+model ListActor {
+    id         Int      @id @default(autoincrement())
+    addedAt    DateTime @default(now())
+    note       String?  
+    orderIndex Int      @default(0)
+
+    // FK Keys
+    listId  Int
+    actorId Int
+    userId  Int
+
+    // Relations
+    list  List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+    actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade)
+    user  User  @relation("AddedByActorUser", fields: [userId], references: [id])
+
+    @@unique([listId, actorId])
+    @@index([listId, orderIndex])
+}
+
+model ListCrew {
+    id         Int      @id @default(autoincrement())
+    addedAt    DateTime @default(now())
+    note       String?  
+    orderIndex Int      @default(0)
+
+    // FK Keys
+    listId Int
+    crewId Int
+    userId Int
+
+    // Relations
+    list List @relation(fields: [listId], references: [id], onDelete: Cascade)
+    crew Crew @relation(fields: [crewId], references: [id], onDelete: Cascade)
+    user User @relation("AddedByCrewUser", fields: [userId], references: [id])
+
+    @@unique([listId, crewId])
+    @@index([listId, orderIndex])
+}
+
+model ListActivityMovie {
+    id         Int            @id @default(autoincrement())
+    actionType ListActionType
+    metadata   Json?
+    createdAt  DateTime       @default(now())
+
+    // FK Keys
+    listId  Int
+    movieId Int
+    userId  Int
+
+    // Relations
+    list  List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+    movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([listId, createdAt])
+    @@index([userId, createdAt])
+}
+
+model ListActivitySerie {
+    id         Int            @id @default(autoincrement())
+    actionType ListActionType
+    metadata   Json?
+    createdAt  DateTime       @default(now())
+
+    // FK Keys
+    listId  Int
+    serieId Int
+    userId  Int
+
+    // Relations
+    list  List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+    serie Serie @relation(fields: [serieId], references: [id], onDelete: Cascade)
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([listId, createdAt])
+    @@index([userId, createdAt])
+}
+
+model ListActivitySeason {
+    id         Int            @id @default(autoincrement())
+    actionType ListActionType
+    metadata   Json?
+    createdAt  DateTime       @default(now())
+
+    // FK Keys
+    listId   Int
+    seasonId Int
+    userId   Int
+
+    // Relations
+    list   List   @relation(fields: [listId], references: [id], onDelete: Cascade)
+    season Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([listId, createdAt])
+    @@index([userId, createdAt])
+}
+
+model ListActivityEpisode {
+    id         Int            @id @default(autoincrement())
+    actionType ListActionType
+    metadata   Json?
+    createdAt  DateTime       @default(now())
+
+    // FK Keys
+    listId    Int
+    episodeId Int
+    userId    Int
+
+    // Relations
+    list    List    @relation(fields: [listId], references: [id], onDelete: Cascade)
+    episode Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([listId, createdAt])
+    @@index([userId, createdAt])
+}
+
+model ListActivityActor {
+    id         Int            @id @default(autoincrement())
+    actionType ListActionType
+    metadata   Json?
+    createdAt  DateTime       @default(now())
+
+    // FK Keys
+    listId  Int
+    actorId Int
+    userId  Int
+
+    // Relations
+    list  List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+    actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade)
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([listId, createdAt])
+    @@index([userId, createdAt])
+}
+
+model ListActivityCrew {
+    id         Int            @id @default(autoincrement())
+    actionType ListActionType
+    metadata   Json?
+    createdAt  DateTime       @default(now())
+
+    // FK Keys
+    listId Int
+    crewId Int
+    userId Int
+
+    // Relations
+    list List @relation(fields: [listId], references: [id], onDelete: Cascade)
+    crew Crew @relation(fields: [crewId], references: [id], onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([listId, createdAt])
+    @@index([userId, createdAt])
+}

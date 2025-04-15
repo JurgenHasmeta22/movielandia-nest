@@ -1,0 +1,112 @@
+enum PostType {
+    Normal
+    Announcement
+    Sticky
+    Question
+    Answered
+}
+
+model ForumPost {
+    id          Int       @id @default(autoincrement())
+    content     String    
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime? @updatedAt
+    isEdited    Boolean   @default(false)
+    editCount   Int       @default(0)
+    lastEditAt  DateTime?
+    isModerated Boolean   @default(false)
+    slug        String    @unique
+    type        PostType  @default(Normal)
+    isAnswer    Boolean   @default(false)
+    isDeleted   Boolean   @default(false)
+    answeredAt  DateTime?
+    deletedAt   DateTime?
+
+    // FK Keys
+    topicId      Int
+    userId       Int
+    answeredById Int?
+    deletedById  Int?
+
+    // Relations
+    topic            ForumTopic          @relation(fields: [topicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user             User                @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    answeredBy       User?               @relation("PostAnswerer", fields: [answeredById], references: [id])
+    deletedBy        User?               @relation("PostDeleter", fields: [deletedById], references: [id])
+    attachments      Attachment[]
+    replies          ForumReply[]
+    upvotes          UpvoteForumPost[]
+    downvotes        DownvoteForumPost[]
+    history          ForumPostHistory[]
+    lastPostCategory ForumCategory?      @relation("CategoryLastPost")
+
+    @@index([createdAt])
+    @@index([isModerated])
+    @@index([topicId])
+    @@index([isDeleted])
+    @@index([answeredAt])
+}
+
+model Attachment {
+    id          Int      @id @default(autoincrement())
+    filename    String
+    fileUrl     String
+    fileSize    Int
+    mimeType    String
+    uploadedAt  DateTime @default(now())
+    isPublic    Boolean  @default(true)
+    description String?  
+
+    // FK Keys
+    postId Int
+    userId Int
+
+    // Relations
+    user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+    @@index([uploadedAt])
+    @@index([mimeType])
+}
+
+model UpvoteForumPost {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId Int
+    postId Int
+
+    // Relations
+    user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, postId])
+}
+
+model DownvoteForumPost {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId Int
+    postId Int
+
+    // Relations
+    user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, postId])
+}
+
+model ForumPostHistory {
+    id       Int      @id @default(autoincrement())
+    content  String   
+    editedAt DateTime @default(now())
+
+    // FK Keys
+    postId     Int
+    editedById Int
+
+    // Relations
+    post     ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+    editedBy User      @relation("PostEditor", fields: [editedById], references: [id])
+}

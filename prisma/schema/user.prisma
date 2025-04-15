@@ -1,0 +1,231 @@
+/**
+ * User Model - Core entity representing application users
+ * User Capabilities:
+ * 1. Authentication & Profile
+ * - Register and login (email/password or Google OAuth)
+ * - Manage profile (username, email, password, bio)
+ * - Upload and manage avatar
+ * - Reset password and account activation
+ * 2. Content Interaction
+ * - Bookmark favorites (movies, series, seasons, episodes, actors, crew)
+ * - Rate content (0-10 stars for movies, series, seasons, episodes, actors, crew)
+ * - Write, edit and manage reviews for all content types
+ * - Interact with others' reviews (upvote/downvote)
+ * - Create and manage personal lists of various content
+ * 3. Social Features
+ * - Follow/unfollow other users (with pending/accepted/rejected states)
+ * - Send/receive direct messages through inbox system
+ * - Receive notifications for social interactions
+ * 4. Forum Participation
+ * - Create and manage forum topics
+ * - Post replies and participate in discussions
+ * - Upvote/downvote forum content (topics, posts, replies)
+ * - Bookmark favorite topics
+ * - Watch topics for updates
+ * - Moderate forum categories (if given moderator rights)
+ * - Upload attachments to forum posts
+ * 5. Content Management (Admin Only)
+ * - Moderate user content
+ * - Handle reported content
+ * - Create moderation logs
+ * - Close topics
+ * - Edit/delete forum posts
+ * 6. List Management
+ * - Create and manage personal lists
+ * - Add various content types to lists
+ * - Share lists with other users
+ * - Track list statistics
+ * - Record list activities
+ * Stats & Tracking:
+ * - Forum activity statistics (topics, posts, replies, reputation)
+ * - List usage statistics
+ * - Content interaction history
+ */
+
+enum UserType {
+    User
+    Admin
+}
+
+enum FollowState {
+    pending
+    accepted
+    rejected
+}
+
+enum Gender {
+    Male
+    Female
+}
+
+model User {
+    id               Int       @id @default(autoincrement())
+    userName         String    @unique
+    email            String    @unique
+    password         String?
+    role             UserType  @default(User)
+    bio              String?   
+    age              Int?
+    birthday         DateTime? 
+    gender           Gender    @default(Male)
+    phone            String    @default("+11234567890")
+    countryFrom      String    @default("United States")
+    active           Boolean   @default(false)
+    canResetPassword Boolean   @default(false)
+    subscribed       Boolean   @default(false)
+
+    // Auth Relations
+    resetPasswordTokens ResetPasswordToken[]
+    activateTokens      ActivateToken[]
+    accounts            Account[]
+    sessions            Session[]
+
+    // Content Favorites Relations
+    favMovies   UserMovieFavorite[]
+    favSeries   UserSerieFavorite[]
+    favGenres   UserGenreFavorite[]
+    favSeasons  UserSeasonFavorite[]
+    favEpisodes UserEpisodeFavorite[]
+    favActors   UserActorFavorite[]
+    favCrew     UserCrewFavorite[]
+
+    // Ratings Relations
+    ratingsInMovie   UserMovieRating[]
+    ratingsInSerie   UserSerieRating[]
+    ratingsInSeason  UserSeasonRating[]
+    ratingsInEpisode UserEpisodeRating[]
+    ratingsInActor   UserActorRating[]
+    ratingsInCrew    UserCrewRating[]
+
+    // Reviews Relations
+    movieReviews   MovieReview[]
+    serieReviews   SerieReview[]
+    seasonReviews  SeasonReview[]
+    episodeReviews EpisodeReview[]
+    actorReviews   ActorReview[]
+    crewReviews    CrewReview[]
+
+    // Review Interactions Relations
+    movieReviewsUpvoted     UpvoteMovieReview[]
+    movieReviewsDownvoted   DownvoteMovieReview[]
+    serieReviewsUpvoted     UpvoteSerieReview[]
+    serieReviewsDownvoted   DownvoteSerieReview[]
+    seasonReviewsUpvoted    UpvoteSeasonReview[]
+    seasonReviewsDownvoted  DownvoteSeasonReview[]
+    episodeReviewsUpvoted   UpvoteEpisodeReview[]
+    episodeReviewsDownvoted DownvoteEpisodeReview[]
+    actorReviewsUpvoted     UpvoteActorReview[]
+    actorReviewsDownvoted   DownvoteActorReview[]
+    crewReviewsUpvoted      UpvoteCrewReview[]
+    crewReviewsDownvoted    DownvoteCrewReview[]
+
+    // Social Relations
+    avatar           Avatar?
+    followers        UserFollow[] @relation("UserFollowing")
+    following        UserFollow[] @relation("UserFollowers")
+    inboxes          UserInbox[]
+    messagesSent     Message[]    @relation("Sender")
+    messagesReceived Message[]    @relation("Receiver")
+
+    // Notification Relations
+    notificationsReceived Notification[] @relation("NotificationReceiver")
+    notificationsSent     Notification[] @relation("NotificationSender")
+
+    // Forum Relations
+    forumTopics              ForumTopic[]
+    forumPosts               ForumPost[]
+    forumReplies             ForumReply[]
+    forumTopicUpvotes        UpvoteForumTopic[]
+    forumTopicDownvotes      DownvoteForumTopic[]
+    forumPostUpvotes         UpvoteForumPost[]
+    forumPostDownvotes       DownvoteForumPost[]
+    forumReplyUpvotes        UpvoteForumReply[]
+    forumReplyDownvotes      DownvoteForumReply[]
+    forumTopicsBookmarked    UserForumTopicFavorite[]
+    forumTopicsWatched       UserForumTopicWatch[]
+    forumModeratedCategories UserForumModerator[]
+    attachments              Attachment[]
+
+    // Moderation Relations
+    reportedContentCreated  ReportedContent[]   @relation("ReportingUser")
+    reportedContentReceived ReportedContent[]   @relation("ReportedUser")
+    moderationLogsCreated   ModerationLog[]     @relation("ModeratorUser")
+    moderationLogsTargeted  ModerationLog[]     @relation("TargetUser")
+    forumStats              ForumUserStats?
+    topicsClosed            ForumTopic[]        @relation("TopicCloser")
+    postsAnswered           ForumPost[]         @relation("PostAnswerer")
+    postsEdited             ForumPostHistory[]  @relation("PostEditor")
+    repliesEdited           ForumReplyHistory[] @relation("ReplyEditor")
+    postsDeleted            ForumPost[]         @relation("PostDeleter")
+
+    // List Relations
+    lists             List[]
+    sharedLists       ListShare[]
+    listStats         UserListStats?
+    movieActivities   ListActivityMovie[]
+    serieActivities   ListActivitySerie[]
+    seasonActivities  ListActivitySeason[]
+    episodeActivities ListActivityEpisode[]
+    actorActivities   ListActivityActor[]
+    crewActivities    ListActivityCrew[]
+    addedMovieItems   ListMovie[]   @relation("AddedByUser")
+    addedSerieItems   ListSerie[]   @relation("AddedBySerieUser")
+    addedSeasonItems  ListSeason[]  @relation("AddedBySeasonUser")
+    addedEpisodeItems ListEpisode[] @relation("AddedByEpisodeUser")
+    addedActorItems   ListActor[]   @relation("AddedByActorUser")
+    addedCrewItems    ListCrew[]    @relation("AddedByCrewUser")
+
+    @@index([userName(sort: Asc)])
+    @@index([email])
+    @@index([countryFrom])
+}
+
+model Avatar {
+    id       Int    @id @default(autoincrement())
+    photoSrc String
+
+    // FK Keys
+    userId Int @unique
+
+    // Relations
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model UserFollow {
+    id    Int         @id @default(autoincrement())
+    state FollowState @default(pending)
+
+    // FK Keys
+    followerId  Int
+    followingId Int
+
+    // Relations
+    follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([followerId, followingId])
+}
+
+model ForumUserStats {
+    id              Int       @id @default(autoincrement())
+    userId          Int       @unique
+    user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    topicCount      Int       @default(0)
+    postCount       Int       @default(0)
+    replyCount      Int       @default(0)
+    upvotesReceived Int       @default(0)
+    reputation      Int       @default(0)
+    lastPostAt      DateTime?
+}
+
+model UserListStats {
+    id          Int       @id @default(autoincrement())
+    userId      Int       @unique
+    totalLists  Int       @default(0)
+    totalItems  Int       @default(0)
+    sharedLists Int       @default(0)
+    lastListAt  DateTime?
+
+    // Relations
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

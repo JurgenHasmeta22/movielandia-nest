@@ -1,0 +1,120 @@
+model Movie {
+    id           Int       @id @default(autoincrement())
+    title        String
+    photoSrc     String
+    photoSrcProd String
+    trailerSrc   String
+    duration     Int
+    ratingImdb   Float
+    dateAired    DateTime?
+    description  String    
+
+    // Relations
+    cast                 CastMovie[]
+    crew                 CrewMovie[]
+    genres               MovieGenre[]
+    reviews              MovieReview[]
+    usersWhoBookmarkedIt UserMovieFavorite[]
+    usersWhoRatedIt      UserMovieRating[]
+    upvoteMovieReviews   UpvoteMovieReview[]
+    downvoteMovieReviews DownvoteMovieReview[]
+    listItems            ListMovie[]
+    listActivities       ListActivityMovie[]
+
+    @@index([title(sort: Asc)])
+    @@index([duration])
+    @@index([ratingImdb])
+    @@index([dateAired])
+}
+
+model MovieReview {
+    id        Int       @id @default(autoincrement())
+    content   String?
+    rating    Float?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    // FK Keys
+    userId  Int
+    movieId Int
+
+    // Relations
+    user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    movie     Movie                 @relation(fields: [movieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    upvotes   UpvoteMovieReview[]
+    downvotes DownvoteMovieReview[]
+}
+
+model UpvoteMovieReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId        Int
+    movieId       Int
+    movieReviewId Int
+
+    // Relations
+    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    movie       Movie        @relation(fields: [movieId], references: [id], onDelete: Cascade)
+    movieReview MovieReview? @relation(fields: [movieReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, movieId, movieReviewId])
+}
+
+model DownvoteMovieReview {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    userId        Int
+    movieId       Int
+    movieReviewId Int
+
+    // Relations
+    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    movie       Movie        @relation(fields: [movieId], references: [id], onDelete: Cascade)
+    movieReview MovieReview? @relation(fields: [movieReviewId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, movieId, movieReviewId])
+}
+
+model CastMovie {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    movieId Int
+    actorId Int
+
+    // Relations
+    movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([movieId, actorId])
+}
+
+model CrewMovie {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    movieId Int
+    crewId  Int
+
+    // Relations
+    movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    crew  Crew  @relation(fields: [crewId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([crewId, movieId])
+}
+
+model MovieGenre {
+    id Int @id @default(autoincrement())
+
+    // FK Keys
+    movieId Int
+    genreId Int
+
+    // Relations
+    movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([genreId, movieId])
+}
