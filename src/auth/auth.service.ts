@@ -4,7 +4,7 @@ import { PrismaService } from "../prisma.service";
 import * as bcrypt from "bcrypt";
 import { SignUpDto, SignInDto, ForgotPasswordDto, ResetPasswordDto, ActivateAccountDto } from "./dtos/auth.dto";
 import { randomBytes } from "crypto";
-import { EmailService } from "./services/email.service";
+import { EmailService } from "@/email/email.service";
 
 @Injectable()
 export class AuthService {
@@ -122,7 +122,7 @@ export class AuthService {
             },
         });
 
-        await this.emailService.sendPasswordResetEmail(email, resetToken);
+        await this.emailService.sendPasswordResetEmail(email, user.userName, resetToken);
 
         return { message: "Password reset instructions have been sent to your email" };
     }
