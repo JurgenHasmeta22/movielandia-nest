@@ -4,7 +4,7 @@ import { PrismaService } from "../prisma.service";
 import * as bcrypt from "bcrypt";
 import { SignUpDto, SignInDto, ForgotPasswordDto, ResetPasswordDto, ActivateAccountDto } from "./dtos/auth.dto";
 import { randomBytes } from "crypto";
-import { EmailService } from "@/email/email.service";
+import { EmailService } from "../email/email.service";
 
 @Injectable()
 export class AuthService {
@@ -66,7 +66,7 @@ export class AuthService {
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        
+
         if (!isPasswordValid) {
             throw new UnauthorizedException("Invalid credentials");
         }
