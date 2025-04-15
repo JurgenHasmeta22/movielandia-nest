@@ -3,8 +3,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma.service';
-import { AuthGuard } from '../src/guards/auth.guard';
-import { OptionalAuthGuard } from '../src/guards/optional-auth.guard';
+import { AuthGuard } from '../src/auth/guards/auth.guard';
+import { OptionalAuthGuard } from '../src/auth/guards/optional-auth.guard';
 import { SortOrder } from '../src/modules/movie/dtos/movie-query.dto';
 
 describe('MovieController (e2e)', () => {

@@ -21,9 +21,9 @@ import { UpdateMovieDto } from "./dtos/update-movie.dto";
 import { MovieQueryDto } from "./dtos/movie-query.dto";
 import { MovieListResponseDto, MovieDetailsDto, RelatedMoviesResponseDto } from "./dtos/movie-response.dto";
 import { User } from "@prisma/client";
-import { CurrentUser } from "../../decorators/current-user.decorator";
-import { OptionalAuthGuard } from "../../guards/optional-auth.guard";
-import { AuthGuard } from "../../guards/auth.guard";
+import { CurrentUser } from "../../auth/decorators/current-user.decorator";
+import { OptionalAuthGuard } from "../../auth/guards/optional-auth.guard";
+import { AuthGuard } from "../../auth/guards/auth.guard";
 
 @ApiTags("Movies")
 @Controller("movies")
