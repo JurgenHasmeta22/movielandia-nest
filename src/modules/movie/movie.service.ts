@@ -39,7 +39,8 @@ export class MovieService {
                 if (typeof filterValue === "string" && filterOperatorString === "contains") {
                     filters[filterNameString] = { contains: filterValue.toLowerCase() };
                 } else {
-                    const operator = filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
+                    const operator =
+                        filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
                     filters[filterNameString] = { [operator]: Number(filterValue) };
                 }
             }
@@ -69,15 +70,15 @@ export class MovieService {
 
             const totalCount = await this.prisma.movie.count({ where: filters });
 
-            return { 
+            return {
                 movies: moviesWithDetails,
-                count: totalCount
+                count: totalCount,
             };
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
             }
-            throw new BadRequestException('Invalid query parameters or database error occurred');
+            throw new BadRequestException("Invalid query parameters or database error occurred");
         }
     }
 

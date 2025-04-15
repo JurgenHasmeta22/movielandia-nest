@@ -12,6 +12,7 @@ import {
     HttpCode,
     UseGuards,
     BadRequestException,
+    ValidationPipe,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { MovieService } from "./movie.service";
@@ -34,15 +35,18 @@ export class MovieController {
     @ApiOperation({ summary: "Get all movies with filters and pagination" })
     @ApiResponse({ status: HttpStatus.OK, description: "Movies retrieved successfully", type: MovieListResponseDto })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
-    async findAll(@Query() query: MovieQueryDto, @CurrentUser() user?: User): Promise<MovieListResponseDto> {
+    async findAll(
+        @Query(new ValidationPipe({ transform: true })) query: MovieQueryDto,
+        @CurrentUser() user?: User,
+    ): Promise<MovieListResponseDto> {
         try {
             return await this.movieService.findAll(query, user?.id);
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
             }
-            
-            throw new BadRequestException('Failed to fetch movies. Please check your query parameters.');
+
+            throw new BadRequestException("Failed to fetch movies. Please check your query parameters.");
         }
     }
 
@@ -77,7 +81,7 @@ export class MovieController {
                 throw error;
             }
 
-            throw new BadRequestException('Failed to search movies. Please check your query parameters.');
+            throw new BadRequestException("Failed to search movies. Please check your query parameters.");
         }
     }
 
@@ -100,7 +104,7 @@ export class MovieController {
             if (error instanceof BadRequestException) {
                 throw error;
             }
-            throw new BadRequestException('Failed to fetch movie. Please check the movie ID.');
+            throw new BadRequestException("Failed to fetch movie. Please check the movie ID.");
         }
     }
 
@@ -125,7 +129,7 @@ export class MovieController {
             if (error instanceof BadRequestException) {
                 throw error;
             }
-            throw new BadRequestException('Failed to fetch related movies. Please check your query parameters.');
+            throw new BadRequestException("Failed to fetch related movies. Please check your query parameters.");
         }
     }
 
@@ -142,7 +146,7 @@ export class MovieController {
             if (error instanceof BadRequestException) {
                 throw error;
             }
-            throw new BadRequestException('Failed to create movie. Please check your input.');
+            throw new BadRequestException("Failed to create movie. Please check your input.");
         }
     }
 
@@ -163,7 +167,7 @@ export class MovieController {
             if (error instanceof BadRequestException) {
                 throw error;
             }
-            throw new BadRequestException('Failed to update movie. Please check your input.');
+            throw new BadRequestException("Failed to update movie. Please check your input.");
         }
     }
 
@@ -181,7 +185,7 @@ export class MovieController {
             if (error instanceof BadRequestException) {
                 throw error;
             }
-            throw new BadRequestException('Failed to delete movie. Please check the movie ID.');
+            throw new BadRequestException("Failed to delete movie. Please check the movie ID.");
         }
     }
 }
