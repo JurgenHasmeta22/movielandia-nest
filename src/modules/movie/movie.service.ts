@@ -35,13 +35,11 @@ export class MovieService {
         }
 
         if (filterValue !== undefined && filterNameString && filterOperatorString) {
-            if (filterOperatorString === "contains") {
-                filters[filterNameString] = { 
-                    contains: typeof filterValue === 'string' ? filterValue.toLowerCase() : filterValue 
-                };
+            if (typeof filterValue === 'string' && filterOperatorString === "contains") {
+                filters[filterNameString] = { contains: filterValue.toLowerCase() };
             } else {
                 const operator = filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
-                filters[filterNameString] = { [operator]: filterValue };
+                filters[filterNameString] = { [operator]: Number(filterValue) };
             }
         }
 

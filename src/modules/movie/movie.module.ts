@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 import { MovieController } from "./movie.controller";
 import { MovieService } from "./movie.service";
-import { PrismaService } from "@/prisma.service";
-import { JwtStrategy } from "@/guards/jwt.strategy";
+import { PrismaService } from "../../prisma.service";
+import { JwtStrategy } from "../../guards/jwt.strategy";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 

@@ -203,9 +203,9 @@ async function baseSeeding() {
 // #endregion
 
 const config = {
-    useDynamicSeeding: true, // Set to false to use base seeding instead
-    deleteBeforeSeeding: false, // Set to true to delete all data before seeding
-    dynamicSeedingStartStep: SeedStep.Reviews // Which step to start from for dynamic seeding
+    useDynamicSeeding: false,
+    deleteBeforeSeeding: false,
+    dynamicSeedingStartStep: SeedStep.Reviews
 };
 
 async function main() {

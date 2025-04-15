@@ -25,7 +25,8 @@
         "migrate:resolve": "npx prisma migrate resolve --preview-feature",
         "prisma:studio": "npx prisma studio",
         "prisma:generate": "npx prisma generate",
-        "prisma:generate:watch": "npx prisma generate --watch"
+        "prisma:generate:watch": "npx prisma generate --watch",
+        "prisma:seed": "ts-node prisma/seed/seed.ts"
     },
     "engines": {
         "npm": ">=10.0.0",
@@ -49,6 +50,7 @@
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",
         "@eslint/js": "^9.18.0",
+        "@faker-js/faker": "^9.7.0",
         "@nestjs/cli": "^11.0.0",
         "@nestjs/schematics": "^11.0.0",
         "@nestjs/testing": "^11.0.1",

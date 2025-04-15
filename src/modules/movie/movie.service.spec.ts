@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MovieService } from './movie.service';
-import { PrismaService } from '@/prisma.service';
-import { Movie, User } from '@prisma/client';
+import { PrismaService } from '../../prisma.service';
+import { Movie } from '@prisma/client';
 import { MovieQueryDto, SortOrder } from './dtos/movie-query.dto';
 import { CreateMovieDto } from './dtos/create-movie.dto';
 import { UpdateMovieDto } from './dtos/update-movie.dto';

@@ -5,7 +5,7 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma.service';
 import { AuthGuard } from '../src/guards/auth.guard';
 import { OptionalAuthGuard } from '../src/guards/optional-auth.guard';
-import { SortOrder } from '@/modules/movie/dtos/movie-query.dto';
+import { SortOrder } from '../src/modules/movie/dtos/movie-query.dto';
 
 describe('MovieController (e2e)', () => {
   let app: INestApplication;
@@ -32,7 +32,10 @@ describe('MovieController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     prisma = app.get<PrismaService>(PrismaService);
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.useGlobalPipes(new ValidationPipe({ 
+      transform: true,
+      transformOptions: { enableImplicitConversion: true }
+    }));
     await app.init();
 
     // Clear the database before all tests
@@ -157,8 +160,8 @@ describe('MovieController (e2e)', () => {
       photoSrcProd: 'new-prod.jpg',
       trailerSrc: 'new-trailer.mp4',
       duration: 120,
-      dateAired: new Date().toISOString(),
-      ratingImdb: 8.5,
+      dateAired: new Date(),
+      ratingImdb: 8.5
     };
 
     afterEach(async () => {

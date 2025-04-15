@@ -65,8 +65,9 @@ export class MovieController {
     @Get("count")
     @ApiOperation({ summary: "Get total count of movies" })
     @ApiResponse({ status: HttpStatus.OK, description: "Movies count retrieved successfully", type: Number })
-    async count(): Promise<number> {
-        return this.movieService.count();
+    async count() {
+        const count = await this.movieService.count();
+        return count;
     }
 
     @Get(":id")
