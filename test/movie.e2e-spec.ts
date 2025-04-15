@@ -20,6 +20,7 @@ describe('MovieController (e2e)', () => {
     },
   };
 
+  //#region Test Setup and Teardown
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -38,7 +39,6 @@ describe('MovieController (e2e)', () => {
     }));
     await app.init();
 
-    // Clear the database before all tests
     await prisma.movie.deleteMany();
   });
 
@@ -46,7 +46,9 @@ describe('MovieController (e2e)', () => {
     await prisma.movie.deleteMany();
     await app.close();
   });
+  //#endregion
 
+  //#region GET Endpoints
   describe('/movies (GET)', () => {
     beforeEach(async () => {
       await prisma.movie.create({
@@ -148,141 +150,6 @@ describe('MovieController (e2e)', () => {
     it('should return 404 for non-existent movie', () => {
       return request(app.getHttpServer())
         .get('/movies/999999')
-        .expect(404);
-    });
-  });
-
-  describe('/movies (POST)', () => {
-    const newMovie = {
-      title: 'new movie',
-      description: 'new description',
-      photoSrc: 'new.jpg',
-      photoSrcProd: 'new-prod.jpg',
-      trailerSrc: 'new-trailer.mp4',
-      duration: 120,
-      dateAired: new Date(),
-      ratingImdb: 8.5
-    };
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
-    });
-
-    it('should create a new movie', () => {
-      return request(app.getHttpServer())
-        .post('/movies')
-        .send(newMovie)
-        .expect(201)
-        .expect((res) => {
-          expect(res.body.title).toBe('new movie');
-          expect(res.body.id).toBeDefined();
-          expect(res.body.description).toBe('new description');
-        });
-    });
-
-    it('should validate required fields', () => {
-      return request(app.getHttpServer())
-        .post('/movies')
-        .send({})
-        .expect(400);
-    });
-
-    it('should convert title to lowercase', () => {
-      const movieWithUppercase = { ...newMovie, title: 'NEW MOVIE' };
-      return request(app.getHttpServer())
-        .post('/movies')
-        .send(movieWithUppercase)
-        .expect(201)
-        .expect((res) => {
-          expect(res.body.title).toBe('new movie');
-        });
-    });
-  });
-
-  describe('/movies/:id (PUT)', () => {
-    let movieId: number;
-
-    beforeEach(async () => {
-      const movie = await prisma.movie.create({
-        data: {
-          title: 'test movie',
-          description: 'test description',
-          photoSrc: 'test.jpg',
-          photoSrcProd: 'test-prod.jpg',
-          trailerSrc: 'test-trailer.mp4',
-          duration: 120,
-          dateAired: new Date(),
-          ratingImdb: 8.5,
-        },
-      });
-      movieId = movie.id;
-    });
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
-    });
-
-    it('should update an existing movie', () => {
-      return request(app.getHttpServer())
-        .put(`/movies/${movieId}`)
-        .send({ title: 'updated movie', description: 'updated description' })
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.title).toBe('updated movie');
-          expect(res.body.description).toBe('updated description');
-        });
-    });
-
-    it('should return 404 for non-existent movie', () => {
-      return request(app.getHttpServer())
-        .put('/movies/999999')
-        .send({ title: 'updated movie' })
-        .expect(404);
-    });
-
-    it('should convert updated title to lowercase', () => {
-      return request(app.getHttpServer())
-        .put(`/movies/${movieId}`)
-        .send({ title: 'UPDATED MOVIE' })
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.title).toBe('updated movie');
-        });
-    });
-  });
-
-  describe('/movies/:id (DELETE)', () => {
-    let movieId: number;
-
-    beforeEach(async () => {
-      const movie = await prisma.movie.create({
-        data: {
-          title: 'test movie',
-          description: 'test description',
-          photoSrc: 'test.jpg',
-          photoSrcProd: 'test-prod.jpg',
-          trailerSrc: 'test-trailer.mp4',
-          duration: 120,
-          dateAired: new Date(),
-          ratingImdb: 8.5,
-        },
-      });
-      movieId = movie.id;
-    });
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
-    });
-
-    it('should delete an existing movie', () => {
-      return request(app.getHttpServer())
-        .delete(`/movies/${movieId}`)
-        .expect(204);
-    });
-
-    it('should return 404 for non-existent movie', () => {
-      return request(app.getHttpServer())
-        .delete('/movies/999999')
         .expect(404);
     });
   });
@@ -432,4 +299,146 @@ describe('MovieController (e2e)', () => {
         });
     });
   });
+  //#endregion
+
+  //#region POST Endpoints
+  describe('/movies (POST)', () => {
+    const newMovie = {
+      title: 'new movie',
+      description: 'new description',
+      photoSrc: 'new.jpg',
+      photoSrcProd: 'new-prod.jpg',
+      trailerSrc: 'new-trailer.mp4',
+      duration: 120,
+      dateAired: new Date(),
+      ratingImdb: 8.5
+    };
+
+    afterEach(async () => {
+      await prisma.movie.deleteMany();
+    });
+
+    it('should create a new movie', () => {
+      return request(app.getHttpServer())
+        .post('/movies')
+        .send(newMovie)
+        .expect(201)
+        .expect((res) => {
+          expect(res.body.title).toBe('new movie');
+          expect(res.body.id).toBeDefined();
+          expect(res.body.description).toBe('new description');
+        });
+    });
+
+    it('should validate required fields', () => {
+      return request(app.getHttpServer())
+        .post('/movies')
+        .send({})
+        .expect(400);
+    });
+
+    it('should convert title to lowercase', () => {
+      const movieWithUppercase = { ...newMovie, title: 'NEW MOVIE' };
+      return request(app.getHttpServer())
+        .post('/movies')
+        .send(movieWithUppercase)
+        .expect(201)
+        .expect((res) => {
+          expect(res.body.title).toBe('new movie');
+        });
+    });
+  });
+  //#endregion
+
+  //#region PUT Endpoints
+  describe('/movies/:id (PUT)', () => {
+    let movieId: number;
+
+    beforeEach(async () => {
+      const movie = await prisma.movie.create({
+        data: {
+          title: 'test movie',
+          description: 'test description',
+          photoSrc: 'test.jpg',
+          photoSrcProd: 'test-prod.jpg',
+          trailerSrc: 'test-trailer.mp4',
+          duration: 120,
+          dateAired: new Date(),
+          ratingImdb: 8.5,
+        },
+      });
+      movieId = movie.id;
+    });
+
+    afterEach(async () => {
+      await prisma.movie.deleteMany();
+    });
+
+    it('should update an existing movie', () => {
+      return request(app.getHttpServer())
+        .put(`/movies/${movieId}`)
+        .send({ title: 'updated movie', description: 'updated description' })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.title).toBe('updated movie');
+          expect(res.body.description).toBe('updated description');
+        });
+    });
+
+    it('should return 404 for non-existent movie', () => {
+      return request(app.getHttpServer())
+        .put('/movies/999999')
+        .send({ title: 'updated movie' })
+        .expect(404);
+    });
+
+    it('should convert updated title to lowercase', () => {
+      return request(app.getHttpServer())
+        .put(`/movies/${movieId}`)
+        .send({ title: 'UPDATED MOVIE' })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.title).toBe('updated movie');
+        });
+    });
+  });
+  //#endregion
+
+  //#region DELETE Endpoints
+  describe('/movies/:id (DELETE)', () => {
+    let movieId: number;
+
+    beforeEach(async () => {
+      const movie = await prisma.movie.create({
+        data: {
+          title: 'test movie',
+          description: 'test description',
+          photoSrc: 'test.jpg',
+          photoSrcProd: 'test-prod.jpg',
+          trailerSrc: 'test-trailer.mp4',
+          duration: 120,
+          dateAired: new Date(),
+          ratingImdb: 8.5,
+        },
+      });
+      movieId = movie.id;
+    });
+
+    afterEach(async () => {
+      await prisma.movie.deleteMany();
+    });
+
+    it('should delete an existing movie', () => {
+      return request(app.getHttpServer())
+        .delete(`/movies/${movieId}`)
+        .expect(204);
+    });
+
+    it('should return 404 for non-existent movie', () => {
+      return request(app.getHttpServer())
+        .delete('/movies/999999')
+        .expect(404);
+    });
+  });
+  //#endregion
 });
