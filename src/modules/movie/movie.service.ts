@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma.service';
-import { MovieQueryDto, SortOrder } from './dtos/movie-query.dto';
-import { CreateMovieDto } from './dtos/create-movie.dto';
-import { UpdateMovieDto } from './dtos/update-movie.dto';
-import { MovieListResponseDto } from './dtos/movie-response.dto';
-import { MovieDetailsDto } from './dtos/movie-response.dto';
-import { RelatedMoviesResponseDto } from './dtos/movie-response.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../../prisma.service";
+import { MovieQueryDto, SortOrder } from "./dtos/movie-query.dto";
+import { CreateMovieDto } from "./dtos/create-movie.dto";
+import { UpdateMovieDto } from "./dtos/update-movie.dto";
+import { MovieListResponseDto } from "./dtos/movie-response.dto";
+import { MovieDetailsDto } from "./dtos/movie-response.dto";
+import { RelatedMoviesResponseDto } from "./dtos/movie-response.dto";
 
 @Injectable()
 export class MovieService {
@@ -35,7 +35,7 @@ export class MovieService {
         }
 
         if (filterValue !== undefined && filterNameString && filterOperatorString) {
-            if (typeof filterValue === 'string' && filterOperatorString === "contains") {
+            if (typeof filterValue === "string" && filterOperatorString === "contains") {
                 filters[filterNameString] = { contains: filterValue.toLowerCase() };
             } else {
                 const operator = filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
@@ -254,7 +254,7 @@ export class MovieService {
                 ...updateMovieDto,
                 ...(updateMovieDto.title && { title: updateMovieDto.title.toLowerCase() }),
             },
-            include: { genres: { select: { genre: true } } }
+            include: { genres: { select: { genre: true } } },
         });
 
         return updatedMovie;

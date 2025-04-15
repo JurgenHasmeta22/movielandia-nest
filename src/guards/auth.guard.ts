@@ -11,6 +11,7 @@ export class AuthGuard extends PassportAuthGuard("jwt") {
         if (err || !user) {
             throw new UnauthorizedException("Authentication required");
         }
+
         return user;
     }
 }
