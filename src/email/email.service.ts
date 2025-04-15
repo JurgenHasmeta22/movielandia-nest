@@ -14,7 +14,7 @@ export class EmailService {
     }
 
     private async renderTemplate(templateName: string, data: any): Promise<string> {
-        const templatePath = join(__dirname, "templates", "emails", `${templateName}.ejs`);
+        const templatePath = join(__dirname, "templates", `${templateName}.ejs`);
         return ejs.renderFile(templatePath, {
             ...data,
             baseUrl: this.baseUrl,
