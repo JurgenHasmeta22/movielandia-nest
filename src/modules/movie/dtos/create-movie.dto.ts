@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, MaxLength, MinLength } from "class-validator";
+import { IsDate, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
 
 export class CreateMovieDto {
     @ApiProperty({ description: "Movie title" })
@@ -25,22 +25,22 @@ export class CreateMovieDto {
     dateAired: Date;
 
     @ApiProperty({ description: "Movie poster image URL" })
-    @IsUrl()
+    @IsString()
     @IsNotEmpty()
-    posterImage: string;
+    photoSrc: string;
 
-    @ApiPropertyOptional({ description: "Movie background image URL" })
-    @IsUrl()
-    @IsOptional()
-    backgroundImage?: string;
+    @ApiProperty({ description: "Movie production poster image URL" })
+    @IsString()
+    @IsNotEmpty()
+    photoSrcProd: string;
 
     @ApiProperty({ description: "Movie trailer URL" })
-    @IsUrl()
+    @IsString()
     @IsNotEmpty()
-    trailerUrl: string;
+    trailerSrc: string;
 
     @ApiProperty({ description: "IMDB rating" })
     @IsNumber()
     @IsNotEmpty()
-    imdbRating: number;
+    ratingImdb: number;
 }

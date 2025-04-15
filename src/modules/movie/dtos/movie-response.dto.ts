@@ -1,5 +1,4 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Movie } from "@prisma/client";
 import { Type } from "class-transformer";
 
 export class MovieRatingInfo {
@@ -10,8 +9,35 @@ export class MovieRatingInfo {
     totalReviews: number;
 }
 
-export class MovieDetailsDto extends Movie {
+export class MovieDetailsDto {
     @ApiProperty()
+    id: number;
+
+    @ApiProperty()
+    title: string;
+
+    @ApiProperty()
+    description: string;
+
+    @ApiProperty()
+    photoSrc: string;
+
+    @ApiProperty()
+    photoSrcProd: string;
+
+    @ApiProperty()
+    trailerSrc: string;
+
+    @ApiProperty()
+    duration: number;
+
+    @ApiProperty()
+    ratingImdb: number;
+
+    @ApiProperty()
+    dateAired: Date;
+
+    @ApiProperty({ type: MovieRatingInfo })
     @Type(() => MovieRatingInfo)
     ratings?: MovieRatingInfo;
 

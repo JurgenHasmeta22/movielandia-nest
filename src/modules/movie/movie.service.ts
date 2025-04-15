@@ -1,19 +1,21 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "@/prisma.service";
-import { Movie } from "@prisma/client";
-import { CreateMovieDto } from "./dtos/create-movie.dto";
-import { UpdateMovieDto } from "./dtos/update-movie.dto";
-import { MovieQueryDto } from "./dtos/movie-query.dto";
-import { MovieListResponseDto, MovieDetailsDto, RelatedMoviesResponseDto } from "./dtos/movie-response.dto";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma.service';
+import { MovieQueryDto, SortOrder } from './dtos/movie-query.dto';
+import { CreateMovieDto } from './dtos/create-movie.dto';
+import { UpdateMovieDto } from './dtos/update-movie.dto';
+import { MovieListResponseDto } from './dtos/movie-response.dto';
+import { MovieDetailsDto } from './dtos/movie-response.dto';
+import { RelatedMoviesResponseDto } from './dtos/movie-response.dto';
 
 @Injectable()
 export class MovieService {
     constructor(private prisma: PrismaService) {}
 
+    // #region Public API Methods
     async findAll(query: MovieQueryDto, userId?: number): Promise<MovieListResponseDto> {
         const {
             sortBy,
-            ascOrDesc,
+            ascOrDesc = SortOrder.ASC,
             perPage = 12,
             page = 1,
             title,
@@ -28,18 +30,22 @@ export class MovieService {
         const skip = (page - 1) * perPage;
         const take = perPage;
 
-        if (title) filters.title = { contains: title };
+        if (title) {
+            filters.title = { contains: title.toLowerCase() };
+        }
 
         if (filterValue !== undefined && filterNameString && filterOperatorString) {
             if (filterOperatorString === "contains") {
-                filters[filterNameString] = { contains: filterValue };
+                filters[filterNameString] = { 
+                    contains: typeof filterValue === 'string' ? filterValue.toLowerCase() : filterValue 
+                };
             } else {
                 const operator = filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
                 filters[filterNameString] = { [operator]: filterValue };
             }
         }
 
-        orderByObject[sortBy || "title"] = ascOrDesc || "asc";
+        orderByObject[sortBy || "title"] = ascOrDesc || SortOrder.ASC;
 
         const movies = await this.prisma.movie.findMany({
             where: filters,
@@ -193,10 +199,10 @@ export class MovieService {
 
     async search(title: string, query: MovieQueryDto, userId?: number): Promise<MovieListResponseDto> {
         const { page, ascOrDesc, sortBy } = query;
-        const orderByObject = { [sortBy || "title"]: ascOrDesc || "asc" };
+        const orderByObject = { [sortBy || "title"]: ascOrDesc || SortOrder.ASC };
 
         const movies = await this.prisma.movie.findMany({
-            where: { title: { contains: title, mode: "insensitive" } },
+            where: { title: { contains: title.toLowerCase() } },
             orderBy: orderByObject,
             skip: page ? (page - 1) * 12 : 0,
             take: 12,
@@ -217,21 +223,26 @@ export class MovieService {
         );
 
         const count = await this.prisma.movie.count({
-            where: { title: { contains: title, mode: "insensitive" } },
+            where: { title: { contains: title.toLowerCase() } },
         });
 
         return { movies: moviesWithDetails, count };
     }
 
     async create(createMovieDto: CreateMovieDto): Promise<MovieDetailsDto> {
-        return this.prisma.movie.create({
-            data: createMovieDto,
+        const movie = await this.prisma.movie.create({
+            data: {
+                ...createMovieDto,
+                title: createMovieDto.title.toLowerCase(),
+            },
             include: { genres: { select: { genre: true } } },
         });
+
+        return movie;
     }
 
     async update(id: number, updateMovieDto: UpdateMovieDto): Promise<MovieDetailsDto> {
-        const movie = await this.prisma.movie.findUnique({
+        const movie = await this.prisma.movie.findFirst({
             where: { id },
         });
 
@@ -239,15 +250,20 @@ export class MovieService {
             throw new NotFoundException("Movie not found");
         }
 
-        return this.prisma.movie.update({
+        const updatedMovie = await this.prisma.movie.update({
             where: { id },
-            data: updateMovieDto,
-            include: { genres: { select: { genre: true } } },
+            data: {
+                ...updateMovieDto,
+                ...(updateMovieDto.title && { title: updateMovieDto.title.toLowerCase() }),
+            },
+            include: { genres: { select: { genre: true } } }
         });
+
+        return updatedMovie;
     }
 
     async remove(id: number): Promise<void> {
-        const movie = await this.prisma.movie.findUnique({
+        const movie = await this.prisma.movie.findFirst({
             where: { id },
         });
 
@@ -263,7 +279,9 @@ export class MovieService {
     async count(): Promise<number> {
         return this.prisma.movie.count();
     }
+    // #endregion
 
+    // #region Private Helper Methods
     private async getMovieRatings(movieIds: number[]) {
         const movieRatings = await this.prisma.movieReview.groupBy({
             by: ["movieId"],
@@ -300,4 +318,5 @@ export class MovieService {
 
         return { isReviewed: !!existingReview };
     }
+    // #endregion
 }
