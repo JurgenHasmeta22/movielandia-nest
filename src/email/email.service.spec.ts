@@ -16,13 +16,6 @@ describe("EmailService", () => {
         process.env.RESEND_API_KEY = "test-api-key";
         process.env.FRONTEND_URL = "http://localhost:3000";
 
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [EmailService],
-        }).compile();
-
-        service = module.get<EmailService>(EmailService);
-
-        // Create mock with proper typing
         mockSend = jest.fn().mockResolvedValue({ id: "mock-id" });
         mockResend = {
             emails: {
@@ -32,6 +25,12 @@ describe("EmailService", () => {
 
         (Resend as jest.MockedClass<typeof Resend>).mockImplementation(() => mockResend);
         (ejs.renderFile as jest.Mock).mockResolvedValue("<html>Test template</html>");
+
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [EmailService],
+        }).compile();
+
+        service = module.get<EmailService>(EmailService);
     });
 
     afterEach(() => {
@@ -58,7 +57,7 @@ describe("EmailService", () => {
                 }),
             );
 
-            expect(mockResend.emails.send).toHaveBeenCalledWith({
+            expect(mockSend).toHaveBeenCalledWith({
                 from: "Movielandia <noreply@movielandia.com>",
                 to: email,
                 subject: "Welcome to MovieLandia24! Verify your email",
@@ -92,7 +91,7 @@ describe("EmailService", () => {
                 }),
             );
 
-            expect(mockResend.emails.send).toHaveBeenCalledWith({
+            expect(mockSend).toHaveBeenCalledWith({
                 from: "Movielandia <noreply@movielandia.com>",
                 to: email,
                 subject: "Reset Your MovieLandia24 Password",
@@ -127,7 +126,7 @@ describe("EmailService", () => {
                 }),
             );
 
-            expect(mockResend.emails.send).toHaveBeenCalledWith({
+            expect(mockSend).toHaveBeenCalledWith({
                 from: "Movielandia <noreply@movielandia.com>",
                 to: email,
                 subject: "Welcome to MovieLandia24 Newsletter! 🎬",
@@ -167,7 +166,7 @@ describe("EmailService", () => {
                 }),
             );
 
-            expect(mockResend.emails.send).toHaveBeenCalledWith({
+            expect(mockSend).toHaveBeenCalledWith({
                 from: "Movielandia <noreply@movielandia.com>",
                 to: email,
                 subject: `${data.senderName} started following you on MovieLandia24`,
@@ -188,7 +187,7 @@ describe("EmailService", () => {
 
             await service.sendNotificationEmail(email, type, data);
 
-            expect(mockResend.emails.send).toHaveBeenCalledWith(
+            expect(mockSend).toHaveBeenCalledWith(
                 expect.objectContaining({
                     subject: `New Review on your ${data.contentType}`,
                 }),

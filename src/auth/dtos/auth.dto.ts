@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 export class SignUpDto {
     @ApiProperty({
         example: "johndoe",
-        description: "Username between 3-20 characters"
+        description: "Username between 3-20 characters",
     })
     @IsString()
     @MinLength(3)
@@ -13,14 +13,14 @@ export class SignUpDto {
 
     @ApiProperty({
         example: "john.doe@example.com",
-        description: "Valid email address"
+        description: "Valid email address",
     })
     @IsEmail()
     email: string;
 
     @ApiProperty({
         example: "Test123!@#",
-        description: "Password must contain uppercase, lowercase, number/special character"
+        description: "Password must contain uppercase, lowercase, number/special character",
     })
     @IsString()
     @MinLength(8)
@@ -34,7 +34,7 @@ export class SignUpDto {
 export class SignInDto {
     @ApiProperty({
         example: "john.doe@example.com",
-        description: "Registered email address"
+        description: "Registered email address",
     })
     @IsString()
     @IsEmail()
@@ -42,7 +42,7 @@ export class SignInDto {
 
     @ApiProperty({
         example: "Test123!@#",
-        description: "Your password"
+        description: "Your password",
     })
     @IsString()
     password: string;
@@ -51,7 +51,7 @@ export class SignInDto {
 export class ForgotPasswordDto {
     @ApiProperty({
         example: "john.doe@example.com",
-        description: "Email address associated with your account"
+        description: "Email address associated with your account",
     })
     @IsEmail()
     email: string;
@@ -60,14 +60,14 @@ export class ForgotPasswordDto {
 export class ResetPasswordDto {
     @ApiProperty({
         example: "a1b2c3d4e5f6g7h8i9j0",
-        description: "Reset token received via email"
+        description: "Reset token received via email",
     })
     @IsString()
     token: string;
 
     @ApiProperty({
         example: "NewTest123!@#",
-        description: "New password (must contain uppercase, lowercase, number/special character)"
+        description: "New password (must contain uppercase, lowercase, number/special character)",
     })
     @IsString()
     @MinLength(8)
@@ -81,7 +81,7 @@ export class ResetPasswordDto {
 export class ActivateAccountDto {
     @ApiProperty({
         example: "a1b2c3d4e5f6g7h8i9j0",
-        description: "Activation token received via email"
+        description: "Activation token received via email",
     })
     @IsString()
     token: string;
@@ -90,7 +90,7 @@ export class ActivateAccountDto {
 export class TokenResponse {
     @ApiProperty({
         example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        description: "JWT access token"
+        description: "JWT access token",
     })
     accessToken: string;
 }

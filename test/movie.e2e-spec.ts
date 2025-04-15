@@ -295,7 +295,7 @@ describe('MovieController (e2e)', () => {
         .get('/movies/count')
         .expect(200)
         .expect((res) => {
-          expect(res.body).toBe(5);
+          expect(res.body.count).toBe(5);
         });
     });
   });

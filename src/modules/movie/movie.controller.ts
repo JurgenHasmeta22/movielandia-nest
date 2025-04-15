@@ -88,9 +88,9 @@ export class MovieController {
     @Get("count")
     @ApiOperation({ summary: "Get total count of movies" })
     @ApiResponse({ status: HttpStatus.OK, description: "Movies count retrieved successfully", type: Number })
-    async count() {
+    async count(): Promise<{ count: number }> {
         const count = await this.movieService.count();
-        return count;
+        return { count };
     }
 
     @Get(":id")
@@ -98,14 +98,7 @@ export class MovieController {
     @ApiResponse({ status: HttpStatus.OK, description: "Movie retrieved successfully", type: MovieDetailsDto })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Movie not found" })
     async findOne(@Param("id", ParseIntPipe) id: number, @CurrentUser() user?: User): Promise<MovieDetailsDto> {
-        try {
-            return await this.movieService.findOne(id, user?.id);
-        } catch (error) {
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-            throw new BadRequestException("Failed to fetch movie. Please check the movie ID.");
-        }
+        return await this.movieService.findOne(id, user?.id);
     }
 
     @Get(":id/related")
@@ -161,14 +154,7 @@ export class MovieController {
         @Param("id", ParseIntPipe) id: number,
         @Body() updateMovieDto: UpdateMovieDto,
     ): Promise<MovieDetailsDto> {
-        try {
-            return await this.movieService.update(id, updateMovieDto);
-        } catch (error) {
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-            throw new BadRequestException("Failed to update movie. Please check your input.");
-        }
+        return await this.movieService.update(id, updateMovieDto);
     }
 
     @Delete(":id")
@@ -179,13 +165,6 @@ export class MovieController {
     @ApiResponse({ status: HttpStatus.NO_CONTENT, description: "Movie deleted successfully" })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Movie not found" })
     async remove(@Param("id", ParseIntPipe) id: number): Promise<void> {
-        try {
-            await this.movieService.remove(id);
-        } catch (error) {
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-            throw new BadRequestException("Failed to delete movie. Please check the movie ID.");
-        }
+        await this.movieService.remove(id);
     }
 }

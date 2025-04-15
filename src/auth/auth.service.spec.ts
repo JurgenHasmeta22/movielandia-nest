@@ -5,7 +5,7 @@ import { JwtService } from "@nestjs/jwt";
 import { ConflictException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
-import { EmailService } from "@/email/email.service";
+import { EmailService } from "../email/email.service";
 
 jest.mock("bcrypt");
 jest.mock("crypto");
