@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "../../prisma.service";
 import { MovieQueryDto } from "./dtos/movie-query.dto";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
@@ -7,7 +7,6 @@ import { MovieListResponseDto, MovieDetailsDto, RelatedMoviesResponseDto } from 
 import { MovieMapper } from "./movie.mapper";
 import { MovieParser } from "./movie.parser";
 import { IMovieRatingInfo } from "./movie.interface";
-import { NotFoundError, ValidationError } from "../../utils/error.util";
 import { getCacheConfig, CACHE_TTL, shouldSkipCache } from "../../utils/cache.util";
 
 @Injectable()
@@ -15,13 +14,13 @@ export class MovieService {
     constructor(private prisma: PrismaService) {}
 
     async findAll(query: MovieQueryDto, userId?: number): Promise<MovieListResponseDto> {
+        const cacheConfig = getCacheConfig("movies:list", { query, userId }, CACHE_TTL.SHORT);
+
+        if (!shouldSkipCache({ method: "GET" })) {
+            // Cache implementation would go here
+        }
+
         try {
-            const cacheConfig = getCacheConfig("movies:list", { query, userId }, CACHE_TTL.SHORT);
-
-            if (!shouldSkipCache({ method: "GET" })) {
-                // Cache implementation would go here
-            }
-
             const { filters, orderByObject, skip, take } = MovieParser.parseMovieQuery(query);
 
             const movies = await this.prisma.movie.findMany({
@@ -47,10 +46,15 @@ export class MovieService {
 
             return MovieMapper.toListResponseDto({ movies: moviesWithDetails, count: totalCount });
         } catch (error) {
-            if (error instanceof ValidationError) {
+            if (error instanceof BadRequestException) {
                 throw error;
             }
-            throw new ValidationError("Invalid query parameters or database error occurred");
+
+            if (error.code === "P2022" || error.code === "P2009") {
+                throw new BadRequestException("Invalid query parameters");
+            }
+
+            throw error;
         }
     }
 
@@ -77,7 +81,7 @@ export class MovieService {
         });
 
         if (!movie) {
-            throw new NotFoundError("Movie");
+            throw new NotFoundException("Movie not found");
         }
 
         const ratingsInfo = await this.getMovieRatings([movie.id]);
@@ -117,7 +121,7 @@ export class MovieService {
         });
 
         if (!movie) {
-            throw new NotFoundError("Movie");
+            throw new NotFoundException("Movie not found");
         }
 
         const movieGenres = await this.prisma.movieGenre.findMany({
@@ -198,12 +202,12 @@ export class MovieService {
             data: {
                 title: createMovieDto.title.toLowerCase(),
                 description: createMovieDto.description,
-                photoSrc: createMovieDto.posterUrl,
-                photoSrcProd: createMovieDto.backdropUrl,
-                trailerSrc: "", // This should be added to CreateMovieDto
+                photoSrc: createMovieDto.photoSrc,
+                photoSrcProd: createMovieDto.photoSrcProd,
+                trailerSrc: createMovieDto.trailerSrc,
                 duration: createMovieDto.duration,
-                ratingImdb: createMovieDto.rating || 0,
-                dateAired: new Date(),
+                ratingImdb: createMovieDto.ratingImdb,
+                dateAired: createMovieDto.dateAired || new Date(),
             },
             include: { genres: { select: { genre: true } } },
         });
@@ -217,7 +221,7 @@ export class MovieService {
         });
 
         if (!movie) {
-            throw new NotFoundError("Movie");
+            throw new NotFoundException("Movie not found");
         }
 
         const updatedMovie = await this.prisma.movie.update({
@@ -225,10 +229,12 @@ export class MovieService {
             data: {
                 ...(updateMovieDto.title && { title: updateMovieDto.title.toLowerCase() }),
                 ...(updateMovieDto.description && { description: updateMovieDto.description }),
-                ...(updateMovieDto.posterUrl && { photoSrc: updateMovieDto.posterUrl }),
-                ...(updateMovieDto.backdropUrl && { photoSrcProd: updateMovieDto.backdropUrl }),
+                ...(updateMovieDto.photoSrc && { photoSrc: updateMovieDto.photoSrc }),
+                ...(updateMovieDto.photoSrcProd && { photoSrcProd: updateMovieDto.photoSrcProd }),
+                ...(updateMovieDto.trailerSrc && { trailerSrc: updateMovieDto.trailerSrc }),
                 ...(updateMovieDto.duration && { duration: updateMovieDto.duration }),
-                ...(updateMovieDto.rating && { ratingImdb: updateMovieDto.rating }),
+                ...(updateMovieDto.ratingImdb && { ratingImdb: updateMovieDto.ratingImdb }),
+                ...(updateMovieDto.dateAired && { dateAired: updateMovieDto.dateAired }),
             },
             include: { genres: { select: { genre: true } } },
         });
@@ -242,7 +248,7 @@ export class MovieService {
         });
 
         if (!movie) {
-            throw new NotFoundError("Movie");
+            throw new NotFoundException("Movie not found");
         }
 
         await this.prisma.movie.delete({

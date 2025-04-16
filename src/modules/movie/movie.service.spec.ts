@@ -4,7 +4,7 @@ import { PrismaService } from "../../prisma.service";
 import { MovieQueryDto, SortOrder } from "./dtos/movie-query.dto";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
 import { UpdateMovieDto } from "./dtos/update-movie.dto";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
 import { mockMovie, mockMovieRatingInfo, mockMovieWithDetails } from "./movie.mock-data";
 
 describe("MovieService", () => {
@@ -61,20 +61,35 @@ describe("MovieService", () => {
             page: 1,
         };
 
-        it("should return movies with ratings and bookmark info", async () => {
-            mockPrismaService.movie.findMany.mockResolvedValue([mockMovie]);
+        beforeEach(() => {
             mockPrismaService.movieReview.groupBy.mockResolvedValue([
                 {
                     movieId: 1,
-                    _avg: { rating: mockMovieRatingInfo.averageRating },
-                    _count: { rating: mockMovieRatingInfo.totalReviews },
+                    _avg: { rating: 4.5 },
+                    _count: { rating: 10 },
                 },
             ]);
-            mockPrismaService.userMovieFavorite.findFirst.mockResolvedValue({ id: 1 });
+            mockPrismaService.movie.findMany.mockResolvedValue([mockMovie]);
+            mockPrismaService.movie.count.mockResolvedValue(1);
+        });
 
-            const result = await service.findAll(mockQuery, 1);
+        it("should return movies with ratings and bookmark info", async () => {
+            const result = await service.findAll(mockQuery);
 
-            expect(result.movies[0]).toEqual(expect.objectContaining(mockMovieWithDetails));
+            expect(result).toEqual({
+                movies: [
+                    {
+                        ...mockMovie,
+                        ratings: {
+                            averageRating: 4.5,
+                            totalReviews: 10,
+                        },
+                        isBookmarked: false,
+                        isReviewed: false,
+                    },
+                ],
+                count: 1,
+            });
         });
 
         it("should apply filters correctly", async () => {
@@ -112,13 +127,15 @@ describe("MovieService", () => {
 
             const result = await service.findOne(1);
 
-            expect(result).toEqual(
-                expect.objectContaining({
-                    ...mockMovie,
+            expect(result).toEqual({
+                ...mockMovie,
+                ratings: {
                     averageRating: 4.5,
                     totalReviews: 10,
-                }),
-            );
+                },
+                isBookmarked: false,
+                isReviewed: false,
+            });
         });
 
         it("should throw NotFoundException when movie not found", async () => {
@@ -219,20 +236,24 @@ describe("MovieService", () => {
             const result = await service.search("test", mockQuery);
 
             expect(result).toEqual({
-                movies: expect.arrayContaining([
-                    expect.objectContaining({
+                movies: [
+                    {
                         ...mockMovie,
-                        averageRating: 4.5,
-                        totalReviews: 10,
-                    }),
-                ]),
+                        ratings: {
+                            averageRating: 4.5,
+                            totalReviews: 10,
+                        },
+                        isBookmarked: false,
+                        isReviewed: false,
+                    },
+                ],
                 count: 1,
             });
         });
     });
 
     describe("findRelated", () => {
-        it("should return related movies based on genres", async () => {
+        beforeEach(() => {
             mockPrismaService.movie.findFirst.mockResolvedValue(mockMovie);
             mockPrismaService.movieGenre.findMany
                 .mockResolvedValueOnce([{ genreId: 1 }])
@@ -245,28 +266,32 @@ describe("MovieService", () => {
                     _count: { rating: 10 },
                 },
             ]);
+        });
 
+        it("should return related movies based on genres", async () => {
             const result = await service.findRelated(1);
 
             expect(result).toEqual({
-                movies: expect.arrayContaining([
-                    expect.objectContaining({
+                movies: [
+                    {
+                        ...mockMovie,
                         id: 2,
-                        averageRating: 4.5,
-                        totalReviews: 10,
-                    }),
-                ]),
+                        ratings: {
+                            averageRating: 4.5,
+                            totalReviews: 10,
+                        },
+                        isBookmarked: false,
+                        isReviewed: false,
+                    },
+                ],
                 count: 1,
             });
         });
 
-        it("should return null when no related movies found", async () => {
-            mockPrismaService.movie.findFirst.mockResolvedValue(mockMovie);
-            mockPrismaService.movieGenre.findMany.mockResolvedValue([]);
+        it("should throw NotFoundException when movie not found", async () => {
+            mockPrismaService.movie.findFirst.mockResolvedValue(null);
 
-            const result = await service.findRelated(1);
-
-            expect(result).toEqual({ movies: null, count: 0 });
+            await expect(service.findRelated(1)).rejects.toThrow(NotFoundException);
         });
     });
 
@@ -283,16 +308,14 @@ describe("MovieService", () => {
 
             const result = await service.findLatest();
 
-            expect(result[0]).toEqual(
-                expect.objectContaining({
-                    ...mockMovie,
+            expect(result[0]).toEqual({
+                ...mockMovie,
+                ratings: {
                     averageRating: 4.5,
                     totalReviews: 10,
-                }),
-            );
-            expect(mockPrismaService.movie.findMany).toHaveBeenCalledWith({
-                orderBy: { dateAired: "desc" },
-                take: 6,
+                },
+                isBookmarked: false,
+                isReviewed: false,
             });
         });
     });

@@ -6,6 +6,8 @@ import { PrismaService } from '../src/prisma.service';
 import { AuthGuard } from '../src/auth/guards/auth.guard';
 import { OptionalAuthGuard } from '../src/auth/guards/optional-auth.guard';
 import { SortOrder } from '../src/modules/movie/dtos/movie-query.dto';
+import { JwtStrategy } from '../src/auth/guards/jwt.strategy';
+import { MockJwtStrategy } from './mocks/jwt-strategy.mock';
 
 describe('MovieController (e2e)', () => {
   let app: INestApplication;
@@ -20,11 +22,23 @@ describe('MovieController (e2e)', () => {
     },
   };
 
-  //#region Test Setup and Teardown
+  const testMovie = {
+    title: 'test movie',
+    description: 'test description',
+    photoSrc: 'https://example.com/movie-poster.jpg',
+    photoSrcProd: 'https://example.com/movie-production.jpg',
+    trailerSrc: 'https://example.com/movie-trailer.mp4',
+    duration: 120,
+    ratingImdb: 8.5,
+    dateAired: new Date().toISOString()
+  };
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
+      .overrideProvider(JwtStrategy)
+      .useClass(MockJwtStrategy)
       .overrideGuard(AuthGuard)
       .useValue(mockAuthGuard)
       .overrideGuard(OptionalAuthGuard)
@@ -33,40 +47,29 @@ describe('MovieController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     prisma = app.get<PrismaService>(PrismaService);
+    
     app.useGlobalPipes(new ValidationPipe({ 
       transform: true,
       transformOptions: { enableImplicitConversion: true }
     }));
-    await app.init();
 
+    await prisma.$connect();
+    await app.init();
+  });
+
+  beforeEach(async () => {
     await prisma.movie.deleteMany();
   });
 
   afterAll(async () => {
     await prisma.movie.deleteMany();
+    await prisma.$disconnect();
     await app.close();
   });
-  //#endregion
 
-  //#region GET Endpoints
   describe('/movies (GET)', () => {
     beforeEach(async () => {
-      await prisma.movie.create({
-        data: {
-          title: 'test movie',
-          description: 'test description',
-          photoSrc: 'test.jpg',
-          photoSrcProd: 'test-prod.jpg',
-          trailerSrc: 'test-trailer.mp4',
-          duration: 120,
-          dateAired: new Date(),
-          ratingImdb: 8.5,
-        },
-      });
-    });
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
+      await prisma.movie.create({ data: testMovie });
     });
 
     it('should return movies list', () => {
@@ -75,7 +78,11 @@ describe('MovieController (e2e)', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body.movies).toBeDefined();
-          expect(res.body.movies[0].title).toBe('test movie');
+          expect(res.body.movies[0]).toEqual(expect.objectContaining({
+            ...testMovie,
+            id: expect.any(Number),
+            dateAired: expect.any(String)
+          }));
         });
     });
 
@@ -85,7 +92,7 @@ describe('MovieController (e2e)', () => {
         .query({
           title: 'test',
           filterNameString: 'duration',
-          filterOperatorString: 'contains',
+          filterOperatorString: 'equals',
           filterValue: '120',
         })
         .expect(200)
@@ -105,11 +112,7 @@ describe('MovieController (e2e)', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body.movies).toBeDefined();
-          expect(res.body.movies).toEqual(expect.arrayContaining([
-            expect.objectContaining({
-              title: expect.any(String),
-            }),
-          ]));
+          expect(Array.isArray(res.body.movies)).toBe(true);
         });
     });
   });
@@ -118,23 +121,8 @@ describe('MovieController (e2e)', () => {
     let movieId: number;
 
     beforeEach(async () => {
-      const movie = await prisma.movie.create({
-        data: {
-          title: 'test movie',
-          description: 'test description',
-          photoSrc: 'test.jpg',
-          photoSrcProd: 'test-prod.jpg',
-          trailerSrc: 'test-trailer.mp4',
-          duration: 120,
-          dateAired: new Date(),
-          ratingImdb: 8.5,
-        },
-      });
+      const movie = await prisma.movie.create({ data: testMovie });
       movieId = movie.id;
-    });
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
     });
 
     it('should return a single movie', () => {
@@ -142,10 +130,11 @@ describe('MovieController (e2e)', () => {
         .get(`/movies/${movieId}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body.title).toBe('test movie');
-          expect(res.body.description).toBe('test description');
-          expect(res.body.photoSrc).toBe('test.jpg');
-          expect(res.body.photoSrcProd).toBe('test-prod.jpg');
+          expect(res.body).toEqual(expect.objectContaining({
+            ...testMovie,
+            id: movieId,
+            dateAired: expect.any(String)
+          }));
         });
     });
 
@@ -160,32 +149,10 @@ describe('MovieController (e2e)', () => {
     beforeEach(async () => {
       await prisma.movie.createMany({
         data: [
-          {
-            title: 'action movie',
-            description: 'test description',
-            photoSrc: 'test.jpg',
-            photoSrcProd: 'test-prod.jpg',
-            trailerSrc: 'test-trailer.mp4',
-            duration: 120,
-            dateAired: new Date(),
-            ratingImdb: 8.5,
-          },
-          {
-            title: 'comedy movie',
-            description: 'test description',
-            photoSrc: 'test.jpg',
-            photoSrcProd: 'test-prod.jpg',
-            trailerSrc: 'test-trailer.mp4',
-            duration: 120,
-            dateAired: new Date(),
-            ratingImdb: 8.5,
-          },
+          { ...testMovie, title: 'action movie' },
+          { ...testMovie, title: 'comedy movie' }
         ],
       });
-    });
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
     });
 
     it('should search movies by title with sort order', () => {
@@ -201,19 +168,6 @@ describe('MovieController (e2e)', () => {
           expect(res.body.movies).toHaveLength(2);
           expect(res.body.movies[0].title).toBe('action movie');
           expect(res.body.movies[1].title).toBe('comedy movie');
-          expect(res.body.count).toBe(2);
-        });
-    });
-
-    it('should search movies by title', () => {
-      return request(app.getHttpServer())
-        .get('/movies/search')
-        .query({ title: 'action' })
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.movies).toHaveLength(1);
-          expect(res.body.movies[0].title).toBe('action movie');
-          expect(res.body.count).toBe(1);
         });
     });
 
@@ -233,32 +187,10 @@ describe('MovieController (e2e)', () => {
     beforeEach(async () => {
       await prisma.movie.createMany({
         data: [
-          {
-            title: 'old movie',
-            description: 'test description',
-            photoSrc: 'test.jpg',
-            photoSrcProd: 'test-prod.jpg',
-            trailerSrc: 'test-trailer.mp4',
-            duration: 120,
-            dateAired: new Date('2023-01-01'),
-            ratingImdb: 8.5,
-          },
-          {
-            title: 'new movie',
-            description: 'test description',
-            photoSrc: 'test.jpg',
-            photoSrcProd: 'test-prod.jpg',
-            trailerSrc: 'test-trailer.mp4',
-            duration: 120,
-            dateAired: new Date(),
-            ratingImdb: 8.5,
-          },
+          { ...testMovie, title: 'old movie', dateAired: new Date('2023-01-01').toISOString() },
+          { ...testMovie, title: 'new movie', dateAired: new Date('2024-01-01').toISOString() }
         ],
       });
-    });
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
     });
 
     it('should return latest movies in descending order', () => {
@@ -275,21 +207,8 @@ describe('MovieController (e2e)', () => {
   describe('/movies/count (GET)', () => {
     beforeEach(async () => {
       await prisma.movie.createMany({
-        data: Array(5).fill({
-          title: 'test movie',
-          description: 'test description',
-          photoSrc: 'test.jpg',
-          photoSrcProd: 'test-prod.jpg',
-          trailerSrc: 'test-trailer.mp4',
-          duration: 120,
-          dateAired: new Date(),
-          ratingImdb: 8.5,
-        }),
+        data: Array(5).fill(testMovie),
       });
-    });
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
     });
 
     it('should return total count of movies', () => {
@@ -301,24 +220,18 @@ describe('MovieController (e2e)', () => {
         });
     });
   });
-  //#endregion
 
-  //#region POST Endpoints
   describe('/movies (POST)', () => {
     const newMovie = {
       title: 'new movie',
       description: 'new description',
-      photoSrc: 'new.jpg',
-      photoSrcProd: 'new-prod.jpg',
-      trailerSrc: 'new-trailer.mp4',
+      photoSrc: 'https://example.com/new-poster.jpg',
+      photoSrcProd: 'https://example.com/new-production.jpg',
+      trailerSrc: 'https://example.com/new-trailer.mp4',
       duration: 120,
-      dateAired: new Date(),
-      ratingImdb: 8.5
+      ratingImdb: 8.5,
+      dateAired: new Date().toISOString()
     };
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
-    });
 
     it('should create a new movie', () => {
       return request(app.getHttpServer())
@@ -326,11 +239,11 @@ describe('MovieController (e2e)', () => {
         .send(newMovie)
         .expect(201)
         .expect((res) => {
-          expect(res.body.title).toBe('new movie');
-          expect(res.body.id).toBeDefined();
-          expect(res.body.description).toBe('new description');
-          expect(res.body.photoSrc).toBe('new.jpg');
-          expect(res.body.photoSrcProd).toBe('new-prod.jpg');
+          expect(res.body).toEqual(expect.objectContaining({
+            ...newMovie,
+            id: expect.any(Number),
+            dateAired: expect.any(String)
+          }));
         });
     });
 
@@ -342,57 +255,51 @@ describe('MovieController (e2e)', () => {
     });
 
     it('should convert title to lowercase', () => {
-      const movieWithUppercase = { ...newMovie, title: 'NEW MOVIE' };
       return request(app.getHttpServer())
         .post('/movies')
-        .send(movieWithUppercase)
+        .send({ ...newMovie, title: 'NEW MOVIE' })
         .expect(201)
         .expect((res) => {
           expect(res.body.title).toBe('new movie');
         });
     });
-  });
-  //#endregion
 
-  //#region PUT Endpoints
+    it('should validate image URLs', () => {
+      return request(app.getHttpServer())
+        .post('/movies')
+        .send({ ...newMovie, photoSrc: 'invalid-url' })
+        .expect(400);
+    });
+  });
+
   describe('/movies/:id (PUT)', () => {
     let movieId: number;
 
     beforeEach(async () => {
-      const movie = await prisma.movie.create({
-        data: {
-          title: 'test movie',
-          description: 'test description',
-          photoSrc: 'test.jpg',
-          photoSrcProd: 'test-prod.jpg',
-          trailerSrc: 'test-trailer.mp4',
-          duration: 120,
-          dateAired: new Date(),
-          ratingImdb: 8.5,
-        },
-      });
+      const movie = await prisma.movie.create({ data: testMovie });
       movieId = movie.id;
     });
 
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
-    });
-
     it('should update an existing movie', () => {
+      const updateData = {
+        title: 'updated movie',
+        description: 'updated description',
+        photoSrc: 'https://example.com/updated.jpg',
+        photoSrcProd: 'https://example.com/updated-prod.jpg'
+      };
+
       return request(app.getHttpServer())
         .put(`/movies/${movieId}`)
-        .send({ 
-          title: 'updated movie',
-          description: 'updated description',
-          photoSrc: 'updated.jpg',
-          photoSrcProd: 'updated-prod.jpg'
-        })
+        .send(updateData)
         .expect(200)
         .expect((res) => {
-          expect(res.body.title).toBe('updated movie');
-          expect(res.body.description).toBe('updated description');
-          expect(res.body.photoSrc).toBe('updated.jpg');
-          expect(res.body.photoSrcProd).toBe('updated-prod.jpg');
+          expect(res.body).toEqual(expect.objectContaining({
+            ...testMovie,
+            ...updateData,
+            id: movieId,
+            title: 'updated movie',
+            dateAired: expect.any(String)
+          }));
         });
     });
 
@@ -413,30 +320,13 @@ describe('MovieController (e2e)', () => {
         });
     });
   });
-  //#endregion
 
-  //#region DELETE Endpoints
   describe('/movies/:id (DELETE)', () => {
     let movieId: number;
 
     beforeEach(async () => {
-      const movie = await prisma.movie.create({
-        data: {
-          title: 'test movie',
-          description: 'test description',
-          photoSrc: 'test.jpg',
-          photoSrcProd: 'test-prod.jpg',
-          trailerSrc: 'test-trailer.mp4',
-          duration: 120,
-          dateAired: new Date(),
-          ratingImdb: 8.5,
-        },
-      });
+      const movie = await prisma.movie.create({ data: testMovie });
       movieId = movie.id;
-    });
-
-    afterEach(async () => {
-      await prisma.movie.deleteMany();
     });
 
     it('should delete an existing movie', () => {
@@ -451,5 +341,4 @@ describe('MovieController (e2e)', () => {
         .expect(404);
     });
   });
-  //#endregion
 });

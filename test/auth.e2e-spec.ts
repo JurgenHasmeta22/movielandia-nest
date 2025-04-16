@@ -4,14 +4,15 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma.service';
 import { EmailService } from '../src/email/email.service';
+import { JwtStrategy } from '../src/auth/guards/jwt.strategy';
+import { MockJwtStrategy } from './mocks/jwt-strategy.mock';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-  let emailService: EmailService;
+  let emailService: jest.Mocked<EmailService>;
   let activationToken: string;
   let resetToken: string;
-  let jwtToken: string;
 
   const testUser = {
     email: 'test@example.com',
@@ -20,42 +21,61 @@ describe('AuthController (e2e)', () => {
   };
 
   beforeAll(async () => {
+    const mockEmailService = {
+      sendActivationEmail: jest.fn((email, userName, token) => {
+        activationToken = token;
+        return Promise.resolve();
+      }),
+      sendPasswordResetEmail: jest.fn((email, userName, token) => {
+        resetToken = token;
+        return Promise.resolve();
+      }),
+    };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
+      .overrideProvider(JwtStrategy)
+      .useClass(MockJwtStrategy)
       .overrideProvider(EmailService)
-      .useValue({
-        sendActivationEmail: jest.fn((email, userName, token) => {
-          activationToken = token;
-          return Promise.resolve();
-        }),
-        sendPasswordResetEmail: jest.fn((email, userName, token) => {
-          resetToken = token;
-          return Promise.resolve();
-        }),
-      })
+      .useValue(mockEmailService)
       .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     
-    prisma = moduleFixture.get<PrismaService>(PrismaService);
-    emailService = moduleFixture.get<EmailService>(EmailService);
-
+    prisma = app.get<PrismaService>(PrismaService);
+    emailService = moduleFixture.get(EmailService);
+    
+    // Ensure database is connected
+    await prisma.$connect();
+    
     await app.init();
   });
 
   beforeEach(async () => {
     // Clean up the database before each test
-    await prisma.resetPasswordToken.deleteMany();
-    await prisma.activateToken.deleteMany();
-    await prisma.user.deleteMany();
+    if (prisma.resetPasswordToken) {
+      await prisma.resetPasswordToken.deleteMany();
+    }
+    if (prisma.activateToken) {
+      await prisma.activateToken.deleteMany();
+    }
+    if (prisma.user) {
+      await prisma.user.deleteMany();
+    }
   });
 
   afterAll(async () => {
-    await prisma.resetPasswordToken.deleteMany();
-    await prisma.activateToken.deleteMany();
-    await prisma.user.deleteMany();
+    if (prisma.resetPasswordToken) {
+      await prisma.resetPasswordToken.deleteMany();
+    }
+    if (prisma.activateToken) {
+      await prisma.activateToken.deleteMany();
+    }
+    if (prisma.user) {
+      await prisma.user.deleteMany();
+    }
     await prisma.$disconnect();
     await app.close();
   });
@@ -166,7 +186,6 @@ describe('AuthController (e2e)', () => {
         .expect(200);
 
       expect(response.body.accessToken).toBeDefined();
-      jwtToken = response.body.accessToken;
     });
 
     it('should fail with invalid credentials', async () => {

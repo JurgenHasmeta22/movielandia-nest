@@ -18,27 +18,23 @@ export function generateCacheKey(prefix: string, params: Record<string, any>): s
 }
 
 export const CACHE_TTL = {
-    VERY_SHORT: 60, // 1 minute
-    SHORT: 300, // 5 minutes
-    MEDIUM: 1800, // 30 minutes
-    LONG: 3600, // 1 hour
-    VERY_LONG: 86400, // 24 hours
+    SHORT: 60 * 5, // 5 minutes
+    MEDIUM: 60 * 30, // 30 minutes
+    LONG: 60 * 60 * 24, // 24 hours
 };
 
-export function getCacheConfig(
-    prefix: string,
-    params: Record<string, any>,
-    ttl: number = CACHE_TTL.MEDIUM,
-): CacheConfig {
+export function getCacheConfig(key: string, data: any, ttl: number) {
     return {
+        key,
         ttl,
-        key: generateCacheKey(prefix, params),
+        data,
     };
 }
 
-export function shouldSkipCache(request: any): boolean {
-    // Skip cache for authenticated requests or specific conditions
-    return (
-        request.headers?.authorization || request.method !== "GET" || request.headers["cache-control"] === "no-cache"
-    );
+export function shouldSkipCache(options: { method?: string } = {}) {
+    if (process.env.NODE_ENV === "test") {
+        return true;
+    }
+
+    return options.method !== "GET";
 }
