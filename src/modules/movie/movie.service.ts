@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../prisma.service";
 import { MovieQueryDto } from "./dtos/movie-query.dto";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
@@ -7,6 +7,8 @@ import { MovieListResponseDto, MovieDetailsDto, RelatedMoviesResponseDto } from 
 import { MovieMapper } from "./movie.mapper";
 import { MovieParser } from "./movie.parser";
 import { IMovieRatingInfo } from "./movie.interface";
+import { NotFoundError, ValidationError } from "../../utils/error.util";
+import { getCacheConfig, CACHE_TTL, shouldSkipCache } from "../../utils/cache.util";
 
 @Injectable()
 export class MovieService {
@@ -14,6 +16,12 @@ export class MovieService {
 
     async findAll(query: MovieQueryDto, userId?: number): Promise<MovieListResponseDto> {
         try {
+            const cacheConfig = getCacheConfig("movies:list", { query, userId }, CACHE_TTL.SHORT);
+
+            if (!shouldSkipCache({ method: "GET" })) {
+                // Cache implementation would go here
+            }
+
             const { filters, orderByObject, skip, take } = MovieParser.parseMovieQuery(query);
 
             const movies = await this.prisma.movie.findMany({
@@ -28,7 +36,9 @@ export class MovieService {
 
             const moviesWithDetails = await Promise.all(
                 movies.map(async (movie) => {
-                    const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
+                    const bookmarkInfo = userId
+                        ? await this.getBookmarkStatus(movie.id, userId)
+                        : { isBookmarked: false };
                     return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
                 }),
             );
@@ -37,10 +47,10 @@ export class MovieService {
 
             return MovieMapper.toListResponseDto({ movies: moviesWithDetails, count: totalCount });
         } catch (error) {
-            if (error instanceof BadRequestException) {
+            if (error instanceof ValidationError) {
                 throw error;
             }
-            throw new BadRequestException("Invalid query parameters or database error occurred");
+            throw new ValidationError("Invalid query parameters or database error occurred");
         }
     }
 
@@ -67,12 +77,12 @@ export class MovieService {
         });
 
         if (!movie) {
-            throw new NotFoundException("Movie not found");
+            throw new NotFoundError("Movie");
         }
 
         const ratingsInfo = await this.getMovieRatings([movie.id]);
-        const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
-        const reviewInfo = userId ? await this.getReviewStatus(movie.id, userId) : {};
+        const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
+        const reviewInfo = userId ? await this.getReviewStatus(movie.id, userId) : { isReviewed: false };
 
         return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo, reviewInfo);
     }
@@ -88,7 +98,7 @@ export class MovieService {
 
         return Promise.all(
             movies.map(async (movie) => {
-                const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
+                const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
                 return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
@@ -107,7 +117,7 @@ export class MovieService {
         });
 
         if (!movie) {
-            throw new NotFoundException("Movie not found");
+            throw new NotFoundError("Movie");
         }
 
         const movieGenres = await this.prisma.movieGenre.findMany({
@@ -116,7 +126,7 @@ export class MovieService {
         });
 
         if (!movieGenres.length) {
-            return MovieMapper.toRelatedResponseDto({ movies: null, count: 0 });
+            return { movies: null, count: 0 };
         }
 
         const genreIds = movieGenres.map((mg) => mg.genreId);
@@ -132,7 +142,7 @@ export class MovieService {
         const relatedMovieIds = relatedMovieIdsByGenre.map((rm) => rm.movieId);
 
         if (!relatedMovieIds.length) {
-            return MovieMapper.toRelatedResponseDto({ movies: null, count: 0 });
+            return { movies: null, count: 0 };
         }
 
         const totalCount = relatedMovieIds.length;
@@ -147,12 +157,12 @@ export class MovieService {
 
         const moviesWithDetails = await Promise.all(
             relatedMovies.map(async (movie) => {
-                const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
+                const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
                 return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
 
-        return MovieMapper.toRelatedResponseDto({ movies: moviesWithDetails, count: totalCount });
+        return { movies: moviesWithDetails, count: totalCount };
     }
 
     async search(title: string, query: MovieQueryDto, userId?: number): Promise<MovieListResponseDto> {
@@ -171,7 +181,7 @@ export class MovieService {
 
         const moviesWithDetails = await Promise.all(
             movies.map(async (movie) => {
-                const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
+                const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
                 return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
@@ -186,8 +196,14 @@ export class MovieService {
     async create(createMovieDto: CreateMovieDto): Promise<MovieDetailsDto> {
         const movie = await this.prisma.movie.create({
             data: {
-                ...createMovieDto,
                 title: createMovieDto.title.toLowerCase(),
+                description: createMovieDto.description,
+                photoSrc: createMovieDto.posterUrl,
+                photoSrcProd: createMovieDto.backdropUrl,
+                trailerSrc: "", // This should be added to CreateMovieDto
+                duration: createMovieDto.duration,
+                ratingImdb: createMovieDto.rating || 0,
+                dateAired: new Date(),
             },
             include: { genres: { select: { genre: true } } },
         });
@@ -201,14 +217,18 @@ export class MovieService {
         });
 
         if (!movie) {
-            throw new NotFoundException("Movie not found");
+            throw new NotFoundError("Movie");
         }
 
         const updatedMovie = await this.prisma.movie.update({
             where: { id },
             data: {
-                ...updateMovieDto,
                 ...(updateMovieDto.title && { title: updateMovieDto.title.toLowerCase() }),
+                ...(updateMovieDto.description && { description: updateMovieDto.description }),
+                ...(updateMovieDto.posterUrl && { photoSrc: updateMovieDto.posterUrl }),
+                ...(updateMovieDto.backdropUrl && { photoSrcProd: updateMovieDto.backdropUrl }),
+                ...(updateMovieDto.duration && { duration: updateMovieDto.duration }),
+                ...(updateMovieDto.rating && { ratingImdb: updateMovieDto.rating }),
             },
             include: { genres: { select: { genre: true } } },
         });
@@ -222,7 +242,7 @@ export class MovieService {
         });
 
         if (!movie) {
-            throw new NotFoundException("Movie not found");
+            throw new NotFoundError("Movie");
         }
 
         await this.prisma.movie.delete({

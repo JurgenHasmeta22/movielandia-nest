@@ -1,5 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsDate, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
+import {
+    IsDate,
+    IsNotEmpty,
+    IsNumber,
+    IsString,
+    MaxLength,
+    MinLength,
+    IsInt,
+    IsOptional,
+    IsArray,
+    IsUrl,
+    Validate,
+} from "class-validator";
+import { isValidYear, isValidDuration, isValidRating, validateImageUrl } from "../../../utils/validation.util";
 
 export class CreateMovieDto {
     @ApiProperty({
@@ -20,57 +33,72 @@ export class CreateMovieDto {
             "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
     })
     @IsString()
-    @IsNotEmpty()
-    description: string;
+    @IsOptional()
+    description?: string;
+
+    @ApiProperty({
+        description: "Movie release year",
+        example: 2008,
+    })
+    @IsInt()
+    @Validate((value: number) => isValidYear(value), {
+        message: "Invalid release year",
+    })
+    releaseYear: number;
 
     @ApiProperty({
         description: "Movie duration in minutes",
         example: 152,
         minimum: 1,
     })
-    @IsNumber()
-    @IsNotEmpty()
-    duration: number;
-
-    @ApiProperty({
-        description: "Movie release date",
-        example: "2008-07-18T00:00:00.000Z",
+    @IsInt()
+    @Validate((value: number) => isValidDuration(value), {
+        message: "Duration must be between 1 and 999 minutes",
     })
-    @IsDate()
-    @IsNotEmpty()
-    dateAired: Date;
+    duration: number;
 
     @ApiProperty({
         description: "Movie poster image URL",
         example: "https://example.com/dark-knight-poster.jpg",
     })
     @IsString()
+    @IsUrl()
     @IsNotEmpty()
-    photoSrc: string;
+    @Validate((value: string) => validateImageUrl(value), {
+        message: "Invalid image URL. Must end with jpg, jpeg, png, webp, or avif",
+    })
+    posterUrl: string;
 
-    @ApiProperty({
+    @ApiPropertyOptional({
         description: "Movie production poster image URL",
         example: "https://example.com/dark-knight-production.jpg",
     })
     @IsString()
-    @IsNotEmpty()
-    photoSrcProd: string;
-
-    @ApiProperty({
-        description: "Movie trailer URL",
-        example: "https://example.com/trailers/dark-knight.mp4",
+    @IsUrl()
+    @IsOptional()
+    @Validate((value: string) => validateImageUrl(value), {
+        message: "Invalid image URL. Must end with jpg, jpeg, png, webp, or avif",
     })
-    @IsString()
-    @IsNotEmpty()
-    trailerSrc: string;
+    backdropUrl?: string;
 
     @ApiProperty({
+        description: "Genre IDs",
+        example: [1, 2, 3],
+    })
+    @IsArray()
+    @IsInt({ each: true })
+    genreIds: number[];
+
+    @ApiPropertyOptional({
         description: "IMDB rating",
         example: 9.0,
         minimum: 0,
         maximum: 10,
     })
-    @IsNumber()
-    @IsNotEmpty()
-    ratingImdb: number;
+    @IsInt()
+    @Validate((value: number) => isValidRating(value), {
+        message: "Rating must be between 0 and 10",
+    })
+    @IsOptional()
+    rating?: number;
 }

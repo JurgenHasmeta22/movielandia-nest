@@ -1,10 +1,12 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../prisma.service";
 import * as bcrypt from "bcrypt";
 import { SignUpDto, SignInDto, ForgotPasswordDto, ResetPasswordDto, ActivateAccountDto } from "./dtos/auth.dto";
 import { randomBytes } from "crypto";
 import { EmailService } from "../email/email.service";
+import { ConflictError, NotFoundError, UnauthorizedError } from "../utils/error.util";
+import { isValidEmail } from "../utils/validation.util";
 
 @Injectable()
 export class AuthService {
@@ -17,12 +19,16 @@ export class AuthService {
     async signUp(signUpDto: SignUpDto) {
         const { email, password, userName } = signUpDto;
 
+        if (!isValidEmail(email)) {
+            throw new UnauthorizedError("Invalid email format");
+        }
+
         const userExists = await this.prisma.user.findFirst({
             where: { OR: [{ email }, { userName }] },
         });
 
         if (userExists) {
-            throw new ConflictException("User with this email or username already exists");
+            throw new ConflictError("User with this email or username already exists");
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -56,19 +62,23 @@ export class AuthService {
     async signIn(signInDto: SignInDto) {
         const { email, password } = signInDto;
 
+        if (!isValidEmail(email)) {
+            throw new UnauthorizedError("Invalid email format");
+        }
+
         const user = await this.prisma.user.findUnique({ where: { email } });
         if (!user) {
-            throw new UnauthorizedException("Invalid credentials");
+            throw new UnauthorizedError("Invalid credentials");
         }
 
         if (!user.active) {
-            throw new UnauthorizedException("Please activate your account first");
+            throw new UnauthorizedError("Please activate your account first");
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException("Invalid credentials");
+            throw new UnauthorizedError("Invalid credentials");
         }
 
         const payload = { id: user.id, email: user.email };
@@ -86,7 +96,7 @@ export class AuthService {
         });
 
         if (!activateToken) {
-            throw new NotFoundException("Invalid or expired activation token");
+            throw new NotFoundError("Activation token");
         }
 
         await this.prisma.$transaction(async (prisma) => {
@@ -107,10 +117,14 @@ export class AuthService {
     async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
         const { email } = forgotPasswordDto;
 
+        if (!isValidEmail(email)) {
+            throw new UnauthorizedError("Invalid email format");
+        }
+
         const user = await this.prisma.user.findUnique({ where: { email } });
 
         if (!user) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundError("User");
         }
 
         const resetToken = randomBytes(32).toString("hex");
@@ -136,7 +150,7 @@ export class AuthService {
         });
 
         if (!resetToken) {
-            throw new NotFoundException("Invalid or expired reset token");
+            throw new NotFoundError("Reset token");
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);

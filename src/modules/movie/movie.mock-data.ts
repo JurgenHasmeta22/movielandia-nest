@@ -3,7 +3,7 @@ import { IMovieRatingInfo, IMovieWithDetails } from "./movie.interface";
 
 export const mockMovie: Movie = {
     id: 1,
-    title: "Test Movie",
+    title: "test movie",
     description: "A test movie",
     photoSrc: "test.jpg",
     photoSrcProd: "test-prod.jpg",

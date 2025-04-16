@@ -144,6 +144,8 @@ describe('MovieController (e2e)', () => {
         .expect((res) => {
           expect(res.body.title).toBe('test movie');
           expect(res.body.description).toBe('test description');
+          expect(res.body.photoSrc).toBe('test.jpg');
+          expect(res.body.photoSrcProd).toBe('test-prod.jpg');
         });
     });
 
@@ -327,6 +329,8 @@ describe('MovieController (e2e)', () => {
           expect(res.body.title).toBe('new movie');
           expect(res.body.id).toBeDefined();
           expect(res.body.description).toBe('new description');
+          expect(res.body.photoSrc).toBe('new.jpg');
+          expect(res.body.photoSrcProd).toBe('new-prod.jpg');
         });
     });
 
@@ -377,11 +381,18 @@ describe('MovieController (e2e)', () => {
     it('should update an existing movie', () => {
       return request(app.getHttpServer())
         .put(`/movies/${movieId}`)
-        .send({ title: 'updated movie', description: 'updated description' })
+        .send({ 
+          title: 'updated movie',
+          description: 'updated description',
+          photoSrc: 'updated.jpg',
+          photoSrcProd: 'updated-prod.jpg'
+        })
         .expect(200)
         .expect((res) => {
           expect(res.body.title).toBe('updated movie');
           expect(res.body.description).toBe('updated description');
+          expect(res.body.photoSrc).toBe('updated.jpg');
+          expect(res.body.photoSrcProd).toBe('updated-prod.jpg');
         });
     });
 

@@ -1,17 +1,13 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from "@nestjs/common";
+import { Injectable, ExecutionContext } from "@nestjs/common";
 import { AuthGuard as PassportAuthGuard } from "@nestjs/passport";
+import { UnauthorizedError } from "../../utils/error.util";
 
 @Injectable()
 export class AuthGuard extends PassportAuthGuard("jwt") {
-    canActivate(context: ExecutionContext) {
-        return super.canActivate(context);
-    }
-
-    handleRequest(err: any, user: any) {
+    handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
         if (err || !user) {
-            throw new UnauthorizedException("Authentication required");
+            throw new UnauthorizedError("Authentication required");
         }
-
         return user;
     }
 }

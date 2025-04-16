@@ -24,6 +24,8 @@ import { User } from "@prisma/client";
 import { CurrentUser } from "../../auth/decorators/current-user.decorator";
 import { OptionalAuthGuard } from "../../auth/guards/optional-auth.guard";
 import { AuthGuard } from "../../auth/guards/auth.guard";
+import { ValidationError } from "../../utils/error.util";
+import { getPaginationParams, createPaginatedResponse } from "../../utils/pagination.util";
 
 @ApiTags("Movies")
 @Controller("movies")
@@ -42,11 +44,7 @@ export class MovieController {
         try {
             return await this.movieService.findAll(query, user?.id);
         } catch (error) {
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-
-            throw new BadRequestException("Failed to fetch movies. Please check your query parameters.");
+            throw new ValidationError("Failed to fetch movies. Please check your query parameters.");
         }
     }
 
@@ -77,11 +75,7 @@ export class MovieController {
         try {
             return await this.movieService.search(title, query, user?.id);
         } catch (error) {
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-
-            throw new BadRequestException("Failed to search movies. Please check your query parameters.");
+            throw new ValidationError("Failed to search movies. Please check your query parameters.");
         }
     }
 
@@ -117,12 +111,10 @@ export class MovieController {
         @CurrentUser() user?: User,
     ): Promise<RelatedMoviesResponseDto> {
         try {
-            return await this.movieService.findRelated(id, user?.id, page, perPage);
+            const paginationParams = getPaginationParams({ page, limit: perPage });
+            return await this.movieService.findRelated(id, user?.id, paginationParams.page, paginationParams.take);
         } catch (error) {
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-            throw new BadRequestException("Failed to fetch related movies. Please check your query parameters.");
+            throw new ValidationError("Failed to fetch related movies. Please check your query parameters.");
         }
     }
 
@@ -136,10 +128,7 @@ export class MovieController {
         try {
             return await this.movieService.create(createMovieDto);
         } catch (error) {
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-            throw new BadRequestException("Failed to create movie. Please check your input.");
+            throw new ValidationError("Failed to create movie. Please check your input.");
         }
     }
 

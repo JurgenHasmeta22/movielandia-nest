@@ -1,57 +1,54 @@
 import { Movie } from "@prisma/client";
-import {
-    MovieDetailsDto,
-    MovieListResponseDto,
-    MovieRatingInfo,
-    RelatedMoviesResponseDto,
-} from "./dtos/movie-response.dto";
-import {
-    IMovie,
-    IMovieRatingInfo,
-    IMovieWithDetails,
-    IRelatedMoviesResponse,
-    IMovieListResponse,
-} from "./movie.interface";
+import { MovieListResponseDto, MovieDetailsDto, MovieRatingInfo } from "./dtos/movie-response.dto";
+import { IMovieRatingInfo } from "./movie.interface";
+import { formatDate, parseRuntime, truncateText, slugify } from "../../utils/transform.util";
 
 export class MovieMapper {
-    static toDto(movie: IMovie): MovieDetailsDto {
+    static toDto(movie: Movie): MovieDetailsDto {
         return {
-            ...movie,
+            id: movie.id,
+            title: movie.title,
+            description: movie.description,
+            photoSrc: movie.photoSrc,
+            photoSrcProd: movie.photoSrcProd,
+            trailerSrc: movie.trailerSrc,
+            duration: movie.duration,
+            ratingImdb: movie.ratingImdb,
+            dateAired: movie.dateAired,
         };
     }
 
     static toDtoWithDetails(
-        movie: IMovie,
-        ratingsInfo?: IMovieRatingInfo,
-        bookmarkInfo?: { isBookmarked: boolean } | Record<string, never>,
-        reviewInfo?: { isReviewed: boolean } | Record<string, never>,
+        movie: Movie,
+        ratingInfo?: IMovieRatingInfo,
+        bookmarkInfo?: { isBookmarked: boolean },
+        reviewInfo?: { isReviewed: boolean },
     ): MovieDetailsDto {
         return {
-            ...movie,
-            ...(ratingsInfo && { ratings: this.toRatingInfoDto(ratingsInfo) }),
-            ...(Object.keys(bookmarkInfo || {}).length > 0 && bookmarkInfo),
-            ...(Object.keys(reviewInfo || {}).length > 0 && reviewInfo),
+            ...this.toDto(movie),
+            description: movie.description ? truncateText(movie.description, 200) : undefined,
+            ratings: ratingInfo
+                ? {
+                      averageRating: ratingInfo.averageRating,
+                      totalReviews: ratingInfo.totalReviews,
+                  }
+                : undefined,
+            isBookmarked: bookmarkInfo?.isBookmarked || false,
+            isReviewed: reviewInfo?.isReviewed || false,
         };
     }
 
-    static toRatingInfoDto(ratingInfo: IMovieRatingInfo): MovieRatingInfo {
+    static toListResponseDto(data: { movies: MovieDetailsDto[]; count: number }): MovieListResponseDto {
         return {
-            averageRating: ratingInfo.averageRating,
-            totalReviews: ratingInfo.totalReviews,
+            movies: data.movies,
+            count: data.count,
         };
     }
 
-    static toListResponseDto(response: IMovieListResponse): MovieListResponseDto {
+    static toRelatedResponseDto(data: { movies: MovieDetailsDto[] | null; count: number }): MovieListResponseDto {
         return {
-            movies: response.movies.map((movie) => this.toDtoWithDetails(movie)),
-            count: response.count,
-        };
-    }
-
-    static toRelatedResponseDto(response: IRelatedMoviesResponse): RelatedMoviesResponseDto {
-        return {
-            movies: response.movies?.map((movie) => this.toDtoWithDetails(movie)) ?? null,
-            count: response.count,
+            movies: data.movies || [],
+            count: data.count,
         };
     }
 }
