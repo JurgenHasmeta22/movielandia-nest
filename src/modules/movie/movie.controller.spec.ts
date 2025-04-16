@@ -5,6 +5,7 @@ import { MovieQueryDto, SortOrder } from "./dtos/movie-query.dto";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
 import { UpdateMovieDto } from "./dtos/update-movie.dto";
 import { User } from "@prisma/client";
+import { mockMovie, mockMovieWithDetails } from "./movie.mock-data";
 
 describe("MovieController", () => {
     let controller: MovieController;
@@ -25,14 +26,6 @@ describe("MovieController", () => {
         active: true,
         canResetPassword: true,
         subscribed: false,
-    };
-
-    const mockMovie = {
-        id: 1,
-        title: "Test Movie",
-        description: "A test movie",
-        averageRating: 4.5,
-        totalReviews: 10,
     };
 
     const mockMovieService = {
@@ -74,11 +67,11 @@ describe("MovieController", () => {
         };
 
         it("should return movies list with optional user", async () => {
-            mockMovieService.findAll.mockResolvedValue({ movies: [mockMovie] });
+            mockMovieService.findAll.mockResolvedValue({ movies: [mockMovieWithDetails] });
 
             const result = await controller.findAll(mockQuery, mockUser);
 
-            expect(result).toEqual({ movies: [mockMovie] });
+            expect(result).toEqual({ movies: [mockMovieWithDetails] });
             expect(mockMovieService.findAll).toHaveBeenCalledWith(mockQuery, mockUser.id);
         });
 
@@ -94,22 +87,22 @@ describe("MovieController", () => {
 
     describe("findOne", () => {
         it("should return a single movie with optional user", async () => {
-            mockMovieService.findOne.mockResolvedValue(mockMovie);
+            mockMovieService.findOne.mockResolvedValue(mockMovieWithDetails);
 
             const result = await controller.findOne(1, mockUser);
 
-            expect(result).toEqual(mockMovie);
+            expect(result).toEqual(mockMovieWithDetails);
             expect(mockMovieService.findOne).toHaveBeenCalledWith(1, mockUser.id);
         });
     });
 
     describe("findLatest", () => {
         it("should return latest movies with optional user", async () => {
-            mockMovieService.findLatest.mockResolvedValue([mockMovie]);
+            mockMovieService.findLatest.mockResolvedValue([mockMovieWithDetails]);
 
             const result = await controller.findLatest(mockUser);
 
-            expect(result).toEqual([mockMovie]);
+            expect(result).toEqual([mockMovieWithDetails]);
             expect(mockMovieService.findLatest).toHaveBeenCalledWith(mockUser.id);
         });
     });
@@ -117,13 +110,13 @@ describe("MovieController", () => {
     describe("findRelated", () => {
         it("should return related movies with pagination", async () => {
             mockMovieService.findRelated.mockResolvedValue({
-                movies: [mockMovie],
+                movies: [mockMovieWithDetails],
                 count: 1,
             });
 
             const result = await controller.findRelated(1, 1, 6, mockUser);
 
-            expect(result).toEqual({ movies: [mockMovie], count: 1 });
+            expect(result).toEqual({ movies: [mockMovieWithDetails], count: 1 });
             expect(mockMovieService.findRelated).toHaveBeenCalledWith(1, mockUser.id, 1, 6);
         });
     });
@@ -137,13 +130,13 @@ describe("MovieController", () => {
 
         it("should return search results with optional user", async () => {
             mockMovieService.search.mockResolvedValue({
-                movies: [mockMovie],
+                movies: [mockMovieWithDetails],
                 count: 1,
             });
 
             const result = await controller.search("test", mockQuery, mockUser);
 
-            expect(result).toEqual({ movies: [mockMovie], count: 1 });
+            expect(result).toEqual({ movies: [mockMovieWithDetails], count: 1 });
             expect(mockMovieService.search).toHaveBeenCalledWith("test", mockQuery, mockUser.id);
         });
     });
@@ -199,7 +192,7 @@ describe("MovieController", () => {
 
             const result = await controller.count();
 
-            expect(result).toBe(100);
+            expect(result).toEqual({ count: 100 });
             expect(mockMovieService.count).toHaveBeenCalled();
         });
     });

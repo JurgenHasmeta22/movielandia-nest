@@ -1,27 +1,15 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { MovieService } from "./movie.service";
 import { PrismaService } from "../../prisma.service";
-import { Movie } from "@prisma/client";
 import { MovieQueryDto, SortOrder } from "./dtos/movie-query.dto";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
 import { UpdateMovieDto } from "./dtos/update-movie.dto";
 import { NotFoundException } from "@nestjs/common";
+import { mockMovie, mockMovieRatingInfo, mockMovieWithDetails } from "./movie.mock-data";
 
 describe("MovieService", () => {
     let service: MovieService;
     let prisma: PrismaService;
-
-    const mockMovie: Movie = {
-        id: 1,
-        title: "Test Movie",
-        description: "A test movie",
-        photoSrc: "test.jpg",
-        photoSrcProd: "test-prod.jpg",
-        trailerSrc: "trailer.mp4",
-        duration: 120,
-        dateAired: new Date("2024-01-01"),
-        ratingImdb: 8.5,
-    } as Movie;
 
     const mockPrismaService = {
         movie: {
@@ -78,22 +66,15 @@ describe("MovieService", () => {
             mockPrismaService.movieReview.groupBy.mockResolvedValue([
                 {
                     movieId: 1,
-                    _avg: { rating: 4.5 },
-                    _count: { rating: 10 },
+                    _avg: { rating: mockMovieRatingInfo.averageRating },
+                    _count: { rating: mockMovieRatingInfo.totalReviews },
                 },
             ]);
             mockPrismaService.userMovieFavorite.findFirst.mockResolvedValue({ id: 1 });
 
             const result = await service.findAll(mockQuery, 1);
 
-            expect(result.movies[0]).toEqual(
-                expect.objectContaining({
-                    ...mockMovie,
-                    averageRating: 4.5,
-                    totalReviews: 10,
-                    isBookmarked: true,
-                }),
-            );
+            expect(result.movies[0]).toEqual(expect.objectContaining(mockMovieWithDetails));
         });
 
         it("should apply filters correctly", async () => {

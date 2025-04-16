@@ -1,51 +1,20 @@
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "../../prisma.service";
-import { MovieQueryDto, SortOrder } from "./dtos/movie-query.dto";
+import { MovieQueryDto } from "./dtos/movie-query.dto";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
 import { UpdateMovieDto } from "./dtos/update-movie.dto";
-import { MovieListResponseDto } from "./dtos/movie-response.dto";
-import { MovieDetailsDto } from "./dtos/movie-response.dto";
-import { RelatedMoviesResponseDto } from "./dtos/movie-response.dto";
+import { MovieListResponseDto, MovieDetailsDto, RelatedMoviesResponseDto } from "./dtos/movie-response.dto";
+import { MovieMapper } from "./movie.mapper";
+import { MovieParser } from "./movie.parser";
+import { IMovieRatingInfo } from "./movie.interface";
 
 @Injectable()
 export class MovieService {
     constructor(private prisma: PrismaService) {}
 
-    // #region Public API Methods
     async findAll(query: MovieQueryDto, userId?: number): Promise<MovieListResponseDto> {
         try {
-            const {
-                sortBy,
-                ascOrDesc = SortOrder.ASC,
-                perPage = 12,
-                page = 1,
-                title,
-                filterValue,
-                filterNameString,
-                filterOperatorString,
-            } = query;
-
-            const filters: any = {};
-            const orderByObject: any = {};
-
-            const skip = (page - 1) * perPage;
-            const take = perPage;
-
-            if (title) {
-                filters.title = { contains: title.toLowerCase() };
-            }
-
-            if (filterValue !== undefined && filterNameString && filterOperatorString) {
-                if (typeof filterValue === "string" && filterOperatorString === "contains") {
-                    filters[filterNameString] = { contains: filterValue.toLowerCase() };
-                } else {
-                    const operator =
-                        filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
-                    filters[filterNameString] = { [operator]: Number(filterValue) };
-                }
-            }
-
-            orderByObject[sortBy || "title"] = ascOrDesc || SortOrder.ASC;
+            const { filters, orderByObject, skip, take } = MovieParser.parseMovieQuery(query);
 
             const movies = await this.prisma.movie.findMany({
                 where: filters,
@@ -60,20 +29,13 @@ export class MovieService {
             const moviesWithDetails = await Promise.all(
                 movies.map(async (movie) => {
                     const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
-                    return {
-                        ...movie,
-                        ...ratingsInfo[movie.id],
-                        ...bookmarkInfo,
-                    };
+                    return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
                 }),
             );
 
             const totalCount = await this.prisma.movie.count({ where: filters });
 
-            return {
-                movies: moviesWithDetails,
-                count: totalCount,
-            };
+            return MovieMapper.toListResponseDto({ movies: moviesWithDetails, count: totalCount });
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -112,12 +74,7 @@ export class MovieService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
         const reviewInfo = userId ? await this.getReviewStatus(movie.id, userId) : {};
 
-        return {
-            ...movie,
-            ...ratingsInfo[movie.id],
-            ...bookmarkInfo,
-            ...reviewInfo,
-        };
+        return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo, reviewInfo);
     }
 
     async findLatest(userId?: number): Promise<MovieDetailsDto[]> {
@@ -129,18 +86,12 @@ export class MovieService {
         const movieIds = movies.map((movie) => movie.id);
         const ratingsInfo = await this.getMovieRatings(movieIds);
 
-        const moviesWithDetails = await Promise.all(
+        return Promise.all(
             movies.map(async (movie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
-                return {
-                    ...movie,
-                    ...ratingsInfo[movie.id],
-                    ...bookmarkInfo,
-                };
+                return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
-
-        return moviesWithDetails;
     }
 
     async findRelated(
@@ -165,7 +116,7 @@ export class MovieService {
         });
 
         if (!movieGenres.length) {
-            return { movies: null, count: 0 };
+            return MovieMapper.toRelatedResponseDto({ movies: null, count: 0 });
         }
 
         const genreIds = movieGenres.map((mg) => mg.genreId);
@@ -181,7 +132,7 @@ export class MovieService {
         const relatedMovieIds = relatedMovieIdsByGenre.map((rm) => rm.movieId);
 
         if (!relatedMovieIds.length) {
-            return { movies: null, count: 0 };
+            return MovieMapper.toRelatedResponseDto({ movies: null, count: 0 });
         }
 
         const totalCount = relatedMovieIds.length;
@@ -197,25 +148,21 @@ export class MovieService {
         const moviesWithDetails = await Promise.all(
             relatedMovies.map(async (movie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
-                return {
-                    ...movie,
-                    ...ratingsInfo[movie.id],
-                    ...bookmarkInfo,
-                };
+                return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
 
-        return { movies: moviesWithDetails, count: totalCount };
+        return MovieMapper.toRelatedResponseDto({ movies: moviesWithDetails, count: totalCount });
     }
 
     async search(title: string, query: MovieQueryDto, userId?: number): Promise<MovieListResponseDto> {
-        const { page, ascOrDesc, sortBy } = query;
-        const orderByObject = { [sortBy || "title"]: ascOrDesc || SortOrder.ASC };
+        const { ascOrDesc, sortBy } = query;
+        const orderByObject = { [sortBy || "title"]: ascOrDesc || "asc" };
 
         const movies = await this.prisma.movie.findMany({
             where: { title: { contains: title.toLowerCase() } },
             orderBy: orderByObject,
-            skip: page ? (page - 1) * 12 : 0,
+            skip: query.page ? (query.page - 1) * 12 : 0,
             take: 12,
         });
 
@@ -225,11 +172,7 @@ export class MovieService {
         const moviesWithDetails = await Promise.all(
             movies.map(async (movie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : {};
-                return {
-                    ...movie,
-                    ...ratingsInfo[movie.id],
-                    ...bookmarkInfo,
-                };
+                return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
 
@@ -237,7 +180,7 @@ export class MovieService {
             where: { title: { contains: title.toLowerCase() } },
         });
 
-        return { movies: moviesWithDetails, count };
+        return MovieMapper.toListResponseDto({ movies: moviesWithDetails, count });
     }
 
     async create(createMovieDto: CreateMovieDto): Promise<MovieDetailsDto> {
@@ -249,7 +192,7 @@ export class MovieService {
             include: { genres: { select: { genre: true } } },
         });
 
-        return movie;
+        return MovieMapper.toDto(movie);
     }
 
     async update(id: number, updateMovieDto: UpdateMovieDto): Promise<MovieDetailsDto> {
@@ -270,7 +213,7 @@ export class MovieService {
             include: { genres: { select: { genre: true } } },
         });
 
-        return updatedMovie;
+        return MovieMapper.toDto(updatedMovie);
     }
 
     async remove(id: number): Promise<void> {
@@ -290,10 +233,8 @@ export class MovieService {
     async count(): Promise<number> {
         return this.prisma.movie.count();
     }
-    // #endregion
 
-    // #region Private Helper Methods
-    private async getMovieRatings(movieIds: number[]) {
+    private async getMovieRatings(movieIds: number[]): Promise<{ [key: number]: IMovieRatingInfo }> {
         const movieRatings = await this.prisma.movieReview.groupBy({
             by: ["movieId"],
             where: { movieId: { in: movieIds } },
@@ -329,5 +270,4 @@ export class MovieService {
 
         return { isReviewed: !!existingReview };
     }
-    // #endregion
 }
