@@ -1,47 +1,3 @@
-/**
- * User Model - Core entity representing application users
- * User Capabilities:
- * 1. Authentication & Profile
- * - Register and login (email/password or Google OAuth)
- * - Manage profile (username, email, password, bio)
- * - Upload and manage avatar
- * - Reset password and account activation
- * 2. Content Interaction
- * - Bookmark favorites (movies, series, seasons, episodes, actors, crew)
- * - Rate content (0-10 stars for movies, series, seasons, episodes, actors, crew)
- * - Write, edit and manage reviews for all content types
- * - Interact with others' reviews (upvote/downvote)
- * - Create and manage personal lists of various content
- * 3. Social Features
- * - Follow/unfollow other users (with pending/accepted/rejected states)
- * - Send/receive direct messages through inbox system
- * - Receive notifications for social interactions
- * 4. Forum Participation
- * - Create and manage forum topics
- * - Post replies and participate in discussions
- * - Upvote/downvote forum content (topics, posts, replies)
- * - Bookmark favorite topics
- * - Watch topics for updates
- * - Moderate forum categories (if given moderator rights)
- * - Upload attachments to forum posts
- * 5. Content Management (Admin Only)
- * - Moderate user content
- * - Handle reported content
- * - Create moderation logs
- * - Close topics
- * - Edit/delete forum posts
- * 6. List Management
- * - Create and manage personal lists
- * - Add various content types to lists
- * - Share lists with other users
- * - Track list statistics
- * - Record list activities
- * Stats & Tracking:
- * - Forum activity statistics (topics, posts, replies, reputation)
- * - List usage statistics
- * - Content interaction history
- */
-
 enum UserType {
     User
     Admin
@@ -136,11 +92,8 @@ model User {
     forumPosts               ForumPost[]
     forumReplies             ForumReply[]
     forumTopicUpvotes        UpvoteForumTopic[]
-    forumTopicDownvotes      DownvoteForumTopic[]
     forumPostUpvotes         UpvoteForumPost[]
-    forumPostDownvotes       DownvoteForumPost[]
     forumReplyUpvotes        UpvoteForumReply[]
-    forumReplyDownvotes      DownvoteForumReply[]
     forumTopicsBookmarked    UserForumTopicFavorite[]
     forumTopicsWatched       UserForumTopicWatch[]
     forumModeratedCategories UserForumModerator[]

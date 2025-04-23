@@ -1,53 +1,3 @@
-/*
- * Forum System Capabilities Summary
- * -------------------------------
- * 
- * Core Features:
- * 1. Discussion Organization
- *    - Create, read, update, delete topics
- *    - Organize topics into categories
- *    - Tag topics for better organization
- *    - Track view counts and engagement
- *    - Pin important topics
- *    - Lock discussions when needed
- * 
- * 2. User Engagement
- *    - Post responses and replies
- *    - Upload attachments
- *    - Vote on topics/posts/replies
- *    - Bookmark favorite topics
- *    - Watch topics for updates
- *    - Track user reputation
- * 
- * 3. Content Management
- *    - Rich text content support
- *    - File attachments
- *    - Edit history tracking
- *    - Post versioning
- *    - Content moderation
- * 
- * 4. Moderation Tools
- *    - Category-specific moderators
- *    - Topic status management (Open/Closed/Archived)
- *    - Content moderation flags
- *    - User activity tracking
- * 
- * 5. Statistics & Tracking
- *    - User participation metrics
- *    - Topic engagement stats
- *    - Category activity monitoring
- *    - Vote tracking
- *    - View counting
- * 
- * Key User Actions:
- * - Create and participate in discussions
- * - Share files and media
- * - Vote and bookmark content
- * - Follow interesting topics
- * - Build reputation through engagement
- * - Moderate community content
- */
-
 enum TopicStatus {
     Open
     Closed
@@ -82,7 +32,6 @@ model ForumTopic {
     posts                ForumPost[]
     usersWhoBookmarkedIt UserForumTopicFavorite[]
     upvotes              UpvoteForumTopic[]
-    downvotes            DownvoteForumTopic[]
     watchers             UserForumTopicWatch[]
 
     @@index([title(sort: Asc)])
@@ -121,20 +70,6 @@ model UserForumTopicFavorite {
 }
 
 model UpvoteForumTopic {
-    id Int @id @default(autoincrement())
-
-    // FK Keys
-    userId  Int
-    topicId Int
-
-    // Relations
-    user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-    topic ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
-
-    @@unique([userId, topicId])
-}
-
-model DownvoteForumTopic {
     id Int @id @default(autoincrement())
 
     // FK Keys

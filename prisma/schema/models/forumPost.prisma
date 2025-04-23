@@ -12,8 +12,6 @@ model ForumPost {
     createdAt   DateTime  @default(now())
     updatedAt   DateTime? @updatedAt
     isEdited    Boolean   @default(false)
-    editCount   Int       @default(0)
-    lastEditAt  DateTime?
     isModerated Boolean   @default(false)
     slug        String    @unique
     type        PostType  @default(Normal)
@@ -36,7 +34,6 @@ model ForumPost {
     attachments      Attachment[]
     replies          ForumReply[]
     upvotes          UpvoteForumPost[]
-    downvotes        DownvoteForumPost[]
     history          ForumPostHistory[]
     lastPostCategory ForumCategory?      @relation("CategoryLastPost")
 
@@ -70,20 +67,6 @@ model Attachment {
 }
 
 model UpvoteForumPost {
-    id Int @id @default(autoincrement())
-
-    // FK Keys
-    userId Int
-    postId Int
-
-    // Relations
-    user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-    post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-    @@unique([userId, postId])
-}
-
-model DownvoteForumPost {
     id Int @id @default(autoincrement())
 
     // FK Keys

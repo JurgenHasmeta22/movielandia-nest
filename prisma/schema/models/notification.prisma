@@ -24,4 +24,7 @@ enum NotificationType {
     message_received
     liked_review
     disliked_review
+    list_shared
+    list_permission_updated
+    list_activity
 }
