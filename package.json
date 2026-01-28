@@ -33,6 +33,7 @@
         "node": ">=20.0.0"
     },
     "dependencies": {
+        "@libsql/client": "^0.17.0",
         "@nestjs/common": "^11.1.12",
         "@nestjs/config": "^4.0.2",
         "@nestjs/core": "^11.1.12",
@@ -40,6 +41,7 @@
         "@nestjs/passport": "^11.0.5",
         "@nestjs/platform-express": "^11.1.12",
         "@nestjs/swagger": "^11.2.5",
+        "@prisma/adapter-libsql": "^7.3.0",
         "@prisma/client": "^7.3.0",
         "@types/bcrypt": "^6.0.0",
         "bcrypt": "^6.0.0",

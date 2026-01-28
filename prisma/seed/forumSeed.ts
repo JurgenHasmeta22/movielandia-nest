@@ -100,17 +100,7 @@ export async function generateForumData(): Promise<void> {
                         }
                         
                         const remainingUsers = availableUsers.filter(u => !upvoters.some(upvoter => upvoter.id === u.id));
-                        const downvoters = faker.helpers.arrayElements(remainingUsers, downvoteCount);
-                        
-                        for (const downvoter of downvoters) {
-                            await prisma.downvoteForumPost.create({
-                                data: {
-                                    userId: downvoter.id,
-                                    postId: post.id
-                                }
-                            });
-                        }
-                        
+                          
                         if (Math.random() < 0.4) {
                             const replyCount = Math.floor(Math.random() * 3) + 1;
                             
