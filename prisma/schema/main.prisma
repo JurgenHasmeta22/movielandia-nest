@@ -1,38 +1,8 @@
 generator client {
     provider        = "prisma-client-js"
-    previewFeatures = ["prismaSchemaFolder"]
-}
-
-// generator erd {
-//     provider = "prisma-erd-generator"
-//     output = "Movielandia.svg"
-// }
-
-// generator dbml {
-//     provider = "prisma-dbml-generator"
-//     output = "Movielandia.dbml"
-// }
-
-// generator docs {
-//   provider = "node node_modules/prisma-docs-generator"
-// }
-
-// generator jsonSchema {
-//   provider = "prisma-json-schema-generator"
-// }
-
-// generator custom_generator {
-//     provider = "prisma-generator-fake-data"
-//     output   = "../types/fake-data.ts"
-// }
-
-// generator markdown {
-//   provider = "prisma-markdown"
-//   output   = "./movielandia.md"
-//   title    = "Movielandia24"
-// }
+    output          = "../generated/prisma"
+ }
 
 datasource db {
     provider = "sqlite"
-    url      = env("DATABASE_URL")
 }
