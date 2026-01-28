@@ -1,8 +1,14 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { faker } from "@faker-js/faker";
 import { forumCategories } from "./data/forumData";
 
-const prisma = new PrismaClient();
+const dbPath = process.env.DATABASE_URL || "file:./prisma/database/movielandia24.db";
+const adapter = new PrismaLibSql({ url: dbPath });
+const prisma = new PrismaClient({
+    adapter,
+    log: ["query", "info", "warn", "error"],
+});
 
 export async function generateForumDataMinimal(): Promise<void> {
     console.log("Generating minimal forum data for testing...");
@@ -18,6 +24,11 @@ export async function generateForumDataMinimal(): Promise<void> {
       - Topics: ${existingTopicsCount}
       - Posts: ${existingPostsCount}
     `);
+
+    if (users.length === 0) {
+        console.log("No users found. Skipping forum data generation.");
+        return;
+    }
 
     // Generate forum categories if none exist
     if (existingCategoriesCount === 0) {

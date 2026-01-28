@@ -1,8 +1,14 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { faker } from "@faker-js/faker";
 import { forumCategories } from "./data/forumData";
 
-const prisma = new PrismaClient();
+const dbPath = process.env.DATABASE_URL || "file:./prisma/database/movielandia24.db";
+const adapter = new PrismaLibSql({ url: dbPath });
+const prisma = new PrismaClient({
+    adapter,
+    log: ["query", "info", "warn", "error"],
+});
 
 export async function generateForumData(): Promise<void> {
     console.log("Generating forum data...");

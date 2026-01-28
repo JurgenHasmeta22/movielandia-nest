@@ -1,5 +1,6 @@
 // #region "Imports"
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { generateDynamicSeedData, SeedStep } from "./dynamicSeed";
 import { movies } from "./data/movies";
 import { series } from "./data/series";
@@ -26,7 +27,10 @@ import {
 } from "./data/relationships";
 // #endregion
 
+const dbPath = process.env.DATABASE_URL || "file:./prisma/database/movielandia24.db";
+const adapter = new PrismaLibSql({ url: dbPath });
 const prisma = new PrismaClient({
+    adapter,
     log: ["query", "info", "warn", "error"],
 });
 
@@ -222,8 +226,8 @@ async function baseSeeding() {
 
 const config = {
     useDynamicSeeding: true, // Set to false to use base seeding instead
-    deleteBeforeSeeding: false, // Set to true to delete all data before seeding
-    dynamicSeedingStartStep: SeedStep.ForumTags // Which step to start from for dynamic seeding
+    deleteBeforeSeeding: true, // Set to true to delete all data before seeding
+    dynamicSeedingStartStep: SeedStep.Movies // Which step to start from for dynamic seeding
 };
 
 async function main() {

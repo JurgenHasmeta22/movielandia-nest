@@ -1,9 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { faker } from "@faker-js/faker";
 import { generateForumDataMinimal } from "./forumSeedMinimal";
 import { generateForumTagData } from "./forumTagSeed";
 
-const prisma = new PrismaClient();
+const dbPath = process.env.DATABASE_URL || "file:./prisma/database/movielandia24.db";
+const adapter = new PrismaLibSql({ url: dbPath });
+const prisma = new PrismaClient({
+    adapter,
+    log: ["query", "info", "warn", "error"],
+});
 
 // #region "Helper Functions"
 function getRandomRating(): number {

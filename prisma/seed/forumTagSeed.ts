@@ -1,7 +1,13 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { forumTags } from "./data/forumTagData";
 
-const prisma = new PrismaClient();
+const dbPath = process.env.DATABASE_URL || "file:./prisma/database/movielandia24.db";
+const adapter = new PrismaLibSql({ url: dbPath });
+const prisma = new PrismaClient({
+    adapter,
+    log: ["query", "info", "warn", "error"],
+});
 
 export async function generateForumTagData(): Promise<void> {
     console.log("Generating forum tag data...");
