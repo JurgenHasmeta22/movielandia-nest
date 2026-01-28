@@ -84,7 +84,12 @@ export class ActorService {
         return ActorMapper.toDtoWithDetails(actor, ratingsInfo[actor.id], bookmarkInfo, reviewInfo);
     }
 
-    async search(fullname: string, userId?: number, page: number = 1, perPage: number = 12): Promise<ActorListResponseDto> {
+    async search(
+        fullname: string,
+        userId?: number,
+        page: number = 1,
+        perPage: number = 12,
+    ): Promise<ActorListResponseDto> {
         const skip = (page - 1) * perPage;
 
         const actors = await this.prisma.actor.findMany({
@@ -98,9 +103,7 @@ export class ActorService {
 
         const actorsWithDetails = await Promise.all(
             actors.map(async (actor) => {
-                const bookmarkInfo = userId
-                    ? await this.getBookmarkStatus(actor.id, userId)
-                    : { isBookmarked: false };
+                const bookmarkInfo = userId ? await this.getBookmarkStatus(actor.id, userId) : { isBookmarked: false };
                 return ActorMapper.toDtoWithDetails(actor, ratingsInfo[actor.id], bookmarkInfo);
             }),
         );

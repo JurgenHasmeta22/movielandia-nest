@@ -26,7 +26,9 @@ export class SeasonParser {
             const maxRating = parseFloat(query.maxRating as any);
 
             if (minRating < 0 || maxRating > 10 || minRating > maxRating) {
-                throw new BadRequestException("Rating must be between 0 and 10, and minRating must be less than maxRating");
+                throw new BadRequestException(
+                    "Rating must be between 0 and 10, and minRating must be less than maxRating",
+                );
             }
 
             filters.ratingImdb = {

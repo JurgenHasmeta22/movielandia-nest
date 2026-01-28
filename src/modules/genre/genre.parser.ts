@@ -8,13 +8,7 @@ export class GenreParser {
         skip: number;
         take: number;
     } {
-        const {
-            sortBy,
-            ascOrDesc = SortOrder.ASC,
-            perPage = 20,
-            page = 1,
-            name,
-        } = query;
+        const { sortBy, ascOrDesc = SortOrder.ASC, perPage = 20, page = 1, name } = query;
 
         const filters: Prisma.GenreWhereInput = {};
         const orderByObject: Prisma.GenreOrderByWithRelationInput = {};

@@ -71,9 +71,7 @@ export class GenreService {
 
         const genresWithDetails = await Promise.all(
             genres.map(async (genre) => {
-                const bookmarkInfo = userId
-                    ? await this.getBookmarkStatus(genre.id, userId)
-                    : { isBookmarked: false };
+                const bookmarkInfo = userId ? await this.getBookmarkStatus(genre.id, userId) : { isBookmarked: false };
                 return GenreMapper.toDtoWithDetails(genre, bookmarkInfo);
             }),
         );

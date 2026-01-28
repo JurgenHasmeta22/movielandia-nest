@@ -104,7 +104,10 @@ export class EpisodeService {
                 }),
             );
 
-            return EpisodeMapper.toListResponseDto({ episodes: episodesWithDetails, count: episodesWithDetails.length });
+            return EpisodeMapper.toListResponseDto({
+                episodes: episodesWithDetails,
+                count: episodesWithDetails.length,
+            });
         } catch (error) {
             throw error;
         }

@@ -8,14 +8,7 @@ export class CrewParser {
         skip: number;
         take: number;
     } {
-        const {
-            sortBy,
-            ascOrDesc = SortOrder.ASC,
-            perPage = 12,
-            page = 1,
-            fullname,
-            role,
-        } = query;
+        const { sortBy, ascOrDesc = SortOrder.ASC, perPage = 12, page = 1, fullname, role } = query;
 
         const filters: Prisma.CrewWhereInput = {};
         const orderByObject: Prisma.CrewOrderByWithRelationInput = {};

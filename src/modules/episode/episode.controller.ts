@@ -33,7 +33,11 @@ export class EpisodeController {
 
     @Get()
     @ApiOperation({ summary: "Get all episodes with filters and pagination" })
-    @ApiResponse({ status: HttpStatus.OK, description: "Episodes retrieved successfully", type: EpisodeListResponseDto })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: "Episodes retrieved successfully",
+        type: EpisodeListResponseDto,
+    })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
     async findAll(
         @Query(new ValidationPipe({ transform: true })) query: EpisodeQueryDto,

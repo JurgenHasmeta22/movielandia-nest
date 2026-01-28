@@ -28,9 +28,7 @@ export class CrewService {
 
             const crewWithDetails = await Promise.all(
                 crew.map(async (c) => {
-                    const bookmarkInfo = userId
-                        ? await this.getBookmarkStatus(c.id, userId)
-                        : { isBookmarked: false };
+                    const bookmarkInfo = userId ? await this.getBookmarkStatus(c.id, userId) : { isBookmarked: false };
                     return CrewMapper.toDtoWithDetails(c, ratingsInfo[c.id], bookmarkInfo);
                 }),
             );
@@ -84,7 +82,12 @@ export class CrewService {
         return CrewMapper.toDtoWithDetails(crew, ratingsInfo[crew.id], bookmarkInfo, reviewInfo);
     }
 
-    async search(fullname: string, userId?: number, page: number = 1, perPage: number = 12): Promise<CrewListResponseDto> {
+    async search(
+        fullname: string,
+        userId?: number,
+        page: number = 1,
+        perPage: number = 12,
+    ): Promise<CrewListResponseDto> {
         const skip = (page - 1) * perPage;
 
         const crew = await this.prisma.crew.findMany({
@@ -98,9 +101,7 @@ export class CrewService {
 
         const crewWithDetails = await Promise.all(
             crew.map(async (c) => {
-                const bookmarkInfo = userId
-                    ? await this.getBookmarkStatus(c.id, userId)
-                    : { isBookmarked: false };
+                const bookmarkInfo = userId ? await this.getBookmarkStatus(c.id, userId) : { isBookmarked: false };
                 return CrewMapper.toDtoWithDetails(c, ratingsInfo[c.id], bookmarkInfo);
             }),
         );

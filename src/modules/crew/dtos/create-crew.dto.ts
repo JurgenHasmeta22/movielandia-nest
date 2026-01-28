@@ -1,12 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import {
-    IsNotEmpty,
-    IsString,
-    MaxLength,
-    MinLength,
-    IsUrl,
-    Validate,
-} from "class-validator";
+import { IsNotEmpty, IsString, MaxLength, MinLength, IsUrl, Validate } from "class-validator";
 import { validateImageUrl } from "../../../utils/validation.util";
 
 export class CreateCrewDto {

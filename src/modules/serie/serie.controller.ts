@@ -79,69 +79,6 @@ export class SerieController {
         }
     }
 
-    @Get("genre/:genreId")
-    @ApiOperation({ summary: "Get series by genre" })
-    @ApiResponse({
-        status: HttpStatus.OK,
-        description: "Series by genre retrieved successfully",
-        type: SerieListResponseDto,
-    })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
-    async findByGenre(
-        @Param("genreId", ParseIntPipe) genreId: number,
-        @Query("page", ParseIntPipe) page: number = 1,
-        @Query("perPage", ParseIntPipe) perPage: number = 12,
-        @CurrentUser() user?: User,
-    ): Promise<SerieListResponseDto> {
-        try {
-            return await this.serieService.findByGenre(genreId, user?.id, page, perPage);
-        } catch (error) {
-            throw new ValidationError("Failed to fetch series by genre. Please check your query parameters.");
-        }
-    }
-
-    @Get("cast/:actorId")
-    @ApiOperation({ summary: "Get series by cast member" })
-    @ApiResponse({
-        status: HttpStatus.OK,
-        description: "Series by cast member retrieved successfully",
-        type: SerieListResponseDto,
-    })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
-    async findByCast(
-        @Param("actorId", ParseIntPipe) actorId: number,
-        @Query("page", ParseIntPipe) page: number = 1,
-        @Query("perPage", ParseIntPipe) perPage: number = 12,
-        @CurrentUser() user?: User,
-    ): Promise<SerieListResponseDto> {
-        try {
-            return await this.serieService.findByCast(actorId, user?.id, page, perPage);
-        } catch (error) {
-            throw new ValidationError("Failed to fetch series by cast. Please check your query parameters.");
-        }
-    }
-
-    @Get("crew/:crewId")
-    @ApiOperation({ summary: "Get series by crew member" })
-    @ApiResponse({
-        status: HttpStatus.OK,
-        description: "Series by crew member retrieved successfully",
-        type: SerieListResponseDto,
-    })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
-    async findByCrew(
-        @Param("crewId", ParseIntPipe) crewId: number,
-        @Query("page", ParseIntPipe) page: number = 1,
-        @Query("perPage", ParseIntPipe) perPage: number = 12,
-        @CurrentUser() user?: User,
-    ): Promise<SerieListResponseDto> {
-        try {
-            return await this.serieService.findByCrew(crewId, user?.id, page, perPage);
-        } catch (error) {
-            throw new ValidationError("Failed to fetch series by crew. Please check your query parameters.");
-        }
-    }
-
     @Get("count")
     @ApiOperation({ summary: "Get total count of series" })
     @ApiResponse({ status: HttpStatus.OK, description: "Series count retrieved successfully", type: Number })

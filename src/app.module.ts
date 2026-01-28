@@ -9,6 +9,10 @@ import { EpisodeModule } from "./modules/episode/episode.module";
 import { GenreModule } from "./modules/genre/genre.module";
 import { ActorModule } from "./modules/actor/actor.module";
 import { CrewModule } from "./modules/crew/crew.module";
+import { ForumModule } from "./modules/forum/forum.module";
+import { ListModule } from "./modules/list/list.module";
+import { ReviewModule } from "./modules/review/review.module";
+import { UserModule } from "./modules/user/user.module";
 import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "./auth/auth.module";
 
@@ -24,6 +28,10 @@ import { AuthModule } from "./auth/auth.module";
         GenreModule,
         ActorModule,
         CrewModule,
+        ForumModule,
+        ListModule,
+        ReviewModule,
+        UserModule,
         AuthModule,
     ],
     controllers: [AppController],

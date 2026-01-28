@@ -8,13 +8,7 @@ export class ActorParser {
         skip: number;
         take: number;
     } {
-        const {
-            sortBy,
-            ascOrDesc = SortOrder.ASC,
-            perPage = 12,
-            page = 1,
-            fullname,
-        } = query;
+        const { sortBy, ascOrDesc = SortOrder.ASC, perPage = 12, page = 1, fullname } = query;
 
         const filters: Prisma.ActorWhereInput = {};
         const orderByObject: Prisma.ActorOrderByWithRelationInput = {};

@@ -34,7 +34,11 @@ export class CrewController {
 
     @Get()
     @ApiOperation({ summary: "Get all crew members with filters and pagination" })
-    @ApiResponse({ status: HttpStatus.OK, description: "Crew members retrieved successfully", type: CrewListResponseDto })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: "Crew members retrieved successfully",
+        type: CrewListResponseDto,
+    })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
     async findAll(
         @Query(new ValidationPipe({ transform: true })) query: CrewQueryDto,
@@ -105,10 +109,7 @@ export class CrewController {
     @ApiResponse({ status: HttpStatus.OK, description: "Crew member updated successfully", type: CrewDetailsDto })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Crew member not found" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid input" })
-    async update(
-        @Param("id", ParseIntPipe) id: number,
-        @Body() updateCrewDto: UpdateCrewDto,
-    ): Promise<CrewDetailsDto> {
+    async update(@Param("id", ParseIntPipe) id: number, @Body() updateCrewDto: UpdateCrewDto): Promise<CrewDetailsDto> {
         return await this.crewService.update(id, updateCrewDto);
     }
 
