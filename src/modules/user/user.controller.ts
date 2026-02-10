@@ -29,6 +29,9 @@ import {
     SendMessageDto,
     MessagesListResponseDto,
     UserProfileDto,
+    AddReviewDto,
+    UpdateReviewDto,
+    RemoveReviewDto,
 } from "./dtos/user.dto";
 import { CurrentUser } from "../../auth/decorators/current-user.decorator";
 import { OptionalAuthGuard } from "../../auth/guards/optional-auth.guard";
@@ -194,7 +197,7 @@ export class UserController {
     @ApiBearerAuth()
     @ApiOperation({ summary: "Add review for item" })
     @ApiResponse({ status: HttpStatus.CREATED, description: "Review added successfully" })
-    async addReview(@CurrentUser() user: User, @Body() dto: any): Promise<any> {
+    async addReview(@CurrentUser() user: User, @Body() dto: AddReviewDto): Promise<any> {
         return this.userService.addReview(user.id, dto.itemId, dto.itemType, dto.content, dto.rating);
     }
 
@@ -206,7 +209,7 @@ export class UserController {
     async updateReview(
         @CurrentUser() user: User,
         @Param("itemId", ParseIntPipe) itemId: number,
-        @Body() dto: any,
+        @Body() dto: UpdateReviewDto & { itemType: string },
     ): Promise<any> {
         return this.userService.updateReview(user.id, itemId, dto.itemType, dto.content, dto.rating);
     }
@@ -220,7 +223,7 @@ export class UserController {
     async removeReview(
         @CurrentUser() user: User,
         @Param("itemId", ParseIntPipe) itemId: number,
-        @Body() dto: any,
+        @Body() dto: RemoveReviewDto,
     ): Promise<void> {
         await this.userService.removeReview(user.id, itemId, dto.itemType);
     }
