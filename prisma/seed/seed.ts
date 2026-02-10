@@ -10,6 +10,7 @@ import { actors } from "./data/actors";
 import { crew } from "./data/crew";
 import { genres } from "./data/genres";
 import { users } from "./data/users";
+import * as bcrypt from "bcrypt";
 // Import relationship data from relationships.ts
 import {
     movieGenres,
@@ -137,8 +138,17 @@ async function baseSeeding() {
     console.log("Starting base seeding...");
 
     for (const user of users) {
-        // @ts-ignore - Ignore TypeScript error for password field
-        await prisma.user.create({ data: user });
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        await prisma.user.create({ 
+            data: {
+                userName: user.userName,
+                email: user.email,
+                password: hashedPassword,
+                role: user.role as any,
+                bio: user.bio,
+                active: user.active
+            }
+        });
     }
 
     // Create main entities

@@ -26,7 +26,7 @@ export class AuthController {
 
     @Post("signin")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Login with email and password" })
+    @ApiOperation({ summary: "Login with email or username and password" })
     @ApiResponse({ status: HttpStatus.OK, description: "Login successful", type: TokenResponse })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: "Invalid credentials" })
     signin(@Body() signInDto: SignInDto) {

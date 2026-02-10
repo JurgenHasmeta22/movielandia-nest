@@ -33,15 +33,14 @@ export class SignUpDto {
 
 export class SignInDto {
     @ApiProperty({
-        example: "john.doe@example.com",
-        description: "Registered email address",
+        example: "test1@email.com",
+        description: "Email address or username",
     })
     @IsString()
-    @IsEmail()
-    email: string;
+    emailOrUsername: string;
 
     @ApiProperty({
-        example: "Test123!@#",
+        example: "Test2222%",
         description: "Your password",
     })
     @IsString()

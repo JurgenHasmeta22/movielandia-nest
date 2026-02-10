@@ -59,13 +59,13 @@ export class AuthService {
     }
 
     async signIn(signInDto: SignInDto) {
-        const { email, password } = signInDto;
+        const { emailOrUsername, password } = signInDto;
 
-        if (!isValidEmail(email)) {
-            throw new UnauthorizedException("Invalid email format");
-        }
+        const isEmail = isValidEmail(emailOrUsername);
+        const user = await this.prisma.user.findFirst({
+            where: isEmail ? { email: emailOrUsername } : { userName: emailOrUsername },
+        });
 
-        const user = await this.prisma.user.findUnique({ where: { email } });
         if (!user) {
             throw new UnauthorizedException("Invalid credentials");
         }
