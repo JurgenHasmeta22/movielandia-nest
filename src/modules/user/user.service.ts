@@ -420,6 +420,25 @@ export class UserService {
         }
     }
 
+    private convertReviewTypeToFavoriteType(itemType: string): FavoriteType {
+        switch (itemType) {
+            case "movie":
+                return FavoriteType.MOVIES;
+            case "serie":
+                return FavoriteType.SERIES;
+            case "season":
+                return FavoriteType.SEASONS;
+            case "episode":
+                return FavoriteType.EPISODES;
+            case "actor":
+                return FavoriteType.ACTORS;
+            case "crew":
+                return FavoriteType.CREW;
+            default:
+                throw new BadRequestException(`Invalid item type: ${itemType}`);
+        }
+    }
+
     private async checkFavoriteExists(userId: number, itemId: number, type: FavoriteType): Promise<boolean> {
         switch (type) {
             case FavoriteType.MOVIES:
@@ -653,7 +672,8 @@ export class UserService {
     }
 
     async addReview(userId: number, itemId: number, itemType: string, content: string, rating: number): Promise<any> {
-        await this.validateItemExists(itemId, itemType as FavoriteType);
+        const favoriteType = this.convertReviewTypeToFavoriteType(itemType);
+        await this.validateItemExists(itemId, favoriteType);
 
         const existingReview = await this.checkReviewExists(userId, itemId, itemType);
         if (existingReview) {
