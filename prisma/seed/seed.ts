@@ -225,7 +225,7 @@ async function baseSeeding() {
 // #endregion
 
 const config = {
-    useDynamicSeeding: true, // Set to false to use base seeding instead
+    useDynamicSeeding: false, // Set to false to use base seeding instead
     deleteBeforeSeeding: true, // Set to true to delete all data before seeding
     dynamicSeedingStartStep: SeedStep.Movies // Which step to start from for dynamic seeding
 };
