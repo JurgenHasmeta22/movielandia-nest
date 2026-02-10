@@ -123,7 +123,7 @@ export class UserService {
 
     async getFavorites(
         userId: number,
-        type: FavoriteType,
+        type?: FavoriteType,
         page: number = 1,
         search: string = "",
     ): Promise<FavoritesListResponseDto> {
@@ -540,11 +540,51 @@ export class UserService {
 
     private async getFavoritesQuery(
         userId: number,
-        type: FavoriteType,
+        type: FavoriteType | undefined,
         skip: number,
         take: number,
         search: string = "",
     ): Promise<any[]> {
+        if (!type) {
+            const [movies, series, actors, crew, seasons, episodes] = await Promise.all([
+                this.prisma.userMovieFavorite.findMany({
+                    where: { userId, movie: { title: { contains: search } } },
+                    include: { movie: true },
+                    orderBy: { id: "desc" },
+                }),
+                this.prisma.userSerieFavorite.findMany({
+                    where: { userId, serie: { title: { contains: search } } },
+                    include: { serie: true },
+                    orderBy: { id: "desc" },
+                }),
+                this.prisma.userActorFavorite.findMany({
+                    where: { userId, actor: { fullname: { contains: search } } },
+                    include: { actor: true },
+                    orderBy: { id: "desc" },
+                }),
+                this.prisma.userCrewFavorite.findMany({
+                    where: { userId, crew: { fullname: { contains: search } } },
+                    include: { crew: true },
+                    orderBy: { id: "desc" },
+                }),
+                this.prisma.userSeasonFavorite.findMany({
+                    where: { userId },
+                    include: { season: true },
+                    orderBy: { id: "desc" },
+                }),
+                this.prisma.userEpisodeFavorite.findMany({
+                    where: { userId },
+                    include: { episode: true },
+                    orderBy: { id: "desc" },
+                }),
+            ]);
+            
+            const allFavorites = [...movies, ...series, ...actors, ...crew, ...seasons, ...episodes];
+            allFavorites.sort((a, b) => b.id - a.id);
+            
+            return allFavorites.slice(skip, skip + take);
+        }
+
         switch (type) {
             case FavoriteType.MOVIES:
                 return this.prisma.userMovieFavorite.findMany({

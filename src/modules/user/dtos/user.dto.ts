@@ -80,8 +80,9 @@ export class RemoveFavoriteDto {
 }
 
 export class GetFavoritesQueryDto {
+    @IsOptional()
     @IsEnum(FavoriteType)
-    type: FavoriteType;
+    type?: FavoriteType;
 
     @IsOptional()
     @Type(() => Number)
