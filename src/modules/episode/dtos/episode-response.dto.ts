@@ -101,6 +101,13 @@ export class EpisodeDetailsDto {
         required: false,
     })
     isReviewed?: boolean;
+
+    @ApiProperty({
+        description: "List of reviews for this episode",
+        isArray: true,
+        required: false,
+    })
+    reviews?: any[];
 }
 
 export class EpisodeListResponseDto {

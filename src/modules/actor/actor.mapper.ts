@@ -16,7 +16,7 @@ export class ActorMapper {
     }
 
     static toDtoWithDetails(
-        actor: Actor,
+        actor: any,
         ratingInfo?: IActorRatingInfo,
         bookmarkInfo?: { isBookmarked: boolean },
         reviewInfo?: { isReviewed: boolean },
@@ -32,6 +32,21 @@ export class ActorMapper {
                 : undefined,
             isBookmarked: bookmarkInfo?.isBookmarked || false,
             isReviewed: reviewInfo?.isReviewed || false,
+            reviews: actor.reviews ? actor.reviews.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: {
+                    id: review.user.id,
+                    userName: review.user.userName,
+                    avatar: review.user.avatar,
+                },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })) : undefined,
         };
     }
 

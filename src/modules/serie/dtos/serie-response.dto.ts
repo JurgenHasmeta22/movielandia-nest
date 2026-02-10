@@ -87,6 +87,13 @@ export class SerieDetailsDto {
         description: "Whether the current user has reviewed this serie",
     })
     isReviewed?: boolean;
+
+    @ApiProperty({
+        description: "List of reviews for this serie",
+        isArray: true,
+        required: false,
+    })
+    reviews?: any[];
 }
 
 export class SerieListResponseDto {

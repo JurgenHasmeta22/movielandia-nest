@@ -95,6 +95,13 @@ export class SeasonDetailsDto {
         required: false,
     })
     isReviewed?: boolean;
+
+    @ApiProperty({
+        description: "List of reviews for this season",
+        isArray: true,
+        required: false,
+    })
+    reviews?: any[];
 }
 
 export class SeasonListResponseDto {

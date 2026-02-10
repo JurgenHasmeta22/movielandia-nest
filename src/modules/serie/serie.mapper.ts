@@ -18,7 +18,7 @@ export class SerieMapper {
     }
 
     static toDtoWithDetails(
-        serie: Serie,
+        serie: any,
         ratingInfo?: ISerieRatingInfo,
         bookmarkInfo?: { isBookmarked: boolean },
         reviewInfo?: { isReviewed: boolean },
@@ -34,6 +34,21 @@ export class SerieMapper {
                 : undefined,
             isBookmarked: bookmarkInfo?.isBookmarked || false,
             isReviewed: reviewInfo?.isReviewed || false,
+            reviews: serie.reviews ? serie.reviews.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: {
+                    id: review.user.id,
+                    userName: review.user.userName,
+                    avatar: review.user.avatar,
+                },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })) : undefined,
         };
     }
 

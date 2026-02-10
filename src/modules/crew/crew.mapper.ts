@@ -17,7 +17,7 @@ export class CrewMapper {
     }
 
     static toDtoWithDetails(
-        crew: Crew,
+        crew: any,
         ratingInfo?: ICrewRatingInfo,
         bookmarkInfo?: { isBookmarked: boolean },
         reviewInfo?: { isReviewed: boolean },
@@ -33,6 +33,21 @@ export class CrewMapper {
                 : undefined,
             isBookmarked: bookmarkInfo?.isBookmarked || false,
             isReviewed: reviewInfo?.isReviewed || false,
+            reviews: crew.reviews ? crew.reviews.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: {
+                    id: review.user.id,
+                    userName: review.user.userName,
+                    avatar: review.user.avatar,
+                },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })) : undefined,
         };
     }
 

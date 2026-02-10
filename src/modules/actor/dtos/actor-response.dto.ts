@@ -72,6 +72,13 @@ export class ActorDetailsDto {
         description: "Whether the current user has reviewed this actor",
     })
     isReviewed?: boolean;
+
+    @ApiProperty({
+        description: "List of reviews for this actor",
+        isArray: true,
+        required: false,
+    })
+    reviews?: any[];
 }
 
 export class ActorListResponseDto {

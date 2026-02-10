@@ -78,6 +78,13 @@ export class CrewDetailsDto {
         description: "Whether the current user has reviewed this crew member",
     })
     isReviewed?: boolean;
+
+    @ApiProperty({
+        description: "List of reviews for this crew member",
+        isArray: true,
+        required: false,
+    })
+    reviews?: any[];
 }
 
 export class CrewListResponseDto {

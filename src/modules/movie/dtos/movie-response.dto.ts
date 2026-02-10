@@ -93,6 +93,13 @@ export class MovieDetailsDto {
         description: "Whether the current user has reviewed this movie",
     })
     isReviewed?: boolean;
+
+    @ApiProperty({
+        description: "List of reviews for this movie",
+        isArray: true,
+        required: false,
+    })
+    reviews?: any[];
 }
 
 export class MovieListResponseDto {
