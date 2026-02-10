@@ -192,6 +192,19 @@ export class UserController {
         await this.userService.deleteMessage(messageId, user.id);
     }
 
+    @Get("reviews/list")
+    @UseGuards(AuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "Get user reviews" })
+    @ApiResponse({ status: HttpStatus.OK, description: "Reviews retrieved successfully" })
+    async getReviews(
+        @CurrentUser() user: User,
+        @Query("page") page: number = 1,
+        @Query("itemType") itemType?: string,
+    ): Promise<any> {
+        return this.userService.getUserReviews(user.id, Number(page) || 1, itemType);
+    }
+
     @Post("reviews")
     @UseGuards(AuthGuard)
     @ApiBearerAuth()

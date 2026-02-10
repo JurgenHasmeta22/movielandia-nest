@@ -113,6 +113,36 @@ export class EpisodeService {
         }
     }
 
+    async search(title: string, userId?: number, page: number = 1, perPage: number = 12): Promise<EpisodeListResponseDto> {
+        const skip = (page - 1) * perPage;
+
+        const episodes = await this.prisma.episode.findMany({
+            where: { title: { contains: title.toLowerCase() } },
+            orderBy: { title: "asc" },
+            skip,
+            take: perPage,
+        });
+
+        const episodeIds = episodes.map((episode) => episode.id);
+        const ratingsInfo = await this.getEpisodeRatings(episodeIds);
+
+        const episodesWithDetails = await Promise.all(
+            episodes.map(async (episode) => {
+                const bookmarkInfo = userId
+                    ? await this.getBookmarkStatus(episode.id, userId)
+                    : { isBookmarked: false };
+                const reviewInfo = userId ? await this.getReviewStatus(episode.id, userId) : { isReviewed: false };
+                return EpisodeMapper.toDtoWithDetails(episode, ratingsInfo[episode.id], bookmarkInfo, reviewInfo);
+            }),
+        );
+
+        const count = await this.prisma.episode.count({
+            where: { title: { contains: title.toLowerCase() } },
+        });
+
+        return EpisodeMapper.toListResponseDto({ episodes: episodesWithDetails, count });
+    }
+
     async create(createEpisodeDto: CreateEpisodeDto): Promise<EpisodeDetailsDto> {
         const episode = await this.prisma.episode.create({
             data: {

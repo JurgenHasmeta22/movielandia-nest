@@ -50,6 +50,27 @@ export class EpisodeController {
         }
     }
 
+    @Get("search")
+    @ApiOperation({ summary: "Search episodes by title" })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: "Episodes search results retrieved successfully",
+        type: EpisodeListResponseDto,
+    })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
+    async search(
+        @Query("title") title: string,
+        @Query("page") page: number = 1,
+        @Query("perPage") perPage: number = 12,
+        @CurrentUser() user?: User,
+    ): Promise<EpisodeListResponseDto> {
+        try {
+            return await this.episodeService.search(title, user?.id, Number(page), Number(perPage));
+        } catch (error) {
+            throw new ValidationError("Failed to search episodes. Please check your query parameters.");
+        }
+    }
+
     @Get("season/:seasonId")
     @ApiOperation({ summary: "Get all episodes for a specific season" })
     @ApiResponse({
