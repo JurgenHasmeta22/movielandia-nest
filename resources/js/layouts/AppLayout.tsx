@@ -29,6 +29,9 @@ interface AppLayoutProps {
 export default function AppLayout({ children, title }: AppLayoutProps) {
     const { auth, flash } = usePage<SharedProps>().props;
     const user = auth?.user;
+    const avatarSrc = user?.avatar
+        ? (user.avatar.startsWith('http') ? user.avatar : `/images/users/${user.avatar}`)
+        : null;
 
     return (
         <>
@@ -57,22 +60,59 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                             <div className="flex items-center gap-3">
                                 <HeaderSearch />
                                 {user ? (
-                                    <>
-                                        <Link href="/users/me" className="text-sm text-gray-300 hover:text-white transition-colors">
-                                            {user.userName}
-                                        </Link>
-                                        <Link href="/lists" className="text-sm text-gray-300 hover:text-white transition-colors">
-                                            My Lists
-                                        </Link>
-                                        <form action="/logout" method="POST">
-                                            <button
-                                                type="submit"
-                                                className="text-sm bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg transition-colors"
-                                            >
-                                                Sign Out
-                                            </button>
-                                        </form>
-                                    </>
+                                    <details className="relative group">
+                                        <summary className="list-none flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-800/90 px-2 py-1.5 cursor-pointer hover:border-gray-600 transition-colors">
+                                            {avatarSrc ? (
+                                                <img
+                                                    src={avatarSrc}
+                                                    alt={user.userName}
+                                                    className="w-7 h-7 rounded-full object-cover"
+                                                    onError={(e) => {
+                                                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                                    }}
+                                                />
+                                            ) : (
+                                                <span className="w-7 h-7 rounded-full bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 text-xs font-semibold inline-flex items-center justify-center">
+                                                    {user.userName.slice(0, 1).toUpperCase()}
+                                                </span>
+                                            )}
+                                            <span className="text-sm text-gray-200 hidden sm:inline max-w-28 truncate">{user.userName}</span>
+                                        </summary>
+
+                                        <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-700 bg-gray-900 shadow-2xl p-2 z-50">
+                                            <div className="px-2 py-2 border-b border-gray-800">
+                                                <p className="text-sm font-medium text-white truncate">{user.userName}</p>
+                                                <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                                            </div>
+                                            <div className="py-1">
+                                                <Link href="/users/me" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+                                                    My Profile
+                                                </Link>
+                                                <Link href="/users/favorites/list" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+                                                    Favorites
+                                                </Link>
+                                                <Link href="/users/reviews/list" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+                                                    Reviews
+                                                </Link>
+                                                <Link href="/users/messages/inbox" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+                                                    Messages
+                                                </Link>
+                                                <Link href="/lists" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+                                                    My Lists
+                                                </Link>
+                                            </div>
+                                            <div className="pt-1 border-t border-gray-800">
+                                                <form action="/logout" method="POST">
+                                                    <button
+                                                        type="submit"
+                                                        className="w-full text-left px-2 py-2 text-sm text-red-300 hover:text-red-200 hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        Sign Out
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </details>
                                 ) : (
                                     <>
                                         <Link href="/login" className="text-sm text-gray-300 hover:text-white transition-colors">

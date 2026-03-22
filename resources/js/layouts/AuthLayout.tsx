@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
 interface SharedProps {
+    auth?: { user?: { id: number; userName: string } | null };
     flash: { type: string; message: string } | null;
     [key: string]: unknown;
 }
@@ -35,12 +36,44 @@ const POSTER_LABELS = [
 ];
 
 export default function AuthLayout({ children, title }: AuthLayoutProps) {
-    const { flash } = usePage<SharedProps>().props;
+    const { flash, auth } = usePage<SharedProps>().props;
+    const user = auth?.user;
 
     return (
         <>
             {title && <Head title={title} />}
-            <div className="min-h-screen flex bg-gray-950">
+            <div className="min-h-screen flex flex-col bg-gray-950">
+                <header className="h-16 border-b border-gray-800 bg-gray-950/90 backdrop-blur sticky top-0 z-30">
+                    <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+                        <Link href="/" className="text-xl font-bold text-yellow-400 hover:text-yellow-300 transition-colors">
+                            MovieLandia24
+                        </Link>
+                        <nav className="hidden md:flex items-center gap-5 text-sm">
+                            <Link href="/movies" className="text-gray-300 hover:text-white transition-colors">Movies</Link>
+                            <Link href="/series" className="text-gray-300 hover:text-white transition-colors">Series</Link>
+                            <Link href="/actors" className="text-gray-300 hover:text-white transition-colors">Actors</Link>
+                            <Link href="/crew" className="text-gray-300 hover:text-white transition-colors">Crew</Link>
+                        </nav>
+                        <div className="flex items-center gap-2">
+                            {user ? (
+                                <Link href="/users/me" className="text-sm text-gray-200 hover:text-white transition-colors">
+                                    {user.userName}
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link href="/login" className="text-sm text-gray-300 hover:text-white transition-colors">
+                                        Sign In
+                                    </Link>
+                                    <Link href="/register" className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition-colors">
+                                        Sign Up
+                                    </Link>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </header>
+
+                <div className="flex flex-1">
                 {/* ── Left: form panel ─────────────────────────────────────────── */}
                 <div className="relative z-10 flex flex-col w-full lg:w-[480px] xl:w-[520px] flex-shrink-0 bg-[#111827] shadow-2xl shadow-black/60">
                     {/* Top bar */}
@@ -115,6 +148,7 @@ export default function AuthLayout({ children, title }: AuthLayoutProps) {
                             ))}
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </>

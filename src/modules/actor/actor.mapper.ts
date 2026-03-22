@@ -32,6 +32,12 @@ export class ActorMapper {
                     title: c.movie.title,
                     photoSrc: c.movie.photoSrc ?? null,
                 })) ?? [],
+            series:
+                actor.starredSeries?.map((c: any) => ({
+                    id: c.serie.id,
+                    title: c.serie.title,
+                    photoSrc: c.serie.photoSrc ?? null,
+                })) ?? [],
             ratings: ratingInfo
                 ? {
                       averageRating: ratingInfo.averageRating,

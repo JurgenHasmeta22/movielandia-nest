@@ -1,20 +1,35 @@
-import { Link, useForm } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import AppLayout from "../../layouts/AppLayout";
 
 interface Message {
     id: number;
-    content: string;
+    text: string;
     createdAt: string;
-    sender?: { id: number; userName: string; avatar?: { photoSrc: string } | null };
-    receiver?: { id: number; userName: string; avatar?: { photoSrc: string } | null };
+    sender?: { id: number; userName: string; avatar?: string | null };
+    receiver?: { id: number; userName: string; avatar?: string | null };
+}
+
+interface MessagesPayload {
+    items: Message[];
+    total: number;
+    page: number;
+    perPage: number;
 }
 
 interface Props {
-    messages: Message[];
+    messages: MessagesPayload;
     box: "inbox" | "sent";
 }
 
 export default function UsersMessages({ messages, box }: Props) {
+    const items = messages?.items ?? [];
+
+    const resolveAvatar = (avatar?: string | null) => {
+        if (!avatar) return '/images/placeholder.jpg';
+        if (avatar.startsWith('http')) return avatar;
+        return `/images/users/${avatar}`;
+    };
+
     return (
         <AppLayout title="Messages">
             <div className="max-w-4xl mx-auto px-4 py-8">
@@ -36,18 +51,19 @@ export default function UsersMessages({ messages, box }: Props) {
                     </div>
                 </div>
 
-                {messages.length === 0 ? (
+                {items.length === 0 ? (
                     <p className="text-gray-400 text-center py-16">No messages in {box}.</p>
                 ) : (
                     <div className="space-y-3">
-                        {messages.map((msg) => {
+                        {items.map((msg) => {
                             const contact = box === "inbox" ? msg.sender : msg.receiver;
                             return (
                                 <div key={msg.id} className="flex items-start gap-4 p-4 bg-gray-800 rounded-lg">
                                     <img
-                                        src={contact?.avatar?.photoSrc || "/images/placeholder.jpg"}
+                                        src={resolveAvatar(contact?.avatar)}
                                         alt={contact?.userName || ""}
                                         className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
                                     />
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between mb-1">
@@ -56,7 +72,7 @@ export default function UsersMessages({ messages, box }: Props) {
                                                 {new Date(msg.createdAt).toLocaleDateString()}
                                             </p>
                                         </div>
-                                        <p className="text-gray-300 text-sm">{msg.content}</p>
+                                        <p className="text-gray-300 text-sm">{msg.text}</p>
                                     </div>
                                 </div>
                             );

@@ -9,21 +9,30 @@ interface ForumTopic {
     _count?: { posts: number };
 }
 
+interface TopicsPayload {
+    items: ForumTopic[];
+    total: number;
+    page: number;
+    perPage: number;
+}
+
 interface Props {
-    topics: ForumTopic[];
+    topics: TopicsPayload;
 }
 
 export default function UsersForumTopics({ topics }: Props) {
+    const items = topics?.items ?? [];
+
     return (
         <AppLayout title="My Forum Topics">
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <h1 className="text-3xl font-bold text-white mb-6">My Forum Topics</h1>
 
-                {topics.length === 0 ? (
+                {items.length === 0 ? (
                     <p className="text-gray-400 text-center py-16">No forum topics yet.</p>
                 ) : (
                     <div className="space-y-3">
-                        {topics.map((topic) => (
+                        {items.map((topic) => (
                             <Link
                                 key={topic.id}
                                 href={`/forum/topics/${topic.id}`}

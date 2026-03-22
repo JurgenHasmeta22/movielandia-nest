@@ -82,6 +82,9 @@ export class ActorDetailsDto {
     @ApiProperty({ description: "Movies this actor starred in", isArray: true, required: false })
     movies?: { id: number; title: string; photoSrc: string | null }[];
 
+    @ApiProperty({ description: "Series this actor starred in", isArray: true, required: false })
+    series?: { id: number; title: string; photoSrc: string | null }[];
+
     @ApiProperty({
         description: "List of reviews for this actor",
         isArray: true,
