@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    Query,
+    ParseIntPipe,
+    Req,
+    Res,
+    UseGuards,
+} from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { ForumService } from "./forum.service";
 import { CreateForumCategoryDto, UpdateForumCategoryDto } from "./dtos/forum-category.dto";
@@ -40,7 +53,12 @@ export class ForumController {
 
     @Put("categories/:id")
     @UseGuards(AuthGuard)
-    async updateCategory(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateForumCategoryDto, @Req() req: Request, @Res() res: Response) {
+    async updateCategory(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateForumCategoryDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.forumService.updateCategory(id, dto);
         (req.session as any).flash = { type: "success", message: "Category updated." };
         return res.redirect(303, `/forum/categories/${id}`);
@@ -77,7 +95,12 @@ export class ForumController {
 
     @Put("topics/:id")
     @UseGuards(AuthGuard)
-    async updateTopic(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateForumTopicDto, @Req() req: Request, @Res() res: Response) {
+    async updateTopic(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateForumTopicDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.forumService.updateTopic(id, dto);
         (req.session as any).flash = { type: "success", message: "Topic updated." };
         return res.redirect(303, `/forum/topics/${id}`);
@@ -103,7 +126,12 @@ export class ForumController {
 
     @Put("posts/:id")
     @UseGuards(AuthGuard)
-    async updatePost(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateForumPostDto, @Req() req: Request, @Res() res: Response) {
+    async updatePost(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateForumPostDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         const post = await this.forumService.updatePost(id, dto);
         (req.session as any).flash = { type: "success", message: "Post updated." };
         return res.redirect(303, `/forum/topics/${(post as any).topicId}`);
@@ -117,4 +145,3 @@ export class ForumController {
         return res.redirect(303, "/forum");
     }
 }
-

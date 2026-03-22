@@ -79,6 +79,15 @@ export class CrewDetailsDto {
     })
     isReviewed?: boolean;
 
+    @ApiProperty({ description: "Department / role label for display", required: false })
+    department?: string | null;
+
+    @ApiProperty({ description: "Movies this crew member worked on", isArray: true, required: false })
+    movieCredits?: { id: number; title: string; photoSrc: string | null }[];
+
+    @ApiProperty({ description: "Series this crew member worked on", isArray: true, required: false })
+    serieCredits?: { id: number; title: string; photoSrc: string | null }[];
+
     @ApiProperty({
         description: "List of reviews for this crew member",
         isArray: true,

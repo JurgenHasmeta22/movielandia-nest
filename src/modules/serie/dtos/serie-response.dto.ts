@@ -88,6 +88,18 @@ export class SerieDetailsDto {
     })
     isReviewed?: boolean;
 
+    @ApiProperty({ description: "Release year derived from dateAired", example: 2008, required: false })
+    releaseYear?: number | null;
+
+    @ApiProperty({ description: "Average user rating (flat convenience field)", example: 8.5, required: false })
+    averageRating?: number | null;
+
+    @ApiProperty({ description: "Genres associated with this serie", isArray: true, required: false })
+    genres?: { id: number; name: string }[];
+
+    @ApiProperty({ description: "Seasons of this serie", isArray: true, required: false })
+    seasons?: { id: number; title: string }[];
+
     @ApiProperty({
         description: "List of reviews for this serie",
         isArray: true,

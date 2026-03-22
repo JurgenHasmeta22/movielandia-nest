@@ -64,7 +64,7 @@ export class SerieService {
             include: {
                 genres: { select: { genre: true } },
                 cast: { include: { actor: true } },
-                crew: { include: { crew: true } },
+                seasons: { select: { id: true, title: true } },
                 reviews: {
                     include: {
                         user: true,

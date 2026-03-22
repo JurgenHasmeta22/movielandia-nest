@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    Query,
+    ParseIntPipe,
+    Req,
+    Res,
+    UseGuards,
+} from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { EpisodeService } from "./episode.service";
 import { CreateEpisodeDto } from "./dtos/create-episode.dto";
@@ -21,7 +34,12 @@ export class EpisodeController {
 
     @Get("search")
     @Inertia("Episodes/Index")
-    async search(@Query("title") title: string, @Query("page") page = 1, @Query("perPage") perPage = 12, @Req() req: Request) {
+    async search(
+        @Query("title") title: string,
+        @Query("page") page = 1,
+        @Query("perPage") perPage = 12,
+        @Req() req: Request,
+    ) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.episodeService.search(title, userId, Number(page), Number(perPage));
         return { episodes: data.episodes, count: data.count, searchQuery: title };
@@ -53,7 +71,12 @@ export class EpisodeController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    async update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateEpisodeDto, @Req() req: Request, @Res() res: Response) {
+    async update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateEpisodeDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.episodeService.update(id, dto);
         (req.session as any).flash = { type: "success", message: "Episode updated." };
         return res.redirect(303, `/episodes/${id}`);
@@ -67,4 +90,3 @@ export class EpisodeController {
         return res.redirect(303, "/episodes");
     }
 }
-

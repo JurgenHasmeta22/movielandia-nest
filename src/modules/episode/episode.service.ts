@@ -113,7 +113,12 @@ export class EpisodeService {
         }
     }
 
-    async search(title: string, userId?: number, page: number = 1, perPage: number = 12): Promise<EpisodeListResponseDto> {
+    async search(
+        title: string,
+        userId?: number,
+        page: number = 1,
+        perPage: number = 12,
+    ): Promise<EpisodeListResponseDto> {
         const skip = (page - 1) * perPage;
 
         const episodes = await this.prisma.episode.findMany({

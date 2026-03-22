@@ -24,6 +24,9 @@ export class ActorMapper {
         return {
             ...this.toDto(actor),
             description: actor.description ? truncateText(actor.description, 200) : undefined,
+            birthDate: actor.debut ?? null,
+            birthPlace: null,
+            movies: actor.starredMovies?.map((c: any) => ({ id: c.movie.id, title: c.movie.title, photoSrc: c.movie.photoSrc ?? null })) ?? [],
             ratings: ratingInfo
                 ? {
                       averageRating: ratingInfo.averageRating,
@@ -32,21 +35,24 @@ export class ActorMapper {
                 : undefined,
             isBookmarked: bookmarkInfo?.isBookmarked || false,
             isReviewed: reviewInfo?.isReviewed || false,
-            reviews: actor.reviews ? actor.reviews.map((review: any) => ({
-                id: review.id,
-                rating: review.rating,
-                content: review.content,
-                createdAt: review.createdAt,
-                updatedAt: review.updatedAt,
-                user: {
-                    id: review.user.id,
-                    userName: review.user.userName,
-                    avatar: review.user.avatar,
-                },
-                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
-                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
-                _count: review._count,
-            })) : undefined,
+            reviews: actor.reviews
+                ? actor.reviews.map((review: any) => ({
+                      id: review.id,
+                      rating: review.rating,
+                      content: review.content,
+                      createdAt: review.createdAt,
+                      updatedAt: review.updatedAt,
+                      user: {
+                          id: review.user.id,
+                          userName: review.user.userName,
+                          avatar: review.user.avatar,
+                      },
+                      isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                      isDownvoted:
+                          review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                      _count: review._count,
+                  }))
+                : undefined,
         };
     }
 

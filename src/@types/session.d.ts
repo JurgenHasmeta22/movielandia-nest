@@ -1,8 +1,8 @@
-import 'express-session';
+import "express-session";
 
-declare module 'express-session' {
+declare module "express-session" {
     interface SessionData {
         userId?: number;
-        flash?: { type: 'success' | 'error' | 'info'; message: string };
+        flash?: { type: "success" | "error" | "info"; message: string };
     }
 }

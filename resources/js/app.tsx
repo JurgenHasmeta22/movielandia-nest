@@ -16,8 +16,11 @@ void createInertiaApp({
 
     resolve: async (name) => {
         const page = pages[`./pages/${name}.tsx`];
+
         if (!page) throw new Error(`Page not found: ${name}`);
+
         const module = await page();
+        
         return module.default;
     },
 

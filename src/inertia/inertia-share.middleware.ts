@@ -23,12 +23,19 @@ export class InertiaShareMiddleware extends HandleInertiaRequests {
                 where: { id: userId },
                 select: { id: true, userName: true, email: true, avatar: { select: { photoSrc: true } } },
             });
+
             if (user) {
-                authUser = { id: user.id, userName: user.userName, email: user.email, avatar: user.avatar?.photoSrc ?? null };
+                authUser = {
+                    id: user.id,
+                    userName: user.userName,
+                    email: user.email,
+                    avatar: user.avatar?.photoSrc ?? null,
+                };
             }
         }
 
         const flash = (req.session as any)?.flash ?? null;
+
         if ((req.session as any)?.flash) {
             delete (req.session as any).flash;
         }

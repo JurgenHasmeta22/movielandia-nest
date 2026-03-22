@@ -12,4 +12,3 @@ import { OptionalAuthGuard } from "./guards/optional-auth.guard";
     exports: [AuthService, AuthGuard, OptionalAuthGuard],
 })
 export class AuthModule {}
-

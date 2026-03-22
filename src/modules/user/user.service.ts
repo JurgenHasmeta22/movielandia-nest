@@ -578,10 +578,10 @@ export class UserService {
                     orderBy: { id: "desc" },
                 }),
             ]);
-            
+
             const allFavorites = [...movies, ...series, ...actors, ...crew, ...seasons, ...episodes];
             allFavorites.sort((a, b) => b.id - a.id);
-            
+
             return allFavorites.slice(skip, skip + take);
         }
 
@@ -751,9 +751,7 @@ export class UserService {
         const perPage = 10;
         const skip = (page - 1) * perPage;
 
-        const reviewTypes = itemType
-            ? [itemType]
-            : ["movie", "serie", "season", "episode", "actor", "crew"];
+        const reviewTypes = itemType ? [itemType] : ["movie", "serie", "season", "episode", "actor", "crew"];
 
         const allReviews: any[] = [];
         let totalCount = 0;
@@ -794,7 +792,15 @@ export class UserService {
                     }),
                     this.prisma.movieReview.count({ where: { userId } }),
                 ]);
-                return { reviews: reviews.map((r) => ({ ...r, itemTitle: r.movie?.title, itemImage: r.movie?.photoSrcProd, itemId: r.movieId })), count };
+                return {
+                    reviews: reviews.map((r) => ({
+                        ...r,
+                        itemTitle: r.movie?.title,
+                        itemImage: r.movie?.photoSrcProd,
+                        itemId: r.movieId,
+                    })),
+                    count,
+                };
             }
             case "serie": {
                 const [reviews, count] = await Promise.all([
@@ -807,7 +813,15 @@ export class UserService {
                     }),
                     this.prisma.serieReview.count({ where: { userId } }),
                 ]);
-                return { reviews: reviews.map((r) => ({ ...r, itemTitle: r.serie?.title, itemImage: r.serie?.photoSrcProd, itemId: r.serieId })), count };
+                return {
+                    reviews: reviews.map((r) => ({
+                        ...r,
+                        itemTitle: r.serie?.title,
+                        itemImage: r.serie?.photoSrcProd,
+                        itemId: r.serieId,
+                    })),
+                    count,
+                };
             }
             case "season": {
                 const [reviews, count] = await Promise.all([
@@ -820,7 +834,15 @@ export class UserService {
                     }),
                     this.prisma.seasonReview.count({ where: { userId } }),
                 ]);
-                return { reviews: reviews.map((r) => ({ ...r, itemTitle: r.season?.title, itemImage: r.season?.photoSrcProd, itemId: r.seasonId })), count };
+                return {
+                    reviews: reviews.map((r) => ({
+                        ...r,
+                        itemTitle: r.season?.title,
+                        itemImage: r.season?.photoSrcProd,
+                        itemId: r.seasonId,
+                    })),
+                    count,
+                };
             }
             case "episode": {
                 const [reviews, count] = await Promise.all([
@@ -833,7 +855,15 @@ export class UserService {
                     }),
                     this.prisma.episodeReview.count({ where: { userId } }),
                 ]);
-                return { reviews: reviews.map((r) => ({ ...r, itemTitle: r.episode?.title, itemImage: r.episode?.photoSrcProd, itemId: r.episodeId })), count };
+                return {
+                    reviews: reviews.map((r) => ({
+                        ...r,
+                        itemTitle: r.episode?.title,
+                        itemImage: r.episode?.photoSrcProd,
+                        itemId: r.episodeId,
+                    })),
+                    count,
+                };
             }
             case "actor": {
                 const [reviews, count] = await Promise.all([
@@ -846,7 +876,15 @@ export class UserService {
                     }),
                     this.prisma.actorReview.count({ where: { userId } }),
                 ]);
-                return { reviews: reviews.map((r) => ({ ...r, itemTitle: r.actor?.fullname, itemImage: r.actor?.photoSrcProd, itemId: r.actorId })), count };
+                return {
+                    reviews: reviews.map((r) => ({
+                        ...r,
+                        itemTitle: r.actor?.fullname,
+                        itemImage: r.actor?.photoSrcProd,
+                        itemId: r.actorId,
+                    })),
+                    count,
+                };
             }
             case "crew": {
                 const [reviews, count] = await Promise.all([
@@ -859,7 +897,15 @@ export class UserService {
                     }),
                     this.prisma.crewReview.count({ where: { userId } }),
                 ]);
-                return { reviews: reviews.map((r) => ({ ...r, itemTitle: r.crew?.fullname, itemImage: r.crew?.photoSrcProd, itemId: r.crewId })), count };
+                return {
+                    reviews: reviews.map((r) => ({
+                        ...r,
+                        itemTitle: r.crew?.fullname,
+                        itemImage: r.crew?.photoSrcProd,
+                        itemId: r.crewId,
+                    })),
+                    count,
+                };
             }
             default:
                 return { reviews: [], count: 0 };

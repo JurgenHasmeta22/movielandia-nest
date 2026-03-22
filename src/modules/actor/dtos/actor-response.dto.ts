@@ -73,6 +73,15 @@ export class ActorDetailsDto {
     })
     isReviewed?: boolean;
 
+    @ApiProperty({ description: "Birth date (mapped from debut)", required: false })
+    birthDate?: string | null;
+
+    @ApiProperty({ description: "Birth place", required: false })
+    birthPlace?: string | null;
+
+    @ApiProperty({ description: "Movies this actor starred in", isArray: true, required: false })
+    movies?: { id: number; title: string; photoSrc: string | null }[];
+
     @ApiProperty({
         description: "List of reviews for this actor",
         isArray: true,

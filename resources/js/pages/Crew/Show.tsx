@@ -29,9 +29,10 @@ export default function CrewShow({ member }: Props) {
             <div className="max-w-6xl mx-auto px-4 py-8">
                 <div className="flex gap-8 mb-10">
                     <img
-                        src={member.photoSrc || "/images/placeholder.jpg"}
+                        src={member.photoSrc ? `/images/crew/${member.photoSrc}` : '/images/placeholder.jpg'}
                         alt={member.fullname}
                         className="w-48 h-64 rounded-xl shadow-lg object-cover flex-shrink-0"
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }}
                     />
                     <div className="flex-1">
                         <h1 className="text-4xl font-bold text-white mb-1">{member.fullname}</h1>
@@ -52,9 +53,10 @@ export default function CrewShow({ member }: Props) {
                                 <Link key={credit.id} href={`/movies/${credit.id}`} className="group">
                                     <div className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-indigo-500 transition">
                                         <img
-                                            src={credit.photoSrc || "/images/placeholder.jpg"}
+                                            src={credit.photoSrc ? `/images/movies/${credit.photoSrc}` : '/images/placeholder.jpg'}
                                             alt={credit.title}
                                             className="w-full aspect-[2/3] object-cover"
+                                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }}
                                         />
                                         <div className="p-2">
                                             <p className="text-white text-sm font-medium truncate">{credit.title}</p>
@@ -75,9 +77,10 @@ export default function CrewShow({ member }: Props) {
                                 <Link key={credit.id} href={`/series/${credit.id}`} className="group">
                                     <div className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-indigo-500 transition">
                                         <img
-                                            src={credit.photoSrc || "/images/placeholder.jpg"}
+                                            src={credit.photoSrc ? `/images/series/${credit.photoSrc}` : '/images/placeholder.jpg'}
                                             alt={credit.title}
                                             className="w-full aspect-[2/3] object-cover"
+                                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }}
                                         />
                                         <div className="p-2">
                                             <p className="text-white text-sm font-medium truncate">{credit.title}</p>

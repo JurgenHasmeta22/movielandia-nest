@@ -110,7 +110,12 @@ export class SeasonService {
         }
     }
 
-    async search(title: string, userId?: number, page: number = 1, perPage: number = 12): Promise<SeasonListResponseDto> {
+    async search(
+        title: string,
+        userId?: number,
+        page: number = 1,
+        perPage: number = 12,
+    ): Promise<SeasonListResponseDto> {
         const skip = (page - 1) * perPage;
 
         const seasons = await this.prisma.season.findMany({
@@ -125,9 +130,7 @@ export class SeasonService {
 
         const seasonsWithDetails = await Promise.all(
             seasons.map(async (season) => {
-                const bookmarkInfo = userId
-                    ? await this.getBookmarkStatus(season.id, userId)
-                    : { isBookmarked: false };
+                const bookmarkInfo = userId ? await this.getBookmarkStatus(season.id, userId) : { isBookmarked: false };
                 const reviewInfo = userId ? await this.getReviewStatus(season.id, userId) : { isReviewed: false };
                 return SeasonMapper.toDtoWithDetails(season, ratingsInfo[season.id], bookmarkInfo, reviewInfo);
             }),

@@ -20,6 +20,9 @@ export class GenreService {
                 orderBy: orderByObject,
                 skip,
                 take,
+                include: {
+                    _count: { select: { movies: true, series: true } },
+                },
             });
 
             const genresWithDetails = await Promise.all(
@@ -47,9 +50,40 @@ export class GenreService {
         }
     }
 
-    async findOne(id: number, userId?: number): Promise<GenreDetailsDto> {
+    async findOne(
+        id: number,
+        userId?: number,
+        moviesPage = 1,
+        seriesPage = 1,
+        perPage = 12,
+        sortBy = "title",
+        ascOrDesc: "asc" | "desc" = "asc",
+    ): Promise<GenreDetailsDto> {
+        const moviesSkip = (moviesPage - 1) * perPage;
+        const seriesSkip = (seriesPage - 1) * perPage;
+
+        const allowedSortMovies = ["title", "dateAired", "ratingImdb"];
+        const allowedSortSeries = ["title", "dateAired", "ratingImdb"];
+        const safeMovieSortBy = allowedSortMovies.includes(sortBy) ? sortBy : "title";
+        const safeSerieSortBy = allowedSortSeries.includes(sortBy) ? sortBy : "title";
+
         const genre = await this.prisma.genre.findFirst({
             where: { id },
+            include: {
+                movies: {
+                    include: { movie: true },
+                    take: perPage,
+                    skip: moviesSkip,
+                    orderBy: { movie: { [safeMovieSortBy]: ascOrDesc } },
+                },
+                series: {
+                    include: { serie: true },
+                    take: perPage,
+                    skip: seriesSkip,
+                    orderBy: { serie: { [safeSerieSortBy]: ascOrDesc } },
+                },
+                _count: { select: { movies: true, series: true } },
+            },
         });
 
         if (!genre) {
@@ -57,7 +91,22 @@ export class GenreService {
         }
 
         const bookmarkInfo = userId ? await this.getBookmarkStatus(id, userId) : { isBookmarked: false };
-        return GenreMapper.toDtoWithDetails(genre, bookmarkInfo);
+        const dto = GenreMapper.toDtoWithDetails(genre, bookmarkInfo);
+
+        dto.moviesPagination = {
+            total: genre._count.movies,
+            page: moviesPage,
+            totalPages: Math.ceil(genre._count.movies / perPage),
+            perPage,
+        };
+        dto.seriesPagination = {
+            total: genre._count.series,
+            page: seriesPage,
+            totalPages: Math.ceil(genre._count.series / perPage),
+            perPage,
+        };
+
+        return dto;
     }
 
     async search(name: string, userId?: number, page: number = 1, perPage: number = 20): Promise<GenreListResponseDto> {

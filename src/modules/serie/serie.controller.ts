@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    Query,
+    ParseIntPipe,
+    Req,
+    Res,
+    UseGuards,
+} from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { SerieService } from "./serie.service";
 import { CreateSerieDto } from "./dtos/create-serie.dto";
@@ -16,7 +29,18 @@ export class SerieController {
     async index(@Query() query: SerieQueryDto, @Req() req: Request) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.serieService.findAll(query, userId);
-        return { series: data.series, count: data.count, filters: query };
+        const page = query.page ?? 1;
+        const perPage = query.perPage ?? 12;
+        return {
+            series: data.series,
+            pagination: {
+                total: data.count,
+                page,
+                totalPages: Math.ceil(data.count / perPage),
+                perPage,
+            },
+            filters: query,
+        };
     }
 
     @Get("latest")
@@ -32,7 +56,19 @@ export class SerieController {
     async search(@Query("title") title: string, @Query() query: SerieQueryDto, @Req() req: Request) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.serieService.search(title, query, userId);
-        return { series: data.series, count: data.count, filters: query, searchQuery: title };
+        const page = query.page ?? 1;
+        const perPage = query.perPage ?? 12;
+        return {
+            series: data.series,
+            pagination: {
+                total: data.count,
+                page,
+                totalPages: Math.ceil(data.count / perPage),
+                perPage,
+            },
+            filters: query,
+            searchQuery: title,
+        };
     }
 
     @Get(":id")
@@ -53,7 +89,12 @@ export class SerieController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    async update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateSerieDto, @Req() req: Request, @Res() res: Response) {
+    async update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateSerieDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.serieService.update(id, dto);
         (req.session as any).flash = { type: "success", message: "Series updated successfully." };
         return res.redirect(303, `/series/${id}`);
@@ -67,4 +108,3 @@ export class SerieController {
         return res.redirect(303, "/series");
     }
 }
-

@@ -39,7 +39,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                         <div className="flex items-center justify-between h-16">
                             {/* Logo */}
                             <Link href="/" className="text-2xl font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
-                                🎬 Movielandia24
+                                Movielandia24
                             </Link>
 
                             {/* Primary nav */}
@@ -49,6 +49,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                                 <Link href="/genres" className="text-gray-300 hover:text-white transition-colors">Genres</Link>
                                 <Link href="/actors" className="text-gray-300 hover:text-white transition-colors">Actors</Link>
                                 <Link href="/forum" className="text-gray-300 hover:text-white transition-colors">Forum</Link>
+                                <Link href="/search" className="text-gray-300 hover:text-white transition-colors">Search</Link>
                             </div>
 
                             {/* Auth */}
@@ -105,9 +106,41 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                 </main>
 
                 {/* Footer */}
-                <footer className="bg-gray-900 border-t border-gray-800 py-8 mt-auto">
-                    <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
-                        © 2026 Movielandia24. Built with NestJS + Inertia.js + React.
+                <footer className="bg-gray-900 border-t border-gray-800 mt-auto">
+                    <div className="max-w-7xl mx-auto px-6 py-10">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                            <div>
+                                <p className="text-indigo-400 font-bold text-lg mb-3">Movielandia24</p>
+                                <p className="text-gray-500 text-sm">Your home for movies, series, ratings and community discussion.</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-300 font-semibold text-sm mb-3 uppercase tracking-wider">Browse</p>
+                                <ul className="space-y-2 text-sm">
+                                    <li><Link href="/movies" className="text-gray-500 hover:text-gray-300 transition-colors">Movies</Link></li>
+                                    <li><Link href="/series" className="text-gray-500 hover:text-gray-300 transition-colors">Series</Link></li>
+                                    <li><Link href="/genres" className="text-gray-500 hover:text-gray-300 transition-colors">Genres</Link></li>
+                                    <li><Link href="/actors" className="text-gray-500 hover:text-gray-300 transition-colors">Actors</Link></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p className="text-gray-300 font-semibold text-sm mb-3 uppercase tracking-wider">Community</p>
+                                <ul className="space-y-2 text-sm">
+                                    <li><Link href="/forum" className="text-gray-500 hover:text-gray-300 transition-colors">Forum</Link></li>
+                                    <li><Link href="/lists" className="text-gray-500 hover:text-gray-300 transition-colors">Lists</Link></li>
+                                    <li><Link href="/search" className="text-gray-500 hover:text-gray-300 transition-colors">Search</Link></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p className="text-gray-300 font-semibold text-sm mb-3 uppercase tracking-wider">Account</p>
+                                <ul className="space-y-2 text-sm">
+                                    <li><Link href="/login" className="text-gray-500 hover:text-gray-300 transition-colors">Sign In</Link></li>
+                                    <li><Link href="/register" className="text-gray-500 hover:text-gray-300 transition-colors">Sign Up</Link></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="border-t border-gray-800 pt-6 text-center text-xs text-gray-600">
+                            &copy; {new Date().getFullYear()} Movielandia24. All rights reserved.
+                        </div>
                     </div>
                 </footer>
             </div>

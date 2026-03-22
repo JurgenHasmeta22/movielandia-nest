@@ -5,6 +5,7 @@ import path from 'node:path';
 
 export default defineConfig(({ isSsrBuild }) => ({
     publicDir: false,
+    base: '/build/',
     plugins: [react(), tailwindcss()],
     resolve: {
         alias: {

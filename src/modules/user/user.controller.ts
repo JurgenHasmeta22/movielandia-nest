@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    Query,
+    ParseIntPipe,
+    Req,
+    Res,
+    UseGuards,
+} from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { UserService } from "./user.service";
 import {
@@ -40,7 +53,12 @@ export class UserController {
     @UseGuards(AuthGuard)
     @Inertia("Users/Favorites")
     async favorites(@Req() req: Request, @Query() query: GetFavoritesQueryDto) {
-        const data = await this.userService.getFavorites(req.session!.userId!, query.type, query.page || 1, query.search || "");
+        const data = await this.userService.getFavorites(
+            req.session!.userId!,
+            query.type,
+            query.page || 1,
+            query.search || "",
+        );
         return { favorites: data, type: query.type };
     }
 
@@ -71,8 +89,20 @@ export class UserController {
     @Get("forum/topics")
     @UseGuards(AuthGuard)
     @Inertia("Users/ForumTopics")
-    async forumTopics(@Req() req: Request, @Query("page") page = 1, @Query("search") search = "", @Query("sortBy") sortBy = "createdAt", @Query("sortOrder") sortOrder: "asc" | "desc" = "asc") {
-        const data = await this.userService.getUserForumTopics(req.session!.userId!, Number(page), search, sortBy, sortOrder);
+    async forumTopics(
+        @Req() req: Request,
+        @Query("page") page = 1,
+        @Query("search") search = "",
+        @Query("sortBy") sortBy = "createdAt",
+        @Query("sortOrder") sortOrder: "asc" | "desc" = "asc",
+    ) {
+        const data = await this.userService.getUserForumTopics(
+            req.session!.userId!,
+            Number(page),
+            search,
+            sortBy,
+            sortOrder,
+        );
         return { topics: data };
     }
 
@@ -142,7 +172,11 @@ export class UserController {
 
     @Delete("messages/:messageId")
     @UseGuards(AuthGuard)
-    async deleteMessage(@Param("messageId", ParseIntPipe) messageId: number, @Req() req: Request, @Res() res: Response) {
+    async deleteMessage(
+        @Param("messageId", ParseIntPipe) messageId: number,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.userService.deleteMessage(messageId, req.session!.userId!);
         return res.redirect(303, "/users/messages/inbox");
     }
@@ -159,7 +193,12 @@ export class UserController {
 
     @Put("reviews/:itemId")
     @UseGuards(AuthGuard)
-    async updateReview(@Param("itemId", ParseIntPipe) itemId: number, @Body() dto: UpdateReviewDto & { itemType: string }, @Req() req: Request, @Res() res: Response) {
+    async updateReview(
+        @Param("itemId", ParseIntPipe) itemId: number,
+        @Body() dto: UpdateReviewDto & { itemType: string },
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.userService.updateReview(req.session!.userId!, itemId, dto.itemType, dto.content, dto.rating);
         (req.session as any).flash = { type: "success", message: "Review updated." };
         return res.redirect(303, req.headers.referer || "/");
@@ -167,10 +206,14 @@ export class UserController {
 
     @Delete("reviews/:itemId")
     @UseGuards(AuthGuard)
-    async removeReview(@Param("itemId", ParseIntPipe) itemId: number, @Body() dto: RemoveReviewDto, @Req() req: Request, @Res() res: Response) {
+    async removeReview(
+        @Param("itemId", ParseIntPipe) itemId: number,
+        @Body() dto: RemoveReviewDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.userService.removeReview(req.session!.userId!, itemId, dto.itemType);
         (req.session as any).flash = { type: "success", message: "Review deleted." };
         return res.redirect(303, req.headers.referer || "/");
     }
 }
-

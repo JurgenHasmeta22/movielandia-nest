@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    Query,
+    ParseIntPipe,
+    Req,
+    Res,
+    UseGuards,
+} from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { GenreService } from "./genre.service";
 import { CreateGenreDto } from "./dtos/create-genre.dto";
@@ -16,12 +29,28 @@ export class GenreController {
     async index(@Query() query: GenreQueryDto, @Req() req: Request) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.genreService.findAll(query, userId);
-        return { genres: data.genres, count: data.count, filters: query };
+        const page = query.page ?? 1;
+        const perPage = query.perPage ?? 20;
+        return {
+            genres: data.genres,
+            pagination: {
+                total: data.count ?? 0,
+                page,
+                totalPages: Math.ceil((data.count ?? 0) / perPage),
+                perPage,
+            },
+            filters: query,
+        };
     }
 
     @Get("search")
     @Inertia("Genres/Index")
-    async search(@Query("name") name: string, @Query("page") page = 1, @Query("perPage") perPage = 20, @Req() req: Request) {
+    async search(
+        @Query("name") name: string,
+        @Query("page") page = 1,
+        @Query("perPage") perPage = 20,
+        @Req() req: Request,
+    ) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.genreService.search(name, userId, Number(page), Number(perPage));
         return { genres: data.genres, count: data.count, searchQuery: name };
@@ -29,10 +58,26 @@ export class GenreController {
 
     @Get(":id")
     @Inertia("Genres/Show")
-    async show(@Param("id", ParseIntPipe) id: number, @Req() req: Request) {
+    async show(
+        @Param("id", ParseIntPipe) id: number,
+        @Query("moviesPage") moviesPage = 1,
+        @Query("seriesPage") seriesPage = 1,
+        @Query("perPage") perPage = 12,
+        @Query("sortBy") sortBy = "title",
+        @Query("ascOrDesc") ascOrDesc: "asc" | "desc" = "asc",
+        @Req() req: Request,
+    ) {
         const userId: number | undefined = req.session?.userId;
-        const genre = await this.genreService.findOne(id, userId);
-        return { genre };
+        const genre = await this.genreService.findOne(
+            id,
+            userId,
+            Number(moviesPage),
+            Number(seriesPage),
+            Number(perPage),
+            sortBy,
+            ascOrDesc,
+        );
+        return { genre, filters: { sortBy, ascOrDesc, perPage: Number(perPage) } };
     }
 
     @Post()
@@ -45,7 +90,12 @@ export class GenreController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    async update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateGenreDto, @Req() req: Request, @Res() res: Response) {
+    async update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateGenreDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.genreService.update(id, dto);
         (req.session as any).flash = { type: "success", message: "Genre updated." };
         return res.redirect(303, `/genres/${id}`);
@@ -59,4 +109,3 @@ export class GenreController {
         return res.redirect(303, "/genres");
     }
 }
-

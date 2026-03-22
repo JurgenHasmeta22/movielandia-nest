@@ -13,9 +13,9 @@
     </head>
     <body class="bg-gray-950 text-gray-100 min-h-screen">
         {{#if ssrBody}}
-            <div id="app" data-page="{{{json page}}}">{{{ssrBody}}}</div>
+            <div id="app" data-page="{{json page}}">{{{ssrBody}}}</div>
         {{else}}
-            <div id="app" data-page="{{{json page}}}"></div>
+            <div id="app" data-page="{{json page}}"></div>
         {{/if}}
     </body>
 </html>

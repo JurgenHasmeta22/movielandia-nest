@@ -94,6 +94,18 @@ export class MovieDetailsDto {
     })
     isReviewed?: boolean;
 
+    @ApiProperty({ description: "Release year derived from dateAired", example: 2008, required: false })
+    releaseYear?: number | null;
+
+    @ApiProperty({ description: "Average user rating (flat convenience field)", example: 8.5, required: false })
+    averageRating?: number | null;
+
+    @ApiProperty({ description: "Genres associated with this movie", isArray: true, required: false })
+    genres?: { id: number; name: string }[];
+
+    @ApiProperty({ description: "Actors in this movie", isArray: true, required: false })
+    actors?: { id: number; fullname: string; photoSrc: string | null }[];
+
     @ApiProperty({
         description: "List of reviews for this movie",
         isArray: true,

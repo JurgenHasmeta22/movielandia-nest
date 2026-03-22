@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    Query,
+    ParseIntPipe,
+    Req,
+    Res,
+    UseGuards,
+} from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { MovieService } from "./movie.service";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
@@ -16,7 +29,18 @@ export class MovieController {
     async index(@Query() query: MovieQueryDto, @Req() req: Request) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.movieService.findAll(query, userId);
-        return { movies: data.movies, count: data.count, filters: query };
+        const page = query.page ?? 1;
+        const perPage = query.perPage ?? 12;
+        return {
+            movies: data.movies,
+            pagination: {
+                total: data.count,
+                page,
+                totalPages: Math.ceil(data.count / perPage),
+                perPage,
+            },
+            filters: query,
+        };
     }
 
     @Get("latest")
@@ -32,7 +56,19 @@ export class MovieController {
     async search(@Query("title") title: string, @Query() query: MovieQueryDto, @Req() req: Request) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.movieService.search(title, query, userId);
-        return { movies: data.movies, count: data.count, filters: query, searchQuery: title };
+        const page = query.page ?? 1;
+        const perPage = query.perPage ?? 12;
+        return {
+            movies: data.movies,
+            pagination: {
+                total: data.count,
+                page,
+                totalPages: Math.ceil(data.count / perPage),
+                perPage,
+            },
+            filters: query,
+            searchQuery: title,
+        };
     }
 
     @Get(":id")
@@ -53,7 +89,12 @@ export class MovieController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    async update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateMovieDto, @Req() req: Request, @Res() res: Response) {
+    async update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateMovieDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.movieService.update(id, dto);
         (req.session as any).flash = { type: "success", message: "Movie updated successfully." };
         return res.redirect(303, `/movies/${id}`);
@@ -67,4 +108,3 @@ export class MovieController {
         return res.redirect(303, "/movies");
     }
 }
-

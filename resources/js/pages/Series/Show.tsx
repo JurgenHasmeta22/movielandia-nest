@@ -2,7 +2,7 @@ import { Link } from '@inertiajs/react';
 import AppLayout from '../../layouts/AppLayout';
 
 interface Genre { id: number; name: string }
-interface Season { id: number; title: string; seasonNumber: number }
+interface Season { id: number; title: string }
 
 interface Serie {
     id: number;
@@ -51,7 +51,7 @@ export default function SerieShow({ serie }: { serie: Serie }) {
                                 <Link key={season.id} href={`/seasons/${season.id}`}
                                     className="bg-gray-900 border border-gray-700 hover:border-indigo-500 rounded-xl p-4 text-center transition-colors">
                                     <div className="text-2xl mb-1">📂</div>
-                                    <p className="text-sm font-medium text-white">{season.title || `Season ${season.seasonNumber}`}</p>
+                                    <p className="text-sm font-medium text-white">{season.title}</p>
                                 </Link>
                             ))}
                         </div>

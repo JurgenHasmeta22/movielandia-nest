@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    Query,
+    ParseIntPipe,
+    Req,
+    Res,
+    UseGuards,
+} from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { ActorService } from "./actor.service";
 import { CreateActorDto } from "./dtos/create-actor.dto";
@@ -21,7 +34,12 @@ export class ActorController {
 
     @Get("search")
     @Inertia("Actors/Index")
-    async search(@Query("fullname") fullname: string, @Query("page") page = 1, @Query("perPage") perPage = 12, @Req() req: Request) {
+    async search(
+        @Query("fullname") fullname: string,
+        @Query("page") page = 1,
+        @Query("perPage") perPage = 12,
+        @Req() req: Request,
+    ) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.actorService.search(fullname, userId, Number(page), Number(perPage));
         return { actors: data.actors, count: data.count, searchQuery: fullname };
@@ -45,7 +63,12 @@ export class ActorController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    async update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateActorDto, @Req() req: Request, @Res() res: Response) {
+    async update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateActorDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.actorService.update(id, dto);
         (req.session as any).flash = { type: "success", message: "Actor updated." };
         return res.redirect(303, `/actors/${id}`);
@@ -59,4 +82,3 @@ export class ActorController {
         return res.redirect(303, "/actors");
     }
 }
-

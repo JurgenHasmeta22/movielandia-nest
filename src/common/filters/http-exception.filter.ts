@@ -1,12 +1,6 @@
-import {
-    ExceptionFilter,
-    Catch,
-    ArgumentsHost,
-    HttpException,
-    HttpStatus,
-    Logger,
-} from "@nestjs/common";
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { Request, Response } from "express";
+import { InertiaResponseHandledException } from "inertia-nestjs";
 import { AppError } from "../../utils/error.util";
 
 interface ErrorResponse {
@@ -29,6 +23,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
     private readonly logger = new Logger(AllExceptionsFilter.name);
 
     catch(exception: unknown, host: ArgumentsHost): void {
+        // Inertia renders its own response and signals completion by throwing this.
+        // The HTTP response is already sent — nothing more to do.
+        if (exception instanceof InertiaResponseHandledException) {
+            return;
+        }
+
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
@@ -48,6 +48,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
                 `[${request.method}] ${request.url} → ${statusCode}`,
                 exception instanceof Error ? exception.stack : String(exception),
             );
+        }
+
+        if (response.headersSent) {
+            return;
         }
 
         response.status(statusCode).json(body);

@@ -44,7 +44,12 @@ export class ListController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    async update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateListDto, @Req() req: Request, @Res() res: Response) {
+    async update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateListDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.listService.updateList(id, req.session!.userId!, dto);
         (req.session as any).flash = { type: "success", message: "List updated." };
         return res.redirect(303, `/lists/${id}`);
@@ -60,35 +65,60 @@ export class ListController {
 
     @Post(":id/movies")
     @UseGuards(AuthGuard)
-    async addMovie(@Param("id", ParseIntPipe) id: number, @Body() dto: AddListItemDto, @Req() req: Request, @Res() res: Response) {
+    async addMovie(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: AddListItemDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.listService.addMovieToList(id, req.session!.userId!, dto);
         return res.redirect(303, `/lists/${id}`);
     }
 
     @Delete(":id/movies/:movieId")
     @UseGuards(AuthGuard)
-    async removeMovie(@Param("id", ParseIntPipe) id: number, @Param("movieId", ParseIntPipe) movieId: number, @Req() req: Request, @Res() res: Response) {
+    async removeMovie(
+        @Param("id", ParseIntPipe) id: number,
+        @Param("movieId", ParseIntPipe) movieId: number,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.listService.removeMovieFromList(id, movieId, req.session!.userId!);
         return res.redirect(303, `/lists/${id}`);
     }
 
     @Post(":id/series")
     @UseGuards(AuthGuard)
-    async addSeries(@Param("id", ParseIntPipe) id: number, @Body() dto: AddListItemDto, @Req() req: Request, @Res() res: Response) {
+    async addSeries(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: AddListItemDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.listService.addSeriesToList(id, req.session!.userId!, dto);
         return res.redirect(303, `/lists/${id}`);
     }
 
     @Delete(":id/series/:serieId")
     @UseGuards(AuthGuard)
-    async removeSeries(@Param("id", ParseIntPipe) id: number, @Param("serieId", ParseIntPipe) serieId: number, @Req() req: Request, @Res() res: Response) {
+    async removeSeries(
+        @Param("id", ParseIntPipe) id: number,
+        @Param("serieId", ParseIntPipe) serieId: number,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.listService.removeSeriesFromList(id, serieId, req.session!.userId!);
         return res.redirect(303, `/lists/${id}`);
     }
 
     @Post(":id/share")
     @UseGuards(AuthGuard)
-    async share(@Param("id", ParseIntPipe) id: number, @Body() dto: CreateListShareDto, @Req() req: Request, @Res() res: Response) {
+    async share(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: CreateListShareDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.listService.shareList(id, req.session!.userId!, dto);
         (req.session as any).flash = { type: "success", message: "List shared." };
         return res.redirect(303, `/lists/${id}`);
@@ -96,10 +126,14 @@ export class ListController {
 
     @Delete(":id/share/:userId")
     @UseGuards(AuthGuard)
-    async unshare(@Param("id", ParseIntPipe) id: number, @Param("userId", ParseIntPipe) sharedUserId: number, @Req() req: Request, @Res() res: Response) {
+    async unshare(
+        @Param("id", ParseIntPipe) id: number,
+        @Param("userId", ParseIntPipe) sharedUserId: number,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.listService.unshareList(id, req.session!.userId!, sharedUserId);
         (req.session as any).flash = { type: "success", message: "List unshared." };
         return res.redirect(303, `/lists/${id}`);
     }
 }
-

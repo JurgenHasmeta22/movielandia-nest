@@ -57,9 +57,9 @@ export default function MovieShow({ movie }: MovieShowProps) {
                             {movie.ratingImdb && <span className="text-yellow-400">⭐ IMDb {movie.ratingImdb}</span>}
                             {movie.averageRating && <span className="text-indigo-400">🌟 User {movie.averageRating.toFixed(1)}</span>}
                         </div>
-                        {movie.genres.length > 0 && (
+                        {movie.genres?.length > 0 && (
                             <div className="flex flex-wrap gap-2">
-                                {movie.genres.map((g) => (
+                                {movie.genres?.map((g) => (
                                     <Link key={g.id} href={`/genres/${g.id}`} className="bg-indigo-900/50 text-indigo-300 text-xs font-medium px-3 py-1 rounded-full hover:bg-indigo-900 transition-colors">
                                         {g.name}
                                     </Link>
@@ -93,7 +93,7 @@ export default function MovieShow({ movie }: MovieShowProps) {
                                 <Link key={actor.id} href={`/actors/${actor.id}`} className="text-center group">
                                     <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-800 mx-auto mb-1">
                                         {actor.photoSrc ? (
-                                            <img src={`/images/actors/${actor.photoSrc}`} alt={actor.fullname} className="w-full h-full object-cover" />
+                                            <img src={`/images/actors/${actor.photoSrc}`} alt={actor.fullname} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-2xl">👤</div>
                                         )}

@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Param,
+    Body,
+    Query,
+    ParseIntPipe,
+    Req,
+    Res,
+    UseGuards,
+} from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { CrewService } from "./crew.service";
 import { CreateCrewDto } from "./dtos/create-crew.dto";
@@ -21,7 +34,12 @@ export class CrewController {
 
     @Get("search")
     @Inertia("Crew/Index")
-    async search(@Query("fullname") fullname: string, @Query("page") page = 1, @Query("perPage") perPage = 12, @Req() req: Request) {
+    async search(
+        @Query("fullname") fullname: string,
+        @Query("page") page = 1,
+        @Query("perPage") perPage = 12,
+        @Req() req: Request,
+    ) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.crewService.search(fullname, userId, Number(page), Number(perPage));
         return { crew: data.crew, count: data.count, searchQuery: fullname };
@@ -45,7 +63,12 @@ export class CrewController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    async update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateCrewDto, @Req() req: Request, @Res() res: Response) {
+    async update(
+        @Param("id", ParseIntPipe) id: number,
+        @Body() dto: UpdateCrewDto,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         await this.crewService.update(id, dto);
         (req.session as any).flash = { type: "success", message: "Crew member updated." };
         return res.redirect(303, `/crew/${id}`);
@@ -59,4 +82,3 @@ export class CrewController {
         return res.redirect(303, "/crew");
     }
 }
-

@@ -20,7 +20,7 @@ export default function ActorShow({ actor }: { actor: Actor }) {
                 <div className="flex flex-col md:flex-row gap-8">
                     <div className="flex-shrink-0">
                         {actor.photoSrc
-                            ? <img src={`/images/actors/${actor.photoSrc}`} alt={actor.fullname} className="w-48 rounded-2xl shadow-2xl" />
+                            ? <img src={`/images/actors/${actor.photoSrc}`} alt={actor.fullname} className="w-48 rounded-2xl shadow-2xl" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
                             : <div className="w-48 aspect-[3/4] bg-gray-800 rounded-2xl flex items-center justify-center text-6xl">👤</div>
                         }
                     </div>
@@ -42,7 +42,7 @@ export default function ActorShow({ actor }: { actor: Actor }) {
                                 <Link key={movie.id} href={`/movies/${movie.id}`} className="group">
                                     <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
                                         {movie.photoSrc
-                                            ? <img src={`/images/movies/${movie.photoSrc}`} alt={movie.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                            ? <img src={`/images/movies/${movie.photoSrc}`} alt={movie.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
                                             : <div className="w-full h-full flex items-center justify-center text-2xl text-gray-600">🎬</div>
                                         }
                                     </div>

@@ -1,14 +1,4 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Req,
-    Res,
-    HttpCode,
-    HttpStatus,
-    BadRequestException,
-} from "@nestjs/common";
+import { Controller, Get, Post, Body, Req, Res, HttpCode, HttpStatus, BadRequestException } from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { AuthService } from "./auth.service";
 import { SignUpDto, SignInDto, ForgotPasswordDto, ResetPasswordDto, ActivateAccountDto } from "./dtos/auth.dto";
@@ -128,4 +118,3 @@ export class AuthController {
         }
     }
 }
-
