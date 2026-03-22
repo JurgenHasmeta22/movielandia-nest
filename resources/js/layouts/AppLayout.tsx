@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { HeaderSearch } from '../components/HeaderSearch';
+import { PageTransition } from '../components/PageTransition';
 
 interface AuthUser {
     id: number;
@@ -144,7 +145,9 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
                 {/* Page content */}
                 <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-                    {children}
+                    <PageTransition>
+                        {children}
+                    </PageTransition>
                 </main>
 
                 {/* Footer */}

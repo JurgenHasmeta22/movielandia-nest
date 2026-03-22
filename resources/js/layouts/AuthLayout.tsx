@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { PageTransition } from '../components/PageTransition';
 
 interface SharedProps {
     auth?: { user?: { id: number; userName: string } | null };
@@ -99,7 +100,9 @@ export default function AuthLayout({ children, title }: AuthLayoutProps) {
 
                     {/* Content */}
                     <div className="flex-1 flex flex-col justify-center px-8 py-6">
-                        {children}
+                        <PageTransition>
+                            {children}
+                        </PageTransition>
                     </div>
 
                     {/* Footer */}
