@@ -30,7 +30,12 @@ export class MovieMapper {
             releaseYear: movie.dateAired ? new Date(movie.dateAired).getFullYear() : null,
             averageRating: ratingInfo?.averageRating ?? null,
             genres: movie.genres?.map((g: any) => ({ id: g.genre.id, name: g.genre.name })) ?? [],
-            actors: movie.cast?.map((c: any) => ({ id: c.actor.id, fullname: c.actor.fullname, photoSrc: c.actor.photoSrc ?? null })) ?? [],
+            actors:
+                movie.cast?.map((c: any) => ({
+                    id: c.actor.id,
+                    fullname: c.actor.fullname,
+                    photoSrc: c.actor.photoSrc ?? null,
+                })) ?? [],
             ratings: ratingInfo
                 ? {
                       averageRating: ratingInfo.averageRating,

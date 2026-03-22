@@ -26,8 +26,18 @@ export class CrewMapper {
             ...this.toDto(crew),
             description: crew.description ? truncateText(crew.description, 200) : undefined,
             department: crew.role ?? null,
-            movieCredits: crew.producedMovies?.map((c: any) => ({ id: c.movie.id, title: c.movie.title, photoSrc: c.movie.photoSrc ?? null })) ?? [],
-            serieCredits: crew.producedSeries?.map((c: any) => ({ id: c.serie.id, title: c.serie.title, photoSrc: c.serie.photoSrc ?? null })) ?? [],
+            movieCredits:
+                crew.producedMovies?.map((c: any) => ({
+                    id: c.movie.id,
+                    title: c.movie.title,
+                    photoSrc: c.movie.photoSrc ?? null,
+                })) ?? [],
+            serieCredits:
+                crew.producedSeries?.map((c: any) => ({
+                    id: c.serie.id,
+                    title: c.serie.title,
+                    photoSrc: c.serie.photoSrc ?? null,
+                })) ?? [],
             ratings: ratingInfo
                 ? {
                       averageRating: ratingInfo.averageRating,

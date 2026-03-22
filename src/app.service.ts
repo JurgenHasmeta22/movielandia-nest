@@ -203,83 +203,202 @@ export class AppService {
 
         if (tab === "movies") {
             const [movies, total] = await Promise.all([
-                this.prisma.movie.findMany({ where: titleFilter, orderBy: { title: "asc" }, skip, take: perPage, select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true } }),
+                this.prisma.movie.findMany({
+                    where: titleFilter,
+                    orderBy: { title: "asc" },
+                    skip,
+                    take: perPage,
+                    select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true },
+                }),
                 this.prisma.movie.count({ where: titleFilter }),
             ]);
-            return { movies: movies.map(mapMedia), moviesPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage }, tab, searchQuery: term };
+            return {
+                movies: movies.map(mapMedia),
+                moviesPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage },
+                tab,
+                searchQuery: term,
+            };
         }
 
         if (tab === "series") {
             const [series, total] = await Promise.all([
-                this.prisma.serie.findMany({ where: titleFilter, orderBy: { title: "asc" }, skip, take: perPage, select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true } }),
+                this.prisma.serie.findMany({
+                    where: titleFilter,
+                    orderBy: { title: "asc" },
+                    skip,
+                    take: perPage,
+                    select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true },
+                }),
                 this.prisma.serie.count({ where: titleFilter }),
             ]);
-            return { series: series.map(mapMedia), seriesPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage }, tab, searchQuery: term };
+            return {
+                series: series.map(mapMedia),
+                seriesPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage },
+                tab,
+                searchQuery: term,
+            };
         }
 
         if (tab === "actors") {
             const [actors, total] = await Promise.all([
-                this.prisma.actor.findMany({ where: fullnameFilter, orderBy: { fullname: "asc" }, skip, take: perPage, select: { id: true, fullname: true, photoSrc: true, debut: true } }),
+                this.prisma.actor.findMany({
+                    where: fullnameFilter,
+                    orderBy: { fullname: "asc" },
+                    skip,
+                    take: perPage,
+                    select: { id: true, fullname: true, photoSrc: true, debut: true },
+                }),
                 this.prisma.actor.count({ where: fullnameFilter }),
             ]);
-            return { actors: actors.map(mapPerson), actorsPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage }, tab, searchQuery: term };
+            return {
+                actors: actors.map(mapPerson),
+                actorsPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage },
+                tab,
+                searchQuery: term,
+            };
         }
 
         if (tab === "crew") {
             const [crew, total] = await Promise.all([
-                this.prisma.crew.findMany({ where: fullnameFilter, orderBy: { fullname: "asc" }, skip, take: perPage, select: { id: true, fullname: true, photoSrc: true, role: true, debut: true } }),
+                this.prisma.crew.findMany({
+                    where: fullnameFilter,
+                    orderBy: { fullname: "asc" },
+                    skip,
+                    take: perPage,
+                    select: { id: true, fullname: true, photoSrc: true, role: true, debut: true },
+                }),
                 this.prisma.crew.count({ where: fullnameFilter }),
             ]);
-            return { crew: crew.map(mapPerson), crewPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage }, tab, searchQuery: term };
+            return {
+                crew: crew.map(mapPerson),
+                crewPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage },
+                tab,
+                searchQuery: term,
+            };
         }
 
         if (tab === "seasons") {
             const [seasons, total] = await Promise.all([
-                this.prisma.season.findMany({ where: titleFilter, orderBy: { title: "asc" }, skip, take: perPage, select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true } }),
+                this.prisma.season.findMany({
+                    where: titleFilter,
+                    orderBy: { title: "asc" },
+                    skip,
+                    take: perPage,
+                    select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true },
+                }),
                 this.prisma.season.count({ where: titleFilter }),
             ]);
-            return { seasons: seasons.map(mapMedia), seasonsPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage }, tab, searchQuery: term };
+            return {
+                seasons: seasons.map(mapMedia),
+                seasonsPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage },
+                tab,
+                searchQuery: term,
+            };
         }
 
         if (tab === "episodes") {
             const [episodes, total] = await Promise.all([
-                this.prisma.episode.findMany({ where: titleFilter, orderBy: { title: "asc" }, skip, take: perPage, select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true } }),
+                this.prisma.episode.findMany({
+                    where: titleFilter,
+                    orderBy: { title: "asc" },
+                    skip,
+                    take: perPage,
+                    select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true },
+                }),
                 this.prisma.episode.count({ where: titleFilter }),
             ]);
-            return { episodes: episodes.map(mapMedia), episodesPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage }, tab, searchQuery: term };
+            return {
+                episodes: episodes.map(mapMedia),
+                episodesPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage },
+                tab,
+                searchQuery: term,
+            };
         }
 
         if (tab === "users") {
             const [users, total] = await Promise.all([
-                this.prisma.user.findMany({ where: userFilter, orderBy: { userName: "asc" }, skip, take: perPage, select: { id: true, userName: true, avatar: true, countryFrom: true } }),
+                this.prisma.user.findMany({
+                    where: userFilter,
+                    orderBy: { userName: "asc" },
+                    skip,
+                    take: perPage,
+                    select: { id: true, userName: true, avatar: true, countryFrom: true },
+                }),
                 this.prisma.user.count({ where: userFilter }),
             ]);
-            return { users: users.map(mapUser), usersPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage }, tab, searchQuery: term };
+            return {
+                users: users.map(mapUser),
+                usersPagination: { total, page, totalPages: Math.ceil(total / perPage), perPage },
+                tab,
+                searchQuery: term,
+            };
         }
 
         // tab === "all" — preview of each category
         const [
-            movies, moviesCount,
-            series, seriesCount,
-            actors, actorsCount,
-            crew, crewCount,
-            seasons, seasonsCount,
-            episodes, episodesCount,
-            users, usersCount,
+            movies,
+            moviesCount,
+            series,
+            seriesCount,
+            actors,
+            actorsCount,
+            crew,
+            crewCount,
+            seasons,
+            seasonsCount,
+            episodes,
+            episodesCount,
+            users,
+            usersCount,
         ] = await Promise.all([
-            this.prisma.movie.findMany({ where: titleFilter, orderBy: { title: "asc" }, take: previewCount, select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true } }),
+            this.prisma.movie.findMany({
+                where: titleFilter,
+                orderBy: { title: "asc" },
+                take: previewCount,
+                select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true },
+            }),
             this.prisma.movie.count({ where: titleFilter }),
-            this.prisma.serie.findMany({ where: titleFilter, orderBy: { title: "asc" }, take: previewCount, select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true } }),
+            this.prisma.serie.findMany({
+                where: titleFilter,
+                orderBy: { title: "asc" },
+                take: previewCount,
+                select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true },
+            }),
             this.prisma.serie.count({ where: titleFilter }),
-            this.prisma.actor.findMany({ where: fullnameFilter, orderBy: { fullname: "asc" }, take: previewCount, select: { id: true, fullname: true, photoSrc: true, debut: true } }),
+            this.prisma.actor.findMany({
+                where: fullnameFilter,
+                orderBy: { fullname: "asc" },
+                take: previewCount,
+                select: { id: true, fullname: true, photoSrc: true, debut: true },
+            }),
             this.prisma.actor.count({ where: fullnameFilter }),
-            this.prisma.crew.findMany({ where: fullnameFilter, orderBy: { fullname: "asc" }, take: previewCount, select: { id: true, fullname: true, photoSrc: true, role: true, debut: true } }),
+            this.prisma.crew.findMany({
+                where: fullnameFilter,
+                orderBy: { fullname: "asc" },
+                take: previewCount,
+                select: { id: true, fullname: true, photoSrc: true, role: true, debut: true },
+            }),
             this.prisma.crew.count({ where: fullnameFilter }),
-            this.prisma.season.findMany({ where: titleFilter, orderBy: { title: "asc" }, take: previewCount, select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true } }),
+            this.prisma.season.findMany({
+                where: titleFilter,
+                orderBy: { title: "asc" },
+                take: previewCount,
+                select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true },
+            }),
             this.prisma.season.count({ where: titleFilter }),
-            this.prisma.episode.findMany({ where: titleFilter, orderBy: { title: "asc" }, take: previewCount, select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true } }),
+            this.prisma.episode.findMany({
+                where: titleFilter,
+                orderBy: { title: "asc" },
+                take: previewCount,
+                select: { id: true, title: true, photoSrc: true, ratingImdb: true, dateAired: true },
+            }),
             this.prisma.episode.count({ where: titleFilter }),
-            this.prisma.user.findMany({ where: userFilter, orderBy: { userName: "asc" }, take: previewCount, select: { id: true, userName: true, avatar: true, countryFrom: true } }),
+            this.prisma.user.findMany({
+                where: userFilter,
+                orderBy: { userName: "asc" },
+                take: previewCount,
+                select: { id: true, userName: true, avatar: true, countryFrom: true },
+            }),
             this.prisma.user.count({ where: userFilter }),
         ]);
 
@@ -291,13 +410,48 @@ export class AppService {
             seasons: seasons.map(mapMedia),
             episodes: episodes.map(mapMedia),
             users: users.map(mapUser),
-            moviesPagination: { total: moviesCount, page: 1, totalPages: Math.ceil(moviesCount / previewCount), perPage: previewCount },
-            seriesPagination: { total: seriesCount, page: 1, totalPages: Math.ceil(seriesCount / previewCount), perPage: previewCount },
-            actorsPagination: { total: actorsCount, page: 1, totalPages: Math.ceil(actorsCount / previewCount), perPage: previewCount },
-            crewPagination: { total: crewCount, page: 1, totalPages: Math.ceil(crewCount / previewCount), perPage: previewCount },
-            seasonsPagination: { total: seasonsCount, page: 1, totalPages: Math.ceil(seasonsCount / previewCount), perPage: previewCount },
-            episodesPagination: { total: episodesCount, page: 1, totalPages: Math.ceil(episodesCount / previewCount), perPage: previewCount },
-            usersPagination: { total: usersCount, page: 1, totalPages: Math.ceil(usersCount / previewCount), perPage: previewCount },
+            moviesPagination: {
+                total: moviesCount,
+                page: 1,
+                totalPages: Math.ceil(moviesCount / previewCount),
+                perPage: previewCount,
+            },
+            seriesPagination: {
+                total: seriesCount,
+                page: 1,
+                totalPages: Math.ceil(seriesCount / previewCount),
+                perPage: previewCount,
+            },
+            actorsPagination: {
+                total: actorsCount,
+                page: 1,
+                totalPages: Math.ceil(actorsCount / previewCount),
+                perPage: previewCount,
+            },
+            crewPagination: {
+                total: crewCount,
+                page: 1,
+                totalPages: Math.ceil(crewCount / previewCount),
+                perPage: previewCount,
+            },
+            seasonsPagination: {
+                total: seasonsCount,
+                page: 1,
+                totalPages: Math.ceil(seasonsCount / previewCount),
+                perPage: previewCount,
+            },
+            episodesPagination: {
+                total: episodesCount,
+                page: 1,
+                totalPages: Math.ceil(episodesCount / previewCount),
+                perPage: previewCount,
+            },
+            usersPagination: {
+                total: usersCount,
+                page: 1,
+                totalPages: Math.ceil(usersCount / previewCount),
+                perPage: previewCount,
+            },
             tab,
             searchQuery: term,
         };

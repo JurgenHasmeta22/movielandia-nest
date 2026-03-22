@@ -24,10 +24,7 @@ export class AppController {
     }
 
     @Get("search-quick")
-    async searchQuick(
-        @Query("q") q = "",
-        @Query("category") category = "all",
-    ) {
+    async searchQuick(@Query("q") q = "", @Query("category") category = "all") {
         return await this.appService.searchQuick(q, category);
     }
 }

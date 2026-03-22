@@ -26,7 +26,12 @@ export class ActorMapper {
             description: actor.description ? truncateText(actor.description, 200) : undefined,
             birthDate: actor.debut ?? null,
             birthPlace: null,
-            movies: actor.starredMovies?.map((c: any) => ({ id: c.movie.id, title: c.movie.title, photoSrc: c.movie.photoSrc ?? null })) ?? [],
+            movies:
+                actor.starredMovies?.map((c: any) => ({
+                    id: c.movie.id,
+                    title: c.movie.title,
+                    photoSrc: c.movie.photoSrc ?? null,
+                })) ?? [],
             ratings: ratingInfo
                 ? {
                       averageRating: ratingInfo.averageRating,
