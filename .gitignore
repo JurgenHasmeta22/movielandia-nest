@@ -398,3 +398,7 @@ Temporary Items
 dist
 .webpack
 .serverless/**/*.zip
+
+# Vite / Inertia build output (generated, never commit)
+public/build/
+bootstrap/ssr/
