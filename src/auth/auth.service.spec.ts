@@ -116,13 +116,13 @@ describe("AuthService", () => {
 
     describe("signIn", () => {
         const signInDto = {
-            email: "test@example.com",
+            emailOrUsername: "test@example.com",
             password: "Test123!@#",
         };
 
         const mockUser = {
             id: 1,
-            email: signInDto.email,
+            email: signInDto.emailOrUsername,
             password: "hashed-password",
             active: true,
         };

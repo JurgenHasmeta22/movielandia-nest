@@ -12,6 +12,7 @@ export class GenreMapper {
     static toDtoWithDetails(genre: Genre, bookmarkInfo?: { isBookmarked: boolean }): GenreDetailsDto {
         return {
             ...this.toDto(genre),
+            ...(bookmarkInfo !== undefined && { isBookmarked: bookmarkInfo.isBookmarked }),
         };
     }
 

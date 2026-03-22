@@ -13,6 +13,13 @@ export class GenreDetailsDto {
         description: "Genre name",
     })
     name: string;
+
+    @ApiProperty({
+        example: false,
+        description: "Whether the current user has bookmarked this genre",
+        required: false,
+    })
+    isBookmarked?: boolean;
 }
 
 export class GenreListResponseDto {

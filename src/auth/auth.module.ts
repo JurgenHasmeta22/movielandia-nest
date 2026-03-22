@@ -1,5 +1,4 @@
-import { Module } from "@nestjs/common";
-import { PrismaService } from "../prisma.service";
+import { Global, Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { JwtStrategy } from "./guards/jwt.strategy";
@@ -8,6 +7,12 @@ import { AuthController } from "./auth.controller";
 import { EmailService } from "../email/email.service";
 import { ConfigService } from "@nestjs/config";
 
+/**
+ * AuthModule is @Global so JwtModule, PassportModule and JwtStrategy are
+ * available in every feature module without needing to be imported again.
+ * PrismaService is injected via the global PrismaModule.
+ */
+@Global()
 @Module({
     imports: [
         PassportModule.register({ defaultStrategy: "jwt" }),
@@ -20,7 +25,7 @@ import { ConfigService } from "@nestjs/config";
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, PrismaService, JwtStrategy, EmailService],
-    exports: [JwtStrategy, PassportModule],
+    providers: [AuthService, JwtStrategy, EmailService],
+    exports: [JwtStrategy, PassportModule, JwtModule, AuthService],
 })
 export class AuthModule {}

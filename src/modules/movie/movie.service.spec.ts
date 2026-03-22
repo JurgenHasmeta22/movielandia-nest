@@ -154,7 +154,7 @@ describe("MovieService", () => {
                 photoSrcProd: "new-prod.jpg",
                 trailerSrc: "new-trailer.mp4",
                 duration: 130,
-                dateAired: new Date("2024-02-01"),
+                dateAired: "2024-02-01",
                 ratingImdb: 8.0,
             };
 

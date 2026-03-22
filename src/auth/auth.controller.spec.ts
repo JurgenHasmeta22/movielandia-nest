@@ -61,7 +61,7 @@ describe("AuthController", () => {
     describe("signin", () => {
         it("should return access token when credentials are valid", async () => {
             const signInDto: SignInDto = {
-                email: "test@example.com",
+                emailOrUsername: "test@example.com",
                 password: "Test123!@#",
             };
             const expectedResult = {
