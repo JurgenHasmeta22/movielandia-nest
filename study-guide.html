@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inertia.js + NestJS + React — Study Guide</title>
+  <style>
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --border:  #30363d;
+      --accent:  #58a6ff;
+      --accent2: #bc8cff;
+      --accent3: #3fb950;
+      --accent4: #f78166;
+      --text:    #e6edf3;
+      --muted:   #8b949e;
+      --code-bg: #1f2937;
+      --tag-bg:  #21262d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,17,23,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: .65rem 2rem;
+      display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    }
+    nav .brand { font-weight: 700; font-size: 1rem; color: var(--accent); white-space:nowrap; }
+    nav a { color: var(--muted); text-decoration: none; font-size: .82rem; transition: color .2s; }
+    nav a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #111827 50%, #1a0a2e 100%);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero .badge {
+      display: inline-flex; gap: .5rem; align-items: center;
+      background: rgba(88,166,255,.12); border: 1px solid rgba(88,166,255,.3);
+      color: var(--accent); border-radius: 50px; padding: .3rem .9rem; font-size: .78rem;
+      margin-bottom: 1.5rem; letter-spacing: .04em; text-transform: uppercase;
+    }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); max-width: 620px; margin: 0 auto 2rem; font-size: 1.05rem; }
+    .hero .pills { display: flex; gap: .7rem; justify-content: center; flex-wrap: wrap; }
+    .pill {
+      background: var(--tag-bg); border: 1px solid var(--border);
+      border-radius: 50px; padding: .28rem .8rem; font-size: .78rem; color: var(--muted);
+    }
+    .pill.blue { color: var(--accent); border-color: rgba(88,166,255,.35); }
+    .pill.purple { color: var(--accent2); border-color: rgba(188,140,255,.35); }
+    .pill.green { color: var(--accent3); border-color: rgba(63,185,80,.35); }
+
+    /* ── LAYOUT ── */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ── SECTIONS ── */
+    section { padding: 3.5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-child { border-bottom: none; }
+    .section-label {
+      font-size: .72rem; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--accent); font-weight: 600; margin-bottom: .5rem;
+    }
+    h2 { font-size: 1.7rem; font-weight: 700; margin-bottom: 1rem; }
+    h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: .6rem; color: var(--text); }
+    p  { color: var(--muted); margin-bottom: .9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      background: var(--surface); border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0; padding: 1rem 1.2rem; margin: 1.2rem 0;
+    }
+    .callout.green { border-color: var(--accent3); }
+    .callout.purple { border-color: var(--accent2); }
+    .callout.red { border-color: var(--accent4); }
+    .callout strong { color: var(--text); display: block; margin-bottom: .3rem; }
+
+    /* ── CODE BLOCKS ── */
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.2rem 1.4rem; overflow-x: auto; margin: 1rem 0; font-size: .83rem;
+      line-height: 1.65;
+    }
+    code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+    pre code { color: #e6edf3; }
+    .file-label {
+      background: var(--tag-bg); border: 1px solid var(--border); border-bottom: none;
+      border-radius: 8px 8px 0 0; padding: .35rem .9rem; font-size: .75rem;
+      color: var(--muted); font-family: monospace; display: inline-block; margin-top: 1rem;
+    }
+    code .kw { color: #ff7b72; }
+    code .fn { color: #d2a8ff; }
+    code .str { color: #a5d6ff; }
+    code .cm { color: #8b949e; font-style: italic; }
+    code .dec { color: #ffa657; }
+    code .num { color: #79c0ff; }
+    code .cls { color: #f0c27a; }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow {
+      display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+      margin: 1.5rem 0; justify-content: center;
+    }
+    .flow-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: .7rem 1rem; text-align: center; min-width: 110px;
+    }
+    .flow-box .icon { font-size: 1.4rem; display: block; margin-bottom: .25rem; }
+    .flow-box .label { font-size: .75rem; color: var(--muted); }
+    .flow-box .title { font-size: .82rem; font-weight: 600; }
+    .flow-arrow {
+      color: var(--muted); font-size: 1.3rem; padding: 0 .4rem; flex-shrink: 0;
+    }
+    .flow-box.highlight { border-color: var(--accent); background: rgba(88,166,255,.08); }
+    .flow-box.green { border-color: var(--accent3); background: rgba(63,185,80,.08); }
+    .flow-box.purple { border-color: var(--accent2); background: rgba(188,140,255,.08); }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 1.2rem; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+    }
+    .card h3 { color: var(--accent); margin-bottom: .5rem; }
+    .card.green h3 { color: var(--accent3); }
+    .card.purple h3 { color: var(--accent2); }
+    .card.red h3 { color: var(--accent4); }
+
+    /* ── TABLE ── */
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .85rem; }
+    th { background: var(--tag-bg); color: var(--accent); text-align: left; padding: .55rem .9rem; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: .5rem .9rem; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+    td:first-child { color: var(--text); font-family: monospace; font-size: .82rem; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── STEP LIST ── */
+    .steps { counter-reset: step; list-style: none; }
+    .steps li {
+      counter-increment: step; padding: .8rem 1rem .8rem 3.2rem;
+      position: relative; margin-bottom: .6rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    }
+    .steps li::before {
+      content: counter(step); position: absolute; left: .9rem; top: .8rem;
+      background: var(--accent); color: #0d1117; border-radius: 50%;
+      width: 1.4rem; height: 1.4rem; display: flex; align-items: center; justify-content: center;
+      font-size: .72rem; font-weight: 700;
+    }
+    .steps li strong { color: var(--text); }
+
+    /* ── COMPARISON ── */
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin:1rem 0; }
+    @media(max-width:600px){ .compare { grid-template-columns: 1fr; } .flow { flex-direction: column; } }
+    .compare .side { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .compare .side-head { padding: .45rem .9rem; font-size: .75rem; font-weight: 600; background: var(--tag-bg); border-bottom: 1px solid var(--border); }
+    .compare .side-head.before { color: var(--accent4); }
+    .compare .side-head.after { color: var(--accent3); }
+    .compare pre { margin: 0; border: none; border-radius: 0; }
+
+    /* ── FOOTER ── */
+    footer { text-align: center; padding: 2.5rem; color: var(--muted); font-size: .82rem; border-top: 1px solid var(--border); }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── MISC ── */
+    .tag { background: var(--tag-bg); border: 1px solid var(--border); border-radius: 4px; padding: .1rem .4rem; font-size: .78rem; font-family: monospace; color: var(--text); }
+    ul.bullets { list-style: disc; padding-left: 1.4rem; }
+    ul.bullets li { color: var(--muted); margin-bottom: .4rem; }
+    ul.bullets li strong { color: var(--text); }
+    .mt { margin-top: 1.2rem; }
+    .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════ NAV ══════════════════════════ -->
+<nav>
+  <span class="brand">🎬 Movielandia · Inertia Study Guide</span>
+  <a href="#what">What is Inertia?</a>
+  <a href="#adapter">The Adapter</a>
+  <a href="#lifecycle">Lifecycle</a>
+  <a href="#setup">NestJS Setup</a>
+  <a href="#decorator">@Inertia Decorator</a>
+  <a href="#shared">Shared Data</a>
+  <a href="#frontend">Frontend</a>
+  <a href="#pages">React Pages</a>
+  <a href="#navigation">Navigation</a>
+  <a href="#errors">Error Handling</a>
+  <a href="#ssr">SSR</a>
+</nav>
+
+<!-- ══════════════════════════ HERO ══════════════════════════ -->
+<div class="hero">
+  <div class="badge">📚 Study Guide · Movielandia24</div>
+  <h1>Inertia.js with <span>NestJS</span> &amp; React</h1>
+  <p>How the <strong>inertia-nestjs</strong> adapter bridges a NestJS backend with a React SPA — no separate API, no fetch boilerplate.</p>
+  <div class="pills">
+    <span class="pill blue">inertia-nestjs</span>
+    <span class="pill blue">@inertiajs/react</span>
+    <span class="pill">NestJS 11</span>
+    <span class="pill purple">React 18</span>
+    <span class="pill green">Handlebars root shell</span>
+    <span class="pill">Vite</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════ 1 · WHAT IS INERTIA ══════════════════════════ -->
+<section id="what">
+  <div class="wrapper">
+    <div class="section-label">Section 01</div>
+    <h2>What is Inertia.js?</h2>
+
+    <p>Inertia.js is a <strong style="color:var(--text)">protocol + thin client library</strong> that lets you build modern single-page applications using classic server-side routing. Think of it as the glue between a traditional MVC backend (NestJS, Laravel, Rails…) and a modern frontend framework (React, Vue, Svelte).</p>
+
+    <div class="grid-2 mt">
+      <div class="card">
+        <h3>Without Inertia</h3>
+        <ul class="bullets">
+          <li>Backend exposes a <strong>REST / GraphQL API</strong></li>
+          <li>Frontend fetches data with <strong>useEffect / SWR / TanStack Query</strong></li>
+          <li>You manage loading states, error states, caching</li>
+          <li>Auth tokens passed in headers; CORS config needed</li>
+          <li>Two separate deploy targets</li>
+        </ul>
+      </div>
+      <div class="card green">
+        <h3>With Inertia</h3>
+        <ul class="bullets">
+          <li>Backend routes return <strong>page components + props</strong></li>
+          <li>Frontend receives props <strong>directly</strong> — no fetch calls</li>
+          <li>No loading skeletons: data arrives with the navigation</li>
+          <li>Session-based auth (same as classic MVC)</li>
+          <li>One deploy target, one codebase</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout mt">
+      <strong>The core idea</strong>
+      Instead of returning HTML or JSON, every controller action returns an <em>Inertia response</em>: a component name (e.g. <code>"Movies/Index"</code>) plus a plain-object payload of props. Inertia serialises this to JSON for XHR visits and wraps it in an HTML shell for full-page loads.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 2 · THE ADAPTER ══════════════════════════ -->
+<section id="adapter">
+  <div class="wrapper">
+    <div class="section-label">Section 02</div>
+    <h2>The <code>inertia-nestjs</code> Adapter</h2>
+
+    <p>The npm package <span class="tag">inertia-nestjs</span> is the official NestJS adapter. It provides three things:</p>
+
+    <table>
+      <thead>
+        <tr><th>Export</th><th>Type</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>InertiaModule</td><td>Dynamic NestJS module</td><td>Registers <code>InertiaService</code> and wires Handlebars helpers for the root shell view.</td></tr>
+        <tr><td>@Inertia(component)</td><td>Method decorator</td><td>Marks a controller action as an Inertia response. The return value becomes <code>props</code>.</td></tr>
+        <tr><td>InertiaService</td><td>Injectable service</td><td>Low-level API for rendering (<code>.render()</code>), redirecting, and sharing data programmatically.</td></tr>
+        <tr><td>HandleInertiaRequests</td><td>Abstract middleware class</td><td>Base for the <code>share()</code> middleware that injects global props (auth user, flash…) into every response.</td></tr>
+        <tr><td>InertiaResponseHandledException</td><td>Sentinel exception</td><td>Thrown internally after writing the HTTP response; must be swallowed by the global exception filter.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout purple">
+      <strong>Package install</strong>
+      <code>npm install inertia-nestjs @inertiajs/react</code>
+    </div>
+
+    <h3 class="mt">How the adapter distinguishes request types</h3>
+    <p>Every Inertia XHR request carries the header <span class="tag">X-Inertia: true</span>. The adapter inspects this header on every request:</p>
+    <div class="flow">
+      <div class="flow-box"><span class="icon">🌐</span><span class="label">Browser</span><span class="title">Full-page load</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight"><span class="icon">🔍</span><span class="label">Adapter check</span><span class="title">X-Inertia?</span></div>
+      <div class="flow-arrow">→ No →</div>
+      <div class="flow-box green"><span class="icon">📄</span><span class="label">Render</span><span class="title">app.hbs shell</span></div>
+      <div class="flow-arrow"></div>
+    </div>
+    <div class="flow">
+      <div class="flow-box"><span class="icon">⚡</span><span class="label">Client-side nav</span><span class="title">SPA visit</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight"><span class="icon">🔍</span><span class="label">Adapter check</span><span class="title">X-Inertia: true</span></div>
+      <div class="flow-arrow">→ Yes →</div>
+      <div class="flow-box purple"><span class="icon">📦</span><span class="label">Returns</span><span class="title">JSON response</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 3 · LIFECYCLE ══════════════════════════ -->
+<section id="lifecycle">
+  <div class="wrapper">
+    <div class="section-label">Section 03</div>
+    <h2>Request / Response Lifecycle</h2>
+
+    <ol class="steps">
+      <li><strong>Browser navigates to <code>/movies</code></strong> — full GET request, no Inertia header yet.</li>
+      <li><strong>InertiaShareMiddleware runs</strong> — reads session, fetches <code>auth.user</code> and <code>flash</code>, merges into shared props for this request.</li>
+      <li><strong>MovieController.index() executes</strong> — queries Prisma, builds <code>{ movies, pagination, filters }</code>, returns plain object.</li>
+      <li><strong>@Inertia("Movies/Index") intercepts the return value</strong> — adapter merges page props + shared props into an Inertia page object: <code>{ component: "Movies/Index", props: {…}, url: "/movies", version: "…" }</code>.</li>
+      <li><strong>First load</strong>: serialised to JSON inside <code>data-page</code> attribute of <code>&lt;div id="app"&gt;</code> in <strong>app.hbs</strong>.</li>
+      <li><strong>React boots</strong> — <code>createInertiaApp</code> reads <code>data-page</code>, lazy-imports <code>pages/Movies/Index.tsx</code>, mounts it with the deserialised props.</li>
+      <li><strong>User clicks a link / <code>router.get()</code></strong> — Inertia intercepts, sends XHR with <code>X-Inertia: true</code>.</li>
+      <li><strong>Server returns JSON</strong> (same shape, no HTML shell), React swaps the component without a full-page reload.</li>
+    </ol>
+
+    <div class="callout green mt">
+      <strong>Version checking</strong>
+      The adapter compares the <span class="tag">X-Inertia-Version</span> header against the server's version (computed from <code>public/build/app.js</code> file size in this project). If they differ, Inertia forces a full-page reload to pick up fresh assets.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 4 · NESTJS SETUP ══════════════════════════ -->
+<section id="setup">
+  <div class="wrapper">
+    <div class="section-label">Section 04</div>
+    <h2>NestJS Setup</h2>
+
+    <h3>main.ts — bootstrapping the Express host</h3>
+    <p>NestJS sits on top of Express. Three things are wired here for Inertia to work: static assets, the Handlebars view engine, and the session middleware.</p>
+
+    <div class="file-label">src/main.ts</div>
+    <pre><code><span class="kw">const</span> app = <span class="kw">await</span> <span class="fn">NestFactory.create</span>&lt;<span class="cls">NestExpressApplication</span>&gt;(<span class="cls">AppModule</span>);
+
+<span class="cm">// Serve Vite-built assets (JS/CSS) from /public</span>
+app.<span class="fn">useStaticAssets</span>(join(process.cwd(), <span class="str">"public"</span>));
+
+<span class="cm">// Handlebars renders the ONE root HTML shell (views/app.hbs)</span>
+app.<span class="fn">setBaseViewsDir</span>(join(process.cwd(), <span class="str">"views"</span>));
+app.<span class="fn">setViewEngine</span>(<span class="str">"hbs"</span>);
+hbs.<span class="fn">registerHelper</span>(<span class="str">"json"</span>, (value) =&gt; JSON.stringify(value));
+
+<span class="cm">// Session — Inertia relies on server-side session for auth + flash</span>
+app.<span class="fn">use</span>(session({
+  secret: process.env.SESSION_SECRET,
+  resave: <span class="kw">false</span>, saveUninitialized: <span class="kw">false</span>,
+  cookie: { httpOnly: <span class="kw">true</span>, secure: isProduction, maxAge: <span class="num">604800000</span> },
+}));</code></pre>
+
+    <h3 class="mt">app.module.ts — wiring InertiaModule</h3>
+
+    <div class="file-label">src/app.module.ts</div>
+    <pre><code><span class="kw">import</span> { <span class="cls">InertiaModule</span> } <span class="kw">from</span> <span class="str">"inertia-nestjs"</span>;
+
+<span class="dec">@Module</span>({
+  imports: [
+    <span class="cls">InertiaModule</span>.<span class="fn">forRoot</span>({
+      rootView: <span class="str">"app"</span>,        <span class="cm">// → views/app.hbs</span>
+      version: assetVersion, <span class="cm">// function returning a string for cache-busting</span>
+      ssr: {
+        enabled: <span class="kw">false</span>,
+        url: <span class="str">"http://127.0.0.1:13714"</span>,
+        bundlePath: <span class="str">"bootstrap/ssr/ssr.js"</span>,
+      },
+    }),
+    <span class="cm">// ... feature modules</span>
+  ],
+})
+<span class="kw">export class</span> <span class="cls">AppModule</span> <span class="kw">implements</span> <span class="cls">NestModule</span> {
+  <span class="fn">configure</span>(consumer: <span class="cls">MiddlewareConsumer</span>) {
+    <span class="cm">// Apply the shared-data middleware to every route</span>
+    consumer.<span class="fn">apply</span>(<span class="cls">InertiaShareMiddleware</span>).<span class="fn">forRoutes</span>(<span class="str">"*"</span>);
+  }
+}
+
+<span class="cm">// Version is derived from the built JS bundle's byte length</span>
+<span class="kw">function</span> <span class="fn">assetVersion</span>(): <span class="cls">string</span> {
+  <span class="kw">try</span> { <span class="kw">return</span> <span class="fn">readFileSync</span>(join(process.cwd(), <span class="str">"public/build/app.js"</span>)).length.<span class="fn">toString</span>(); }
+  <span class="kw">catch</span> { <span class="kw">return</span> <span class="str">"1.0.0"</span>; }
+}</code></pre>
+
+    <h3 class="mt">views/app.hbs — the one HTML shell Inertia ever renders</h3>
+    <p>This Handlebars template is rendered <em>only once</em> per full-page load. After that, all navigation is handled by the client-side Inertia router.</p>
+
+    <div class="file-label">views/app.hbs</div>
+    <pre><code><span class="str">&lt;!DOCTYPE html&gt;</span>
+&lt;html lang=<span class="str">"en"</span>&gt;
+  &lt;head&gt;
+    <span class="cm">&lt;!-- SSR head tags injected here (title, meta) --&gt;</span>
+    {{#each ssrHead}}{{{this}}}{{/each}}
+
+    <span class="cm">&lt;!-- Vite-built CSS and JS --&gt;</span>
+    &lt;link rel=<span class="str">"stylesheet"</span> href=<span class="str">"/build/app.css"</span> /&gt;
+    &lt;script type=<span class="str">"module"</span> src=<span class="str">"/build/app.js"</span> defer&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    <span class="cm">&lt;!-- The "page" variable is the serialised Inertia page object --&gt;</span>
+    <span class="cm">&lt;!-- React mounts onto this div and reads data-page --&gt;</span>
+    {{#if ssrBody}}
+      &lt;div id=<span class="str">"app"</span> data-page=<span class="str">"{{json page}}"</span>&gt;{{{ssrBody}}}&lt;/div&gt;
+    {{else}}
+      &lt;div id=<span class="str">"app"</span> data-page=<span class="str">"{{json page}}"</span>&gt;&lt;/div&gt;
+    {{/if}}
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <div class="callout">
+      <strong>Key insight</strong>
+      The <code>{{json page}}</code> helper serialises the Inertia page object (component name + props) as a JSON string into <code>data-page</code>. This is how React knows which component to render and what props to pass — without a separate API call.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 5 · DECORATOR ══════════════════════════ -->
+<section id="decorator">
+  <div class="wrapper">
+    <div class="section-label">Section 05</div>
+    <h2>The <code>@Inertia()</code> Decorator</h2>
+
+    <p>The <span class="tag">@Inertia(componentName)</span> decorator is all you need to turn any controller method into an Inertia response. Whatever the method returns becomes the <strong>props</strong> of that page component.</p>
+
+    <div class="grid-2">
+      <div>
+        <div class="file-label">src/app.controller.ts</div>
+        <pre><code><span class="dec">@Get</span>()
+<span class="dec">@Inertia</span>(<span class="str">"Home"</span>)
+<span class="kw">async</span> <span class="fn">home</span>() {
+  <span class="kw">return await</span> <span class="kw">this</span>.appService.<span class="fn">getHomeData</span>();
+  <span class="cm">// → props sent to pages/Home.tsx</span>
+}</code></pre>
+      </div>
+      <div>
+        <div class="file-label">src/modules/movie/movie.controller.ts</div>
+        <pre><code><span class="dec">@Get</span>()
+<span class="dec">@Inertia</span>(<span class="str">"Movies/Index"</span>)
+<span class="kw">async</span> <span class="fn">index</span>(<span class="dec">@Query</span>() query: <span class="cls">MovieQueryDto</span>, <span class="dec">@Req</span>() req) {
+  <span class="kw">const</span> data = <span class="kw">await this</span>.movieService.<span class="fn">findAll</span>(query, userId);
+  <span class="kw">return</span> {
+    movies: data.movies,
+    pagination: { total, page, totalPages, perPage },
+    filters: query,
+  };
+}</code></pre>
+      </div>
+    </div>
+
+    <h3 class="mt">The component name maps to a file path</h3>
+    <table>
+      <thead><tr><th>@Inertia() value</th><th>File resolved</th></tr></thead>
+      <tbody>
+        <tr><td>"Home"</td><td>resources/js/pages/Home.tsx</td></tr>
+        <tr><td>"Movies/Index"</td><td>resources/js/pages/Movies/Index.tsx</td></tr>
+        <tr><td>"Auth/Login"</td><td>resources/js/pages/Auth/Login.tsx</td></tr>
+        <tr><td>"Users/Favorites"</td><td>resources/js/pages/Users/Favorites.tsx</td></tr>
+        <tr><td>"Forum/Topic"</td><td>resources/js/pages/Forum/Topic.tsx</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="mt">Full Auth controller — multiple page types</h3>
+    <div class="file-label">src/auth/auth.controller.ts (excerpts)</div>
+    <pre><code><span class="dec">@Get</span>(<span class="str">"login"</span>)
+<span class="dec">@Inertia</span>(<span class="str">"Auth/Login"</span>)
+<span class="fn">loginPage</span>() { <span class="kw">return</span> {}; }            <span class="cm">// empty props — page needs no server data</span>
+
+<span class="dec">@Post</span>(<span class="str">"login"</span>)
+<span class="kw">async</span> <span class="fn">login</span>(<span class="dec">@Body</span>() dto, <span class="dec">@Req</span>() req, <span class="dec">@Res</span>() res) {
+  <span class="cm">// POST handlers do NOT use @Inertia — they redirect (PRG pattern)</span>
+  <span class="kw">const</span> userId = <span class="kw">await this</span>.authService.<span class="fn">validateCredentials</span>(dto.emailOrUsername, dto.password);
+  req.session.userId = userId;
+  <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="num">303</span>, <span class="str">"/"</span>);
+}
+
+<span class="dec">@Get</span>(<span class="str">"reset-password"</span>)
+<span class="dec">@Inertia</span>(<span class="str">"Auth/ResetPassword"</span>)
+<span class="fn">resetPasswordPage</span>(<span class="dec">@Req</span>() req) {
+  <span class="kw">return</span> { token: req.query.token ?? <span class="str">""</span> }; <span class="cm">// pass the token as a prop</span>
+}</code></pre>
+
+    <div class="callout red mt">
+      <strong>PRG Pattern with Inertia</strong>
+      Mutation routes (POST / PUT / DELETE) should <strong>not</strong> use <code>@Inertia()</code>. Instead, set a flash message on the session and <code>res.redirect(303, …)</code>. The redirect target is a GET route decorated with <code>@Inertia()</code>, creating the full POST → Redirect → GET cycle.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 6 · SHARED DATA ══════════════════════════ -->
+<section id="shared">
+  <div class="wrapper">
+    <div class="section-label">Section 06</div>
+    <h2>Shared Data — <code>InertiaShareMiddleware</code></h2>
+
+    <p>Some props need to be available on <em>every</em> page — the authenticated user, flash messages, CSRF token, etc. Inertia solves this with the <strong>share</strong> mechanism. In this project, <code>InertiaShareMiddleware</code> extends <code>HandleInertiaRequests</code> and is applied globally.</p>
+
+    <div class="file-label">src/inertia/inertia-share.middleware.ts</div>
+    <pre><code><span class="dec">@Injectable</span>()
+<span class="kw">export class</span> <span class="cls">InertiaShareMiddleware</span> <span class="kw">extends</span> <span class="cls">HandleInertiaRequests</span> {
+  <span class="fn">constructor</span>(inertia: <span class="cls">InertiaService</span>, <span class="kw">private readonly</span> prisma: <span class="cls">PrismaService</span>) {
+    <span class="kw">super</span>(inertia);
+  }
+
+  <span class="kw">async</span> <span class="fn">share</span>(req: <span class="cls">Request</span>) {
+    <span class="kw">const</span> base = <span class="kw">await super</span>.<span class="fn">share</span>(req);      <span class="cm">// always call super first</span>
+    <span class="kw">const</span> userId = req.session?.userId;
+
+    <span class="cm">// Fetch auth user from DB on every request</span>
+    <span class="kw">let</span> authUser = <span class="kw">null</span>;
+    <span class="kw">if</span> (userId) {
+      <span class="kw">const</span> user = <span class="kw">await this</span>.prisma.user.<span class="fn">findUnique</span>({
+        where: { id: userId },
+        select: { id: <span class="kw">true</span>, userName: <span class="kw">true</span>, email: <span class="kw">true</span>, avatar: { select: { photoSrc: <span class="kw">true</span> } } },
+      });
+      <span class="kw">if</span> (user) authUser = { id: user.id, userName: user.userName, email: user.email, avatar: user.avatar?.photoSrc ?? <span class="kw">null</span> };
+    }
+
+    <span class="cm">// Read flash once, then delete it (one-time message)</span>
+    <span class="kw">const</span> flash = req.session?.flash ?? <span class="kw">null</span>;
+    <span class="kw">if</span> (req.session?.flash) <span class="kw">delete</span> req.session.flash;
+
+    <span class="kw">return</span> { ...base, auth: { user: authUser }, flash };
+  }
+}</code></pre>
+
+    <div class="grid-2 mt">
+      <div class="callout">
+        <strong>What React components receive</strong>
+        Every page automatically receives <code>auth.user</code> and <code>flash</code> alongside its own props. Access them via <code>usePage().props</code> from <span class="tag">@inertiajs/react</span>.
+      </div>
+      <div class="callout green">
+        <strong>One-time flash messages</strong>
+        A controller sets <code>req.session.flash = { type: "success", message: "…" }</code>. The middleware reads it and deletes it so it only appears once — exactly like Laravel's flash.
+      </div>
+    </div>
+
+    <h3 class="mt">Accessing shared props in React</h3>
+    <pre><code><span class="kw">import</span> { <span class="fn">usePage</span> } <span class="kw">from</span> <span class="str">"@inertiajs/react"</span>;
+
+<span class="kw">function</span> <span class="fn">Navbar</span>() {
+  <span class="kw">const</span> { auth, flash } = <span class="fn">usePage</span>().props <span class="kw">as</span> { auth: { user: User | <span class="kw">null</span> }; flash: Flash | <span class="kw">null</span> };
+  <span class="kw">return</span> (
+    &lt;nav&gt;
+      {auth.user ? &lt;<span class="cls">UserMenu</span> user={auth.user} /&gt; : &lt;<span class="cls">GuestLinks</span> /&gt;}
+      {flash &amp;&amp; &lt;<span class="cls">FlashBanner</span> flash={flash} /&gt;}
+    &lt;/nav&gt;
+  );
+}</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 7 · FRONTEND SETUP ══════════════════════════ -->
+<section id="frontend">
+  <div class="wrapper">
+    <div class="section-label">Section 07</div>
+    <h2>Frontend Bootstrap</h2>
+
+    <h3>Client-side entry — resources/js/app.tsx</h3>
+    <div class="file-label">resources/js/app.tsx</div>
+    <pre><code><span class="kw">import</span> { <span class="fn">createInertiaApp</span> } <span class="kw">from</span> <span class="str">"@inertiajs/react"</span>;
+<span class="kw">import</span> { <span class="fn">createRoot</span> } <span class="kw">from</span> <span class="str">"react-dom/client"</span>;
+
+<span class="cm">// Vite's import.meta.glob eagerly maps all page files</span>
+<span class="kw">const</span> pages = import.meta.<span class="fn">glob</span>&lt;<span class="cls">PageModule</span>&gt;(<span class="str">"./pages/**/*.tsx"</span>);
+
+<span class="fn">createInertiaApp</span>({
+  title: (title) =&gt; (title ? <span class="str">`${title} - Movielandia24`</span> : <span class="str">"Movielandia24"</span>),
+
+  <span class="cm">// Called with the component name from @Inertia("Movies/Index")</span>
+  resolve: <span class="kw">async</span> (name) =&gt; {
+    <span class="kw">const</span> page = pages[<span class="str">`./pages/${name}.tsx`</span>];
+    <span class="kw">if</span> (!page) <span class="kw">throw new</span> Error(<span class="str">`Page not found: ${name}`</span>);
+    <span class="kw">const</span> module = <span class="kw">await</span> <span class="fn">page</span>();
+    <span class="kw">return</span> module.default;             <span class="cm">// React component exported as default</span>
+  },
+
+  setup({ el, App, props }) {
+    <span class="cm">// el = the &lt;div id="app"&gt; from app.hbs</span>
+    <span class="fn">createRoot</span>(el).<span class="fn">render</span>(&lt;<span class="cls">App</span> {...props} /&gt;);
+  },
+});</code></pre>
+
+    <div class="callout purple mt">
+      <strong>How <code>resolve</code> works</strong>
+      Vite pre-maps all <code>pages/**/*.tsx</code> files at build time via <code>import.meta.glob</code>. When Inertia calls <code>resolve("Movies/Index")</code>, you look up <code>"./pages/Movies/Index.tsx"</code> in that map and dynamically import it. The result is <strong>code-split</strong> automatically — each page is its own JS chunk.
+    </div>
+
+    <h3 class="mt">Vite config (bundle output)</h3>
+    <div class="file-label">vite.config.ts (key parts)</div>
+    <pre><code><span class="kw">export default</span> <span class="fn">defineConfig</span>({
+  build: {
+    outDir: <span class="str">"public/build"</span>,          <span class="cm">// served by app.useStaticAssets("public")</span>
+    rollupOptions: {
+      input: {
+        app: <span class="str">"resources/js/app.tsx"</span>,  <span class="cm">// client entry</span>
+        ssr: <span class="str">"resources/js/ssr.tsx"</span>,  <span class="cm">// SSR entry (optional)</span>
+      },
+    },
+  },
+});</code></pre>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 8 · REACT PAGES ══════════════════════════ -->
+<section id="pages">
+  <div class="wrapper">
+    <div class="section-label">Section 08</div>
+    <h2>React Pages — Consuming Props</h2>
+
+    <p>A React page is just a default-exported component. Props are passed directly from the controller return value — no hooks, no fetch calls.</p>
+
+    <div class="file-label">resources/js/pages/Movies/Index.tsx</div>
+    <pre><code><span class="cm">// Props interface matches exactly what MovieController.index() returns</span>
+<span class="kw">interface</span> <span class="cls">MoviesIndexProps</span> {
+  movies: <span class="cls">Movie</span>[];
+  pagination: <span class="cls">Pagination</span>;
+  filters?: <span class="cls">SortFilters</span>;
+}
+
+<span class="kw">export default function</span> <span class="fn">MoviesIndex</span>({ movies, pagination, filters = {} }: <span class="cls">MoviesIndexProps</span>) {
+  <span class="cm">// props arrive directly — no useEffect, no loading spinner needed</span>
+  <span class="kw">const</span> sortBy = filters.sortBy ?? <span class="str">"title"</span>;
+
+  <span class="kw">const</span> navigate = (overrides) =&gt;
+    router.<span class="fn">get</span>(<span class="str">"/movies"</span>, { sortBy, ...overrides }, { preserveScroll: <span class="kw">false</span> });
+
+  <span class="kw">return</span> (
+    &lt;<span class="cls">AppLayout</span> title=<span class="str">"Movies"</span>&gt;
+      &lt;<span class="cls">SortControls</span> sortBy={sortBy} onChange={navigate} /&gt;
+      &lt;<span class="cls">MediaGrid</span> items={movies} /&gt;
+      &lt;<span class="cls">PaginationBar</span> {...pagination} /&gt;
+    &lt;/<span class="cls">AppLayout</span>&gt;
+  );
+}</code></pre>
+
+    <div class="divider"></div>
+
+    <div class="grid-2">
+      <div>
+        <h3>Forum page with dual data sources</h3>
+        <div class="file-label">forum.controller.ts</div>
+        <pre><code><span class="dec">@Get</span>(<span class="str">"topics/:id"</span>)
+<span class="dec">@Inertia</span>(<span class="str">"Forum/Topic"</span>)
+<span class="kw">async</span> <span class="fn">topic</span>(<span class="dec">@Param</span>(<span class="str">"id"</span>, <span class="cls">ParseIntPipe</span>) id, <span class="dec">@Query</span>(<span class="str">"page"</span>) page = <span class="num">1</span>) {
+  <span class="kw">await this</span>.forumService.<span class="fn">incrementViewCount</span>(id);
+  <span class="kw">const</span> [topic, posts] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+    <span class="kw">this</span>.forumService.<span class="fn">findTopicById</span>(id),
+    <span class="kw">this</span>.forumService.<span class="fn">findPostsByTopic</span>(id, +page, <span class="num">20</span>),
+  ]);
+  <span class="kw">return</span> { topic, posts };
+}</code></pre>
+      </div>
+      <div>
+        <h3>User page with auth guard</h3>
+        <div class="file-label">user.controller.ts</div>
+        <pre><code><span class="dec">@Get</span>(<span class="str">"me"</span>)
+<span class="dec">@UseGuards</span>(<span class="cls">AuthGuard</span>)
+<span class="dec">@Inertia</span>(<span class="str">"Users/Profile"</span>)
+<span class="kw">async</span> <span class="fn">profile</span>(<span class="dec">@Req</span>() req) {
+  <span class="kw">const</span> user = <span class="kw">await this</span>.userService.<span class="fn">getUserById</span>(req.session.userId);
+  <span class="kw">return</span> { user, isOwnProfile: <span class="kw">true</span> };
+  <span class="cm">// AuthGuard redirects to /login if not authenticated</span>
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 9 · NAVIGATION ══════════════════════════ -->
+<section id="navigation">
+  <div class="wrapper">
+    <div class="section-label">Section 09</div>
+    <h2>Client-side Navigation</h2>
+
+    <p>Inertia intercepts clicks on <code>&lt;Link&gt;</code> components and calls to <code>router.*</code>. These become XHR requests instead of full-page reloads.</p>
+
+    <div class="grid-2">
+      <div>
+        <h3><code>&lt;Link&gt;</code> component</h3>
+        <pre><code><span class="kw">import</span> { <span class="cls">Link</span> } <span class="kw">from</span> <span class="str">"@inertiajs/react"</span>;
+
+<span class="cm">// Renders an &lt;a&gt; tag but intercepts the click</span>
+&lt;<span class="cls">Link</span> href=<span class="str">"/movies"</span>&gt;All Movies&lt;/<span class="cls">Link</span>&gt;
+&lt;<span class="cls">Link</span> href={<span class="str">`/movies/${id}`</span>}&gt;View&lt;/<span class="cls">Link</span>&gt;
+&lt;<span class="cls">Link</span> href=<span class="str">"/logout"</span> method=<span class="str">"post"</span> as=<span class="str">"button"</span>&gt;
+  Sign Out
+&lt;/<span class="cls">Link</span>&gt;</code></pre>
+      </div>
+      <div>
+        <h3><code>router</code> programmatic navigation</h3>
+        <pre><code><span class="kw">import</span> { router } <span class="kw">from</span> <span class="str">"@inertiajs/react"</span>;
+
+<span class="cm">// Navigate with query params (sort, page)</span>
+router.<span class="fn">get</span>(<span class="str">"/movies"</span>, {
+  sortBy: <span class="str">"ratingImdb"</span>, ascOrDesc: <span class="str">"desc"</span>,
+  page: <span class="num">1</span>, perPage: <span class="num">12</span>,
+}, { preserveScroll: <span class="kw">false</span> });
+
+<span class="cm">// POST form submission</span>
+router.<span class="fn">post</span>(<span class="str">"/forum/topics"</span>, formData);</code></pre>
+      </div>
+    </div>
+
+    <div class="callout mt">
+      <strong>How Inertia manages browser history</strong>
+      Every <code>router.get()</code> or <code>&lt;Link&gt;</code> click pushes or replaces a history entry. The back/forward buttons work natively. The <code>preserveScroll</code> option keeps the scroll position when navigating (useful for filters/sort controls).
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 10 · ERROR HANDLING ══════════════════════════ -->
+<section id="errors">
+  <div class="wrapper">
+    <div class="section-label">Section 10</div>
+    <h2>Error Handling with Inertia</h2>
+
+    <p>The adapter throws <span class="tag">InertiaResponseHandledException</span> after writing its own response. The global exception filter <strong>must</strong> swallow this — otherwise NestJS would try to write a second response.</p>
+
+    <div class="file-label">src/common/filters/http-exception.filter.ts</div>
+    <pre><code><span class="dec">@Catch</span>()  <span class="cm">// Catch ALL exceptions</span>
+<span class="kw">export class</span> <span class="cls">AllExceptionsFilter</span> <span class="kw">implements</span> <span class="cls">ExceptionFilter</span> {
+  <span class="fn">catch</span>(exception: <span class="kw">unknown</span>, host: <span class="cls">ArgumentsHost</span>): <span class="kw">void</span> {
+
+    <span class="cm">// ✅ Inertia already sent the response — nothing more to do</span>
+    <span class="kw">if</span> (exception <span class="kw">instanceof</span> <span class="cls">InertiaResponseHandledException</span>) {
+      <span class="kw">return</span>;
+    }
+
+    <span class="cm">// Handle regular HTTP + custom AppError exceptions normally…</span>
+    <span class="kw">const</span> { statusCode, message, error } = <span class="kw">this</span>.<span class="fn">resolveError</span>(exception);
+    response.<span class="fn">status</span>(statusCode).<span class="fn">json</span>({ statusCode, message, error, path, timestamp });
+  }
+}</code></pre>
+
+    <div class="callout red mt">
+      <strong>Critical gotcha</strong>
+      If you forget to handle <code>InertiaResponseHandledException</code> in your filter, every Inertia navigation will throw an unhandled exception error and you will see 500 errors in the console even though the page renders correctly. Always check for it first.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 11 · SSR ══════════════════════════ -->
+<section id="ssr">
+  <div class="wrapper">
+    <div class="section-label">Section 11</div>
+    <h2>Server-Side Rendering (SSR)</h2>
+
+    <p>Inertia supports SSR via a Node.js micro-server that renders the React component tree to HTML. In this project SSR is <strong>configured but disabled</strong> (<code>enabled: false</code>). Here is how it works when enabled.</p>
+
+    <div class="grid-2">
+      <div class="card purple">
+        <h3>How SSR works</h3>
+        <ul class="bullets">
+          <li>The adapter POSTs the page object to the SSR micro-server URL (<code>http://127.0.0.1:13714</code>)</li>
+          <li>The SSR server runs <code>bootstrap/ssr/ssr.js</code> — Vite-built from <code>resources/js/ssr.tsx</code></li>
+          <li>Returns <code>{ head: string[], body: string }</code></li>
+          <li>Adapter injects <code>ssrHead</code> and <code>ssrBody</code> into the Handlebars template</li>
+          <li>Browser sees real HTML, React then <em>hydrates</em> it</li>
+        </ul>
+      </div>
+      <div>
+        <div class="file-label">resources/js/ssr.tsx</div>
+        <pre><code><span class="kw">import</span> <span class="fn">createServer</span> <span class="kw">from</span> <span class="str">"@inertiajs/react/server"</span>;
+<span class="kw">import</span> <span class="cls">ReactDOMServer</span> <span class="kw">from</span> <span class="str">"react-dom/server"</span>;
+
+<span class="fn">createServer</span>((page) =>
+  <span class="fn">createInertiaApp</span>({
+    page,
+    render: <span class="cls">ReactDOMServer</span>.<span class="fn">renderToString</span>,
+    resolve: <span class="kw">async</span> (name) =&gt; {
+      <span class="kw">const</span> mod = <span class="kw">await</span> pages[<span class="str">`./pages/${name}.tsx`</span>]();
+      <span class="kw">return</span> mod.default;
+    },
+    setup: ({ App, props }) =&gt; &lt;<span class="cls">App</span> {...props} /&gt;,
+  })
+);</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ SUMMARY ══════════════════════════ -->
+<section id="summary" style="border-bottom:none">
+  <div class="wrapper">
+    <div class="section-label">Summary</div>
+    <h2>The Complete Picture</h2>
+
+    <div class="flow" style="flex-wrap:wrap; gap:.3rem">
+      <div class="flow-box green"><span class="icon">🌐</span><span class="label">Browser</span><span class="title">GET /movies</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box purple"><span class="icon">🔗</span><span class="label">Middleware</span><span class="title">ShareMiddleware</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight"><span class="icon">🎯</span><span class="label">NestJS</span><span class="title">MovieController</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight"><span class="icon">🏷️</span><span class="label">Decorator</span><span class="title">@Inertia("Movies/Index")</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green"><span class="icon">📄</span><span class="label">First load</span><span class="title">app.hbs + JSON</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box purple"><span class="icon">⚛️</span><span class="label">React</span><span class="title">Movies/Index.tsx</span></div>
+    </div>
+
+    <div class="grid-2 mt">
+      <div class="card">
+        <h3>Server files</h3>
+        <ul class="bullets">
+          <li><strong>src/main.ts</strong> — Express, HBS, sessions</li>
+          <li><strong>src/app.module.ts</strong> — InertiaModule.forRoot()</li>
+          <li><strong>src/inertia/inertia-share.middleware.ts</strong> — shared props</li>
+          <li><strong>src/modules/*/controller.ts</strong> — @Inertia() routes</li>
+          <li><strong>src/common/filters/…</strong> — swallow InertiaResponseHandledException</li>
+          <li><strong>views/app.hbs</strong> — the one HTML shell</li>
+        </ul>
+      </div>
+      <div class="card green">
+        <h3>Client files</h3>
+        <ul class="bullets">
+          <li><strong>resources/js/app.tsx</strong> — createInertiaApp + resolve</li>
+          <li><strong>resources/js/ssr.tsx</strong> — SSR server entry</li>
+          <li><strong>resources/js/pages/**/*.tsx</strong> — one file per route</li>
+          <li><strong>resources/js/layouts/</strong> — AppLayout, AuthLayout wrappers</li>
+          <li><strong>vite.config.ts</strong> — bundles to public/build/</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Movielandia24 · Inertia.js + NestJS + React Study Guide · Generated March 2026</p>
+  <p style="margin-top:.4rem">
+    <a href="https://inertiajs.com" target="_blank">inertiajs.com</a> ·
+    <a href="https://github.com/KarimAziev/inertia-nestjs" target="_blank">inertia-nestjs</a> ·
+    <a href="https://docs.nestjs.com" target="_blank">nestjs.com</a>
+  </p>
+</footer>
+
+</body>
+</html>
