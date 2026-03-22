@@ -4,9 +4,8 @@ import { SerieQueryDto } from "./dtos/serie-query.dto";
 import { CreateSerieDto } from "./dtos/create-serie.dto";
 import { UpdateSerieDto } from "./dtos/update-serie.dto";
 import { SerieListResponseDto, SerieDetailsDto, RelatedSeriesResponseDto } from "./dtos/serie-response.dto";
-import { SerieMapper } from "./serie.mapper";
-import { SerieParser } from "./serie.parser";
 import { ISerieRatingInfo } from "./serie.interface";
+import { truncateText } from "../../utils/transform.util";
 import { getCacheConfig, CACHE_TTL, shouldSkipCache } from "../../utils/cache.util";
 
 @Injectable()
@@ -21,7 +20,30 @@ export class SerieService {
         }
 
         try {
-            const { filters, orderByObject, skip, take } = SerieParser.parseSerieQuery(query);
+            const {
+                sortBy,
+                ascOrDesc = "asc",
+                perPage = 12,
+                page = 1,
+                title,
+                filterValue,
+                filterNameString,
+                filterOperatorString,
+            } = query;
+            const filters: any = {};
+            if (title) filters.title = { contains: title.toLowerCase() };
+            if (filterValue !== undefined && filterNameString && filterOperatorString) {
+                if (typeof filterValue === "string" && filterOperatorString === "contains") {
+                    filters[filterNameString] = { contains: filterValue.toLowerCase() };
+                } else {
+                    const operator =
+                        filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
+                    filters[filterNameString] = { [operator]: Number(filterValue) };
+                }
+            }
+            const skip = (page - 1) * perPage;
+            const take = perPage;
+            const orderByObject: any = { [sortBy || "title"]: ascOrDesc };
 
             const series = await this.prisma.serie.findMany({
                 where: filters,
@@ -38,13 +60,13 @@ export class SerieService {
                     const bookmarkInfo = userId
                         ? await this.getBookmarkStatus(serie.id, userId)
                         : { isBookmarked: false };
-                    return SerieMapper.toDtoWithDetails(serie, ratingsInfo[serie.id], bookmarkInfo);
+                    return this.mapToDetails(serie, ratingsInfo[serie.id], bookmarkInfo);
                 }),
             );
 
             const totalCount = await this.prisma.serie.count({ where: filters });
 
-            return SerieMapper.toListResponseDto({ series: seriesWithDetails, count: totalCount });
+            return { series: seriesWithDetails, count: totalCount };
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -89,7 +111,7 @@ export class SerieService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(serie.id, userId) : { isBookmarked: false };
         const reviewInfo = userId ? await this.getReviewStatus(serie.id, userId) : { isReviewed: false };
 
-        return SerieMapper.toDtoWithDetails(serie, ratingsInfo[serie.id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(serie, ratingsInfo[serie.id], bookmarkInfo, reviewInfo);
     }
 
     async findLatest(userId?: number): Promise<SerieDetailsDto[]> {
@@ -104,7 +126,7 @@ export class SerieService {
         return Promise.all(
             series.map(async (serie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(serie.id, userId) : { isBookmarked: false };
-                return SerieMapper.toDtoWithDetails(serie, ratingsInfo[serie.id], bookmarkInfo);
+                return this.mapToDetails(serie, ratingsInfo[serie.id], bookmarkInfo);
             }),
         );
     }
@@ -163,7 +185,7 @@ export class SerieService {
         const seriesWithDetails = await Promise.all(
             relatedSeries.map(async (serie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(serie.id, userId) : { isBookmarked: false };
-                return SerieMapper.toDtoWithDetails(serie, ratingsInfo[serie.id], bookmarkInfo);
+                return this.mapToDetails(serie, ratingsInfo[serie.id], bookmarkInfo);
             }),
         );
 
@@ -187,7 +209,7 @@ export class SerieService {
         const seriesWithDetails = await Promise.all(
             series.map(async (serie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(serie.id, userId) : { isBookmarked: false };
-                return SerieMapper.toDtoWithDetails(serie, ratingsInfo[serie.id], bookmarkInfo);
+                return this.mapToDetails(serie, ratingsInfo[serie.id], bookmarkInfo);
             }),
         );
 
@@ -195,7 +217,7 @@ export class SerieService {
             where: { title: { contains: title.toLowerCase() } },
         });
 
-        return SerieMapper.toListResponseDto({ series: seriesWithDetails, count });
+        return { series: seriesWithDetails, count };
     }
 
     async create(createSerieDto: CreateSerieDto): Promise<SerieDetailsDto> {
@@ -212,7 +234,7 @@ export class SerieService {
             include: { genres: { select: { genre: true } } },
         });
 
-        return SerieMapper.toDto(serie);
+        return serie as unknown as SerieDetailsDto;
     }
 
     async update(id: number, updateSerieDto: UpdateSerieDto): Promise<SerieDetailsDto> {
@@ -238,7 +260,7 @@ export class SerieService {
             include: { genres: { select: { genre: true } } },
         });
 
-        return SerieMapper.toDto(updatedSerie);
+        return updatedSerie as unknown as SerieDetailsDto;
     }
 
     async remove(id: number): Promise<void> {
@@ -294,5 +316,43 @@ export class SerieService {
         });
 
         return { isReviewed: !!existingReview };
+    }
+
+    private mapToDetails(
+        serie: any,
+        ratingInfo?: ISerieRatingInfo,
+        bookmarkInfo?: { isBookmarked: boolean },
+        reviewInfo?: { isReviewed: boolean },
+    ): SerieDetailsDto {
+        return {
+            id: serie.id,
+            title: serie.title,
+            description: serie.description ? truncateText(serie.description, 200) : undefined,
+            photoSrc: serie.photoSrc,
+            photoSrcProd: serie.photoSrcProd,
+            trailerSrc: serie.trailerSrc,
+            ratingImdb: serie.ratingImdb,
+            dateAired: serie.dateAired,
+            releaseYear: serie.dateAired ? new Date(serie.dateAired).getFullYear() : null,
+            averageRating: ratingInfo?.averageRating ?? null,
+            genres: serie.genres?.map((g: any) => ({ id: g.genre.id, name: g.genre.name })) ?? [],
+            seasons: serie.seasons?.map((s: any) => ({ id: s.id, title: s.title })) ?? [],
+            ratings: ratingInfo
+                ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
+                : undefined,
+            isBookmarked: bookmarkInfo?.isBookmarked || false,
+            isReviewed: reviewInfo?.isReviewed || false,
+            reviews: serie.reviews?.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })),
+        };
     }
 }

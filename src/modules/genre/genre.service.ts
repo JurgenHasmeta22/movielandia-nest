@@ -4,8 +4,6 @@ import { GenreQueryDto } from "./dtos/genre-query.dto";
 import { CreateGenreDto } from "./dtos/create-genre.dto";
 import { UpdateGenreDto } from "./dtos/update-genre.dto";
 import { GenreListResponseDto, GenreDetailsDto } from "./dtos/genre-response.dto";
-import { GenreMapper } from "./genre.mapper";
-import { GenreParser } from "./genre.parser";
 
 @Injectable()
 export class GenreService {
@@ -13,7 +11,12 @@ export class GenreService {
 
     async findAll(query: GenreQueryDto, userId?: number): Promise<GenreListResponseDto> {
         try {
-            const { filters, orderByObject, skip, take } = GenreParser.parseGenreQuery(query);
+            const { sortBy, ascOrDesc = "asc", perPage = 20, page = 1, name } = query;
+            const filters: any = {};
+            if (name) filters.name = { contains: name.toLowerCase() };
+            const skip = (page - 1) * perPage;
+            const take = perPage;
+            const orderByObject: any = { [sortBy || "name"]: ascOrDesc };
 
             const genres = await this.prisma.genre.findMany({
                 where: filters,
@@ -30,13 +33,13 @@ export class GenreService {
                     const bookmarkInfo = userId
                         ? await this.getBookmarkStatus(genre.id, userId)
                         : { isBookmarked: false };
-                    return GenreMapper.toDtoWithDetails(genre, bookmarkInfo);
+                    return this.mapToDetails(genre, bookmarkInfo);
                 }),
             );
 
             const totalCount = await this.prisma.genre.count({ where: filters });
 
-            return GenreMapper.toListResponseDto({ genres: genresWithDetails, count: totalCount });
+            return { genres: genresWithDetails, count: totalCount };
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -91,7 +94,7 @@ export class GenreService {
         }
 
         const bookmarkInfo = userId ? await this.getBookmarkStatus(id, userId) : { isBookmarked: false };
-        const dto = GenreMapper.toDtoWithDetails(genre, bookmarkInfo);
+        const dto = this.mapToDetails(genre, bookmarkInfo);
 
         dto.moviesPagination = {
             total: genre._count.movies,
@@ -121,7 +124,7 @@ export class GenreService {
         const genresWithDetails = await Promise.all(
             genres.map(async (genre) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(genre.id, userId) : { isBookmarked: false };
-                return GenreMapper.toDtoWithDetails(genre, bookmarkInfo);
+                return this.mapToDetails(genre, bookmarkInfo);
             }),
         );
 
@@ -129,7 +132,7 @@ export class GenreService {
             where: { name: { contains: name.toLowerCase() } },
         });
 
-        return GenreMapper.toListResponseDto({ genres: genresWithDetails, count });
+        return { genres: genresWithDetails, count };
     }
 
     async create(createGenreDto: CreateGenreDto): Promise<GenreDetailsDto> {
@@ -139,7 +142,7 @@ export class GenreService {
             },
         });
 
-        return GenreMapper.toDto(genre);
+        return genre as GenreDetailsDto;
     }
 
     async update(id: number, updateGenreDto: UpdateGenreDto): Promise<GenreDetailsDto> {
@@ -158,7 +161,7 @@ export class GenreService {
             },
         });
 
-        return GenreMapper.toDto(updatedGenre);
+        return updatedGenre as GenreDetailsDto;
     }
 
     async remove(id: number): Promise<void> {
@@ -187,5 +190,39 @@ export class GenreService {
         });
 
         return { isBookmarked: !!existingFavorite };
+    }
+
+    private mapToDetails(genre: any, bookmarkInfo?: { isBookmarked: boolean }): GenreDetailsDto {
+        const dto: GenreDetailsDto = {
+            id: genre.id,
+            name: genre.name,
+            ...(bookmarkInfo !== undefined && { isBookmarked: bookmarkInfo.isBookmarked }),
+        };
+
+        if (genre._count) {
+            dto._count = { movies: genre._count.movies, series: genre._count.series };
+        }
+
+        if (genre.movies) {
+            dto.movies = genre.movies.map((gm: any) => ({
+                id: gm.movie.id,
+                title: gm.movie.title,
+                photoSrc: gm.movie.photoSrc ?? null,
+                releaseYear: gm.movie.dateAired ? new Date(gm.movie.dateAired).getFullYear() : null,
+                ratingImdb: gm.movie.ratingImdb ?? null,
+            }));
+        }
+
+        if (genre.series) {
+            dto.series = genre.series.map((gs: any) => ({
+                id: gs.serie.id,
+                title: gs.serie.title,
+                photoSrc: gs.serie.photoSrc ?? null,
+                releaseYear: gs.serie.dateAired ? new Date(gs.serie.dateAired).getFullYear() : null,
+                ratingImdb: gs.serie.ratingImdb ?? null,
+            }));
+        }
+
+        return dto;
     }
 }

@@ -4,9 +4,8 @@ import { MovieQueryDto } from "./dtos/movie-query.dto";
 import { CreateMovieDto } from "./dtos/create-movie.dto";
 import { UpdateMovieDto } from "./dtos/update-movie.dto";
 import { MovieListResponseDto, MovieDetailsDto, RelatedMoviesResponseDto } from "./dtos/movie-response.dto";
-import { MovieMapper } from "./movie.mapper";
-import { MovieParser } from "./movie.parser";
 import { IMovieRatingInfo } from "./movie.interface";
+import { truncateText } from "../../utils/transform.util";
 import { getCacheConfig, CACHE_TTL, shouldSkipCache } from "../../utils/cache.util";
 
 @Injectable()
@@ -21,7 +20,30 @@ export class MovieService {
         }
 
         try {
-            const { filters, orderByObject, skip, take } = MovieParser.parseMovieQuery(query);
+            const {
+                sortBy,
+                ascOrDesc = "asc",
+                perPage = 12,
+                page = 1,
+                title,
+                filterValue,
+                filterNameString,
+                filterOperatorString,
+            } = query;
+            const filters: any = {};
+            if (title) filters.title = { contains: title.toLowerCase() };
+            if (filterValue !== undefined && filterNameString && filterOperatorString) {
+                if (typeof filterValue === "string" && filterOperatorString === "contains") {
+                    filters[filterNameString] = { contains: filterValue.toLowerCase() };
+                } else {
+                    const operator =
+                        filterOperatorString === ">" ? "gt" : filterOperatorString === "<" ? "lt" : "equals";
+                    filters[filterNameString] = { [operator]: Number(filterValue) };
+                }
+            }
+            const skip = (page - 1) * perPage;
+            const take = perPage;
+            const orderByObject: any = { [sortBy || "title"]: ascOrDesc };
 
             const movies = await this.prisma.movie.findMany({
                 where: filters,
@@ -38,13 +60,13 @@ export class MovieService {
                     const bookmarkInfo = userId
                         ? await this.getBookmarkStatus(movie.id, userId)
                         : { isBookmarked: false };
-                    return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
+                    return this.mapToDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
                 }),
             );
 
             const totalCount = await this.prisma.movie.count({ where: filters });
 
-            return MovieMapper.toListResponseDto({ movies: moviesWithDetails, count: totalCount });
+            return { movies: moviesWithDetails, count: totalCount };
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -88,7 +110,7 @@ export class MovieService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
         const reviewInfo = userId ? await this.getReviewStatus(movie.id, userId) : { isReviewed: false };
 
-        return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(movie, ratingsInfo[movie.id], bookmarkInfo, reviewInfo);
     }
 
     async findLatest(userId?: number): Promise<MovieDetailsDto[]> {
@@ -103,7 +125,7 @@ export class MovieService {
         return Promise.all(
             movies.map(async (movie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
-                return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
+                return this.mapToDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
     }
@@ -162,7 +184,7 @@ export class MovieService {
         const moviesWithDetails = await Promise.all(
             relatedMovies.map(async (movie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
-                return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
+                return this.mapToDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
 
@@ -186,7 +208,7 @@ export class MovieService {
         const moviesWithDetails = await Promise.all(
             movies.map(async (movie) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
-                return MovieMapper.toDtoWithDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
+                return this.mapToDetails(movie, ratingsInfo[movie.id], bookmarkInfo);
             }),
         );
 
@@ -194,7 +216,7 @@ export class MovieService {
             where: { title: { contains: title.toLowerCase() } },
         });
 
-        return MovieMapper.toListResponseDto({ movies: moviesWithDetails, count });
+        return { movies: moviesWithDetails, count };
     }
 
     async create(createMovieDto: CreateMovieDto): Promise<MovieDetailsDto> {
@@ -212,7 +234,7 @@ export class MovieService {
             include: { genres: { select: { genre: true } } },
         });
 
-        return MovieMapper.toDto(movie);
+        return movie as unknown as MovieDetailsDto;
     }
 
     async update(id: number, updateMovieDto: UpdateMovieDto): Promise<MovieDetailsDto> {
@@ -239,7 +261,7 @@ export class MovieService {
             include: { genres: { select: { genre: true } } },
         });
 
-        return MovieMapper.toDto(updatedMovie);
+        return updatedMovie as unknown as MovieDetailsDto;
     }
 
     async remove(id: number): Promise<void> {
@@ -295,5 +317,49 @@ export class MovieService {
         });
 
         return { isReviewed: !!existingReview };
+    }
+
+    private mapToDetails(
+        movie: any,
+        ratingInfo?: IMovieRatingInfo,
+        bookmarkInfo?: { isBookmarked: boolean },
+        reviewInfo?: { isReviewed: boolean },
+    ): MovieDetailsDto {
+        return {
+            id: movie.id,
+            title: movie.title,
+            description: movie.description ? truncateText(movie.description, 200) : undefined,
+            photoSrc: movie.photoSrc,
+            photoSrcProd: movie.photoSrcProd,
+            trailerSrc: movie.trailerSrc,
+            duration: movie.duration,
+            ratingImdb: movie.ratingImdb,
+            dateAired: movie.dateAired,
+            releaseYear: movie.dateAired ? new Date(movie.dateAired).getFullYear() : null,
+            averageRating: ratingInfo?.averageRating ?? null,
+            genres: movie.genres?.map((g: any) => ({ id: g.genre.id, name: g.genre.name })) ?? [],
+            actors:
+                movie.cast?.map((c: any) => ({
+                    id: c.actor.id,
+                    fullname: c.actor.fullname,
+                    photoSrc: c.actor.photoSrc ?? null,
+                })) ?? [],
+            ratings: ratingInfo
+                ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
+                : undefined,
+            isBookmarked: bookmarkInfo?.isBookmarked || false,
+            isReviewed: reviewInfo?.isReviewed || false,
+            reviews: movie.reviews?.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })),
+        };
     }
 }

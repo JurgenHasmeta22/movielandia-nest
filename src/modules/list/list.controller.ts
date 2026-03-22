@@ -23,6 +23,7 @@ export class ListController {
     @Inertia("Lists/SharedWithMe")
     async sharedWithMe(@Req() req: Request) {
         const lists = await this.listService.getSharedWithMe(req.session!.userId!);
+
         return { lists };
     }
 
@@ -39,6 +40,7 @@ export class ListController {
     async create(@Body() dto: CreateListDto, @Req() req: Request, @Res() res: Response) {
         const list = await this.listService.createList(req.session!.userId!, dto);
         (req.session as any).flash = { type: "success", message: "List created." };
+
         return res.redirect(303, `/lists/${(list as any).id}`);
     }
 
@@ -52,6 +54,7 @@ export class ListController {
     ) {
         await this.listService.updateList(id, req.session!.userId!, dto);
         (req.session as any).flash = { type: "success", message: "List updated." };
+
         return res.redirect(303, `/lists/${id}`);
     }
 
@@ -60,6 +63,7 @@ export class ListController {
     async delete(@Param("id", ParseIntPipe) id: number, @Req() req: Request, @Res() res: Response) {
         await this.listService.deleteList(id, req.session!.userId!);
         (req.session as any).flash = { type: "success", message: "List deleted." };
+
         return res.redirect(303, "/lists");
     }
 
@@ -134,6 +138,7 @@ export class ListController {
     ) {
         await this.listService.unshareList(id, req.session!.userId!, sharedUserId);
         (req.session as any).flash = { type: "success", message: "List unshared." };
+
         return res.redirect(303, `/lists/${id}`);
     }
 }

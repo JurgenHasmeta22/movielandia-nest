@@ -19,11 +19,9 @@ createServer((page) =>
 
         resolve: async (name) => {
             const pageModule = pages[`./pages/${name}.tsx`];
-
             if (!pageModule) throw new Error(`SSR page not found: ${name}`);
-
-            const module = await pageModule();
             
+            const module = await pageModule();
             return module.default;
         },
 

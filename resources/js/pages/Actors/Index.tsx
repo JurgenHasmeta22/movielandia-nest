@@ -17,6 +17,7 @@ function buildUrl(params: Record<string, string | number | undefined>) {
         .filter(([, v]) => v !== undefined && v !== '')
         .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
         .join('&');
+        
     return `/actors${qs ? `?${qs}` : ''}`;
 }
 

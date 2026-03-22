@@ -4,9 +4,8 @@ import { EpisodeQueryDto } from "./dtos/episode-query.dto";
 import { CreateEpisodeDto } from "./dtos/create-episode.dto";
 import { UpdateEpisodeDto } from "./dtos/update-episode.dto";
 import { EpisodeListResponseDto, EpisodeDetailsDto } from "./dtos/episode-response.dto";
-import { EpisodeMapper } from "./episode.mapper";
-import { EpisodeParser } from "./episode.parser";
 import { IEpisodeRatingInfo } from "./episode.interface";
+import { truncateText } from "../../utils/transform.util";
 import { getCacheConfig, CACHE_TTL, shouldSkipCache } from "../../utils/cache.util";
 
 @Injectable()
@@ -15,7 +14,34 @@ export class EpisodeService {
 
     async findAll(query: EpisodeQueryDto, userId?: number): Promise<EpisodeListResponseDto> {
         try {
-            const { filters, orderByObject, skip, take } = EpisodeParser.parseEpisodeQuery(query);
+            const page = Math.max(1, query.page || 1);
+            const pageSize = Math.min(Math.max(1, query.pageSize || 10), 100);
+            const skip = (page - 1) * pageSize;
+            const take = pageSize;
+            const filters: any = {};
+            if (query.seasonId) filters.seasonId = parseInt(query.seasonId as any);
+            if (query.search) {
+                filters.OR = [
+                    { title: { contains: query.search, mode: "insensitive" } },
+                    { description: { contains: query.search, mode: "insensitive" } },
+                ];
+            }
+            if (query.minRating !== undefined && query.maxRating !== undefined) {
+                const minRating = parseFloat(query.minRating as any);
+                const maxRating = parseFloat(query.maxRating as any);
+                if (minRating < 0 || maxRating > 10 || minRating > maxRating) {
+                    throw new BadRequestException(
+                        "Rating must be between 0 and 10, and minRating must be less than maxRating",
+                    );
+                }
+                filters.ratingImdb = { gte: minRating, lte: maxRating };
+            }
+            const orderByObject: any = {};
+            if (query.sortBy === "rating") orderByObject.ratingImdb = query.sortOrder || "desc";
+            else if (query.sortBy === "date") orderByObject.dateAired = query.sortOrder || "desc";
+            else if (query.sortBy === "duration") orderByObject.duration = query.sortOrder || "asc";
+            else if (query.sortBy === "title") orderByObject.title = query.sortOrder || "asc";
+            else orderByObject.id = "desc";
 
             const episodes = await this.prisma.episode.findMany({
                 where: filters,
@@ -33,13 +59,13 @@ export class EpisodeService {
                         ? await this.getBookmarkStatus(episode.id, userId)
                         : { isBookmarked: false };
                     const reviewInfo = userId ? await this.getReviewStatus(episode.id, userId) : { isReviewed: false };
-                    return EpisodeMapper.toDtoWithDetails(episode, ratingsInfo[episode.id], bookmarkInfo, reviewInfo);
+                    return this.mapToDetails(episode, ratingsInfo[episode.id], bookmarkInfo, reviewInfo);
                 }),
             );
 
             const totalCount = await this.prisma.episode.count({ where: filters });
 
-            return EpisodeMapper.toListResponseDto({ episodes: episodesWithDetails, count: totalCount });
+            return { episodes: episodesWithDetails, count: totalCount };
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -81,7 +107,7 @@ export class EpisodeService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(id, userId) : { isBookmarked: false };
         const reviewInfo = userId ? await this.getReviewStatus(id, userId) : { isReviewed: false };
 
-        return EpisodeMapper.toDtoWithDetails(episode, ratingsInfo[id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(episode, ratingsInfo[id], bookmarkInfo, reviewInfo);
     }
 
     async findBySeasonId(seasonId: number, userId?: number): Promise<EpisodeListResponseDto> {
@@ -100,14 +126,11 @@ export class EpisodeService {
                         ? await this.getBookmarkStatus(episode.id, userId)
                         : { isBookmarked: false };
                     const reviewInfo = userId ? await this.getReviewStatus(episode.id, userId) : { isReviewed: false };
-                    return EpisodeMapper.toDtoWithDetails(episode, ratingsInfo[episode.id], bookmarkInfo, reviewInfo);
+                    return this.mapToDetails(episode, ratingsInfo[episode.id], bookmarkInfo, reviewInfo);
                 }),
             );
 
-            return EpisodeMapper.toListResponseDto({
-                episodes: episodesWithDetails,
-                count: episodesWithDetails.length,
-            });
+            return { episodes: episodesWithDetails, count: episodesWithDetails.length };
         } catch (error) {
             throw error;
         }
@@ -137,7 +160,7 @@ export class EpisodeService {
                     ? await this.getBookmarkStatus(episode.id, userId)
                     : { isBookmarked: false };
                 const reviewInfo = userId ? await this.getReviewStatus(episode.id, userId) : { isReviewed: false };
-                return EpisodeMapper.toDtoWithDetails(episode, ratingsInfo[episode.id], bookmarkInfo, reviewInfo);
+                return this.mapToDetails(episode, ratingsInfo[episode.id], bookmarkInfo, reviewInfo);
             }),
         );
 
@@ -145,7 +168,7 @@ export class EpisodeService {
             where: { title: { contains: title.toLowerCase() } },
         });
 
-        return EpisodeMapper.toListResponseDto({ episodes: episodesWithDetails, count });
+        return { episodes: episodesWithDetails, count };
     }
 
     async create(createEpisodeDto: CreateEpisodeDto): Promise<EpisodeDetailsDto> {
@@ -163,7 +186,7 @@ export class EpisodeService {
             },
         });
 
-        return EpisodeMapper.toDto(episode);
+        return episode as EpisodeDetailsDto;
     }
 
     async update(id: number, updateEpisodeDto: UpdateEpisodeDto): Promise<EpisodeDetailsDto> {
@@ -189,7 +212,7 @@ export class EpisodeService {
             },
         });
 
-        return EpisodeMapper.toDto(updated);
+        return updated as EpisodeDetailsDto;
     }
 
     async delete(id: number): Promise<void> {
@@ -246,5 +269,41 @@ export class EpisodeService {
         });
 
         return { isReviewed: !!review };
+    }
+
+    private mapToDetails(
+        episode: any,
+        ratingInfo?: IEpisodeRatingInfo,
+        bookmarkInfo?: { isBookmarked: boolean },
+        reviewInfo?: { isReviewed: boolean },
+    ): EpisodeDetailsDto {
+        return {
+            id: episode.id,
+            title: episode.title,
+            description: episode.description ? truncateText(episode.description, 200) : undefined,
+            photoSrc: episode.photoSrc,
+            photoSrcProd: episode.photoSrcProd,
+            trailerSrc: episode.trailerSrc,
+            ratingImdb: episode.ratingImdb,
+            dateAired: episode.dateAired,
+            duration: episode.duration,
+            seasonId: episode.seasonId,
+            ratings: ratingInfo
+                ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
+                : undefined,
+            isBookmarked: bookmarkInfo?.isBookmarked || false,
+            isReviewed: reviewInfo?.isReviewed || false,
+            reviews: episode.reviews?.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })),
+        };
     }
 }

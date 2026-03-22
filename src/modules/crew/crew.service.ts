@@ -4,9 +4,8 @@ import { CrewQueryDto } from "./dtos/crew-query.dto";
 import { CreateCrewDto } from "./dtos/create-crew.dto";
 import { UpdateCrewDto } from "./dtos/update-crew.dto";
 import { CrewListResponseDto, CrewDetailsDto } from "./dtos/crew-response.dto";
-import { CrewMapper } from "./crew.mapper";
-import { CrewParser } from "./crew.parser";
 import { ICrewRatingInfo } from "./crew.interface";
+import { truncateText } from "../../utils/transform.util";
 
 @Injectable()
 export class CrewService {
@@ -14,7 +13,15 @@ export class CrewService {
 
     async findAll(query: CrewQueryDto, userId?: number): Promise<CrewListResponseDto> {
         try {
-            const { filters, orderByObject, skip, take } = CrewParser.parseCrewQuery(query);
+            const { sortBy, ascOrDesc = "asc", perPage = 12, page = 1, fullname, role } = query;
+            const filters: any = {};
+
+            if (fullname) filters.fullname = { contains: fullname.toLowerCase() };
+
+            if (role) filters.role = { contains: role.toLowerCase() };
+            const skip = (page - 1) * perPage;
+            const take = perPage;
+            const orderByObject: any = { [sortBy || "fullname"]: ascOrDesc };
 
             const crew = await this.prisma.crew.findMany({
                 where: filters,
@@ -29,13 +36,13 @@ export class CrewService {
             const crewWithDetails = await Promise.all(
                 crew.map(async (c) => {
                     const bookmarkInfo = userId ? await this.getBookmarkStatus(c.id, userId) : { isBookmarked: false };
-                    return CrewMapper.toDtoWithDetails(c, ratingsInfo[c.id], bookmarkInfo);
+                    return this.mapToDetails(c, ratingsInfo[c.id], bookmarkInfo);
                 }),
             );
 
             const totalCount = await this.prisma.crew.count({ where: filters });
 
-            return CrewMapper.toListResponseDto({ crew: crewWithDetails, count: totalCount });
+            return { crew: crewWithDetails, count: totalCount };
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -77,9 +84,10 @@ export class CrewService {
 
         const ratingsInfo = await this.getCrewRatings([crew.id]);
         const bookmarkInfo = userId ? await this.getBookmarkStatus(id, userId) : { isBookmarked: false };
+
         const reviewInfo = userId ? await this.getReviewStatus(id, userId) : { isReviewed: false };
 
-        return CrewMapper.toDtoWithDetails(crew, ratingsInfo[crew.id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(crew, ratingsInfo[crew.id], bookmarkInfo, reviewInfo);
     }
 
     async search(
@@ -102,7 +110,7 @@ export class CrewService {
         const crewWithDetails = await Promise.all(
             crew.map(async (c) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(c.id, userId) : { isBookmarked: false };
-                return CrewMapper.toDtoWithDetails(c, ratingsInfo[c.id], bookmarkInfo);
+                return this.mapToDetails(c, ratingsInfo[c.id], bookmarkInfo);
             }),
         );
 
@@ -110,7 +118,7 @@ export class CrewService {
             where: { fullname: { contains: fullname.toLowerCase() } },
         });
 
-        return CrewMapper.toListResponseDto({ crew: crewWithDetails, count });
+        return { crew: crewWithDetails, count };
     }
 
     async create(createCrewDto: CreateCrewDto): Promise<CrewDetailsDto> {
@@ -125,7 +133,7 @@ export class CrewService {
             },
         });
 
-        return CrewMapper.toDto(crew);
+        return crew as CrewDetailsDto;
     }
 
     async update(id: number, updateCrewDto: UpdateCrewDto): Promise<CrewDetailsDto> {
@@ -149,7 +157,7 @@ export class CrewService {
             },
         });
 
-        return CrewMapper.toDto(updatedCrew);
+        return updatedCrew as CrewDetailsDto;
     }
 
     async remove(id: number): Promise<void> {
@@ -205,5 +213,51 @@ export class CrewService {
         });
 
         return { isReviewed: !!existingReview };
+    }
+
+    private mapToDetails(
+        crew: any,
+        ratingInfo?: ICrewRatingInfo,
+        bookmarkInfo?: { isBookmarked: boolean },
+        reviewInfo?: { isReviewed: boolean },
+    ): CrewDetailsDto {
+        return {
+            id: crew.id,
+            fullname: crew.fullname,
+            role: crew.role,
+            description: crew.description ? truncateText(crew.description, 200) : undefined,
+            photoSrc: crew.photoSrc,
+            photoSrcProd: crew.photoSrcProd,
+            debut: crew.debut,
+            department: crew.role ?? null,
+            movieCredits:
+                crew.producedMovies?.map((c: any) => ({
+                    id: c.movie.id,
+                    title: c.movie.title,
+                    photoSrc: c.movie.photoSrc ?? null,
+                })) ?? [],
+            serieCredits:
+                crew.producedSeries?.map((c: any) => ({
+                    id: c.serie.id,
+                    title: c.serie.title,
+                    photoSrc: c.serie.photoSrc ?? null,
+                })) ?? [],
+            ratings: ratingInfo
+                ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
+                : undefined,
+            isBookmarked: bookmarkInfo?.isBookmarked || false,
+            isReviewed: reviewInfo?.isReviewed || false,
+            reviews: crew.reviews?.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })),
+        };
     }
 }

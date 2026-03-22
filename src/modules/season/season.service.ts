@@ -4,9 +4,8 @@ import { SeasonQueryDto } from "./dtos/season-query.dto";
 import { CreateSeasonDto } from "./dtos/create-season.dto";
 import { UpdateSeasonDto } from "./dtos/update-season.dto";
 import { SeasonListResponseDto, SeasonDetailsDto } from "./dtos/season-response.dto";
-import { SeasonMapper } from "./season.mapper";
-import { SeasonParser } from "./season.parser";
 import { ISeasonRatingInfo } from "./season.interface";
+import { truncateText } from "../../utils/transform.util";
 import { getCacheConfig, CACHE_TTL, shouldSkipCache } from "../../utils/cache.util";
 
 @Injectable()
@@ -15,7 +14,33 @@ export class SeasonService {
 
     async findAll(query: SeasonQueryDto, userId?: number): Promise<SeasonListResponseDto> {
         try {
-            const { filters, orderByObject, skip, take } = SeasonParser.parseSeasonQuery(query);
+            const page = Math.max(1, query.page || 1);
+            const pageSize = Math.min(Math.max(1, query.pageSize || 10), 100);
+            const skip = (page - 1) * pageSize;
+            const take = pageSize;
+            const filters: any = {};
+            if (query.serieId) filters.serieId = parseInt(query.serieId as any);
+            if (query.search) {
+                filters.OR = [
+                    { title: { contains: query.search, mode: "insensitive" } },
+                    { description: { contains: query.search, mode: "insensitive" } },
+                ];
+            }
+            if (query.minRating !== undefined && query.maxRating !== undefined) {
+                const minRating = parseFloat(query.minRating as any);
+                const maxRating = parseFloat(query.maxRating as any);
+                if (minRating < 0 || maxRating > 10 || minRating > maxRating) {
+                    throw new BadRequestException(
+                        "Rating must be between 0 and 10, and minRating must be less than maxRating",
+                    );
+                }
+                filters.ratingImdb = { gte: minRating, lte: maxRating };
+            }
+            const orderByObject: any = {};
+            if (query.sortBy === "rating") orderByObject.ratingImdb = query.sortOrder || "desc";
+            else if (query.sortBy === "date") orderByObject.dateAired = query.sortOrder || "desc";
+            else if (query.sortBy === "title") orderByObject.title = query.sortOrder || "asc";
+            else orderByObject.id = "desc";
 
             const seasons = await this.prisma.season.findMany({
                 where: filters,
@@ -33,13 +58,13 @@ export class SeasonService {
                         ? await this.getBookmarkStatus(season.id, userId)
                         : { isBookmarked: false };
                     const reviewInfo = userId ? await this.getReviewStatus(season.id, userId) : { isReviewed: false };
-                    return SeasonMapper.toDtoWithDetails(season, ratingsInfo[season.id], bookmarkInfo, reviewInfo);
+                    return this.mapToDetails(season, ratingsInfo[season.id], bookmarkInfo, reviewInfo);
                 }),
             );
 
             const totalCount = await this.prisma.season.count({ where: filters });
 
-            return SeasonMapper.toListResponseDto({ seasons: seasonsWithDetails, count: totalCount });
+            return { seasons: seasonsWithDetails, count: totalCount };
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -81,7 +106,7 @@ export class SeasonService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(id, userId) : { isBookmarked: false };
         const reviewInfo = userId ? await this.getReviewStatus(id, userId) : { isReviewed: false };
 
-        return SeasonMapper.toDtoWithDetails(season, ratingsInfo[id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(season, ratingsInfo[id], bookmarkInfo, reviewInfo);
     }
 
     async findBySerieId(serieId: number, userId?: number): Promise<SeasonListResponseDto> {
@@ -100,11 +125,11 @@ export class SeasonService {
                         ? await this.getBookmarkStatus(season.id, userId)
                         : { isBookmarked: false };
                     const reviewInfo = userId ? await this.getReviewStatus(season.id, userId) : { isReviewed: false };
-                    return SeasonMapper.toDtoWithDetails(season, ratingsInfo[season.id], bookmarkInfo, reviewInfo);
+                    return this.mapToDetails(season, ratingsInfo[season.id], bookmarkInfo, reviewInfo);
                 }),
             );
 
-            return SeasonMapper.toListResponseDto({ seasons: seasonsWithDetails, count: seasonsWithDetails.length });
+            return { seasons: seasonsWithDetails, count: seasonsWithDetails.length };
         } catch (error) {
             throw error;
         }
@@ -132,7 +157,7 @@ export class SeasonService {
             seasons.map(async (season) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(season.id, userId) : { isBookmarked: false };
                 const reviewInfo = userId ? await this.getReviewStatus(season.id, userId) : { isReviewed: false };
-                return SeasonMapper.toDtoWithDetails(season, ratingsInfo[season.id], bookmarkInfo, reviewInfo);
+                return this.mapToDetails(season, ratingsInfo[season.id], bookmarkInfo, reviewInfo);
             }),
         );
 
@@ -140,7 +165,7 @@ export class SeasonService {
             where: { title: { contains: title.toLowerCase() } },
         });
 
-        return SeasonMapper.toListResponseDto({ seasons: seasonsWithDetails, count });
+        return { seasons: seasonsWithDetails, count };
     }
 
     async create(createSeasonDto: CreateSeasonDto): Promise<SeasonDetailsDto> {
@@ -157,7 +182,7 @@ export class SeasonService {
             },
         });
 
-        return SeasonMapper.toDto(season);
+        return season as SeasonDetailsDto;
     }
 
     async update(id: number, updateSeasonDto: UpdateSeasonDto): Promise<SeasonDetailsDto> {
@@ -182,7 +207,7 @@ export class SeasonService {
             },
         });
 
-        return SeasonMapper.toDto(updated);
+        return updated as SeasonDetailsDto;
     }
 
     async delete(id: number): Promise<void> {
@@ -239,5 +264,40 @@ export class SeasonService {
         });
 
         return { isReviewed: !!review };
+    }
+
+    private mapToDetails(
+        season: any,
+        ratingInfo?: ISeasonRatingInfo,
+        bookmarkInfo?: { isBookmarked: boolean },
+        reviewInfo?: { isReviewed: boolean },
+    ): SeasonDetailsDto {
+        return {
+            id: season.id,
+            title: season.title,
+            description: season.description ? truncateText(season.description, 200) : undefined,
+            photoSrc: season.photoSrc,
+            photoSrcProd: season.photoSrcProd,
+            trailerSrc: season.trailerSrc,
+            ratingImdb: season.ratingImdb,
+            dateAired: season.dateAired,
+            serieId: season.serieId,
+            ratings: ratingInfo
+                ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
+                : undefined,
+            isBookmarked: bookmarkInfo?.isBookmarked || false,
+            isReviewed: reviewInfo?.isReviewed || false,
+            reviews: season.reviews?.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })),
+        };
     }
 }

@@ -1,24 +1,8 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Put,
-    Delete,
-    Param,
-    Body,
-    Query,
-    ParseIntPipe,
-    Req,
-    Res,
-    UseGuards,
-} from "@nestjs/common";
+import { Controller, Get, Param, Query, ParseIntPipe, Req } from "@nestjs/common";
 import { Inertia } from "inertia-nestjs";
 import { ActorService } from "./actor.service";
-import { CreateActorDto } from "./dtos/create-actor.dto";
-import { UpdateActorDto } from "./dtos/update-actor.dto";
 import { ActorQueryDto } from "./dtos/actor-query.dto";
-import { AuthGuard } from "../../auth/guards/auth.guard";
-import { Request, Response } from "express";
+import { Request } from "express";
 
 @Controller("actors")
 export class ActorController {
@@ -37,6 +21,7 @@ export class ActorController {
             totalPages: Math.ceil(data.count / perPage),
             perPage,
         };
+
         return { actors: data.actors, pagination, filters: query };
     }
 
@@ -59,34 +44,5 @@ export class ActorController {
         const userId: number | undefined = req.session?.userId;
         const actor = await this.actorService.findOne(id, userId);
         return { actor };
-    }
-
-    @Post()
-    @UseGuards(AuthGuard)
-    async create(@Body() dto: CreateActorDto, @Req() req: Request, @Res() res: Response) {
-        await this.actorService.create(dto);
-        (req.session as any).flash = { type: "success", message: "Actor created." };
-        return res.redirect(303, "/actors");
-    }
-
-    @Put(":id")
-    @UseGuards(AuthGuard)
-    async update(
-        @Param("id", ParseIntPipe) id: number,
-        @Body() dto: UpdateActorDto,
-        @Req() req: Request,
-        @Res() res: Response,
-    ) {
-        await this.actorService.update(id, dto);
-        (req.session as any).flash = { type: "success", message: "Actor updated." };
-        return res.redirect(303, `/actors/${id}`);
-    }
-
-    @Delete(":id")
-    @UseGuards(AuthGuard)
-    async remove(@Param("id", ParseIntPipe) id: number, @Req() req: Request, @Res() res: Response) {
-        await this.actorService.remove(id);
-        (req.session as any).flash = { type: "success", message: "Actor deleted." };
-        return res.redirect(303, "/actors");
     }
 }

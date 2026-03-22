@@ -4,9 +4,8 @@ import { ActorQueryDto } from "./dtos/actor-query.dto";
 import { CreateActorDto } from "./dtos/create-actor.dto";
 import { UpdateActorDto } from "./dtos/update-actor.dto";
 import { ActorListResponseDto, ActorDetailsDto } from "./dtos/actor-response.dto";
-import { ActorMapper } from "./actor.mapper";
-import { ActorParser } from "./actor.parser";
 import { IActorRatingInfo } from "./actor.interface";
+import { truncateText } from "../../utils/transform.util";
 
 @Injectable()
 export class ActorService {
@@ -14,7 +13,14 @@ export class ActorService {
 
     async findAll(query: ActorQueryDto, userId?: number): Promise<ActorListResponseDto> {
         try {
-            const { filters, orderByObject, skip, take } = ActorParser.parseActorQuery(query);
+            const { sortBy, ascOrDesc = "asc", perPage = 12, page = 1, fullname } = query;
+            const filters: any = {};
+
+            if (fullname) filters.fullname = { contains: fullname.toLowerCase() };
+
+            const skip = (page - 1) * perPage;
+            const take = perPage;
+            const orderByObject: any = { [sortBy || "fullname"]: ascOrDesc };
 
             const actors = await this.prisma.actor.findMany({
                 where: filters,
@@ -31,13 +37,13 @@ export class ActorService {
                     const bookmarkInfo = userId
                         ? await this.getBookmarkStatus(actor.id, userId)
                         : { isBookmarked: false };
-                    return ActorMapper.toDtoWithDetails(actor, ratingsInfo[actor.id], bookmarkInfo);
+                    return this.mapToDetails(actor, ratingsInfo[actor.id], bookmarkInfo);
                 }),
             );
 
             const totalCount = await this.prisma.actor.count({ where: filters });
 
-            return ActorMapper.toListResponseDto({ actors: actorsWithDetails, count: totalCount });
+            return { actors: actorsWithDetails, count: totalCount };
         } catch (error) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -81,7 +87,7 @@ export class ActorService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(id, userId) : { isBookmarked: false };
         const reviewInfo = userId ? await this.getReviewStatus(id, userId) : { isReviewed: false };
 
-        return ActorMapper.toDtoWithDetails(actor, ratingsInfo[actor.id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(actor, ratingsInfo[actor.id], bookmarkInfo, reviewInfo);
     }
 
     async search(
@@ -104,7 +110,7 @@ export class ActorService {
         const actorsWithDetails = await Promise.all(
             actors.map(async (actor) => {
                 const bookmarkInfo = userId ? await this.getBookmarkStatus(actor.id, userId) : { isBookmarked: false };
-                return ActorMapper.toDtoWithDetails(actor, ratingsInfo[actor.id], bookmarkInfo);
+                return this.mapToDetails(actor, ratingsInfo[actor.id], bookmarkInfo);
             }),
         );
 
@@ -112,7 +118,7 @@ export class ActorService {
             where: { fullname: { contains: fullname.toLowerCase() } },
         });
 
-        return ActorMapper.toListResponseDto({ actors: actorsWithDetails, count });
+        return { actors: actorsWithDetails, count };
     }
 
     async create(createActorDto: CreateActorDto): Promise<ActorDetailsDto> {
@@ -126,7 +132,7 @@ export class ActorService {
             },
         });
 
-        return ActorMapper.toDto(actor);
+        return actor as ActorDetailsDto;
     }
 
     async update(id: number, updateActorDto: UpdateActorDto): Promise<ActorDetailsDto> {
@@ -149,7 +155,7 @@ export class ActorService {
             },
         });
 
-        return ActorMapper.toDto(updatedActor);
+        return updatedActor as ActorDetailsDto;
     }
 
     async remove(id: number): Promise<void> {
@@ -205,5 +211,51 @@ export class ActorService {
         });
 
         return { isReviewed: !!existingReview };
+    }
+
+    private mapToDetails(
+        actor: any,
+        ratingInfo?: IActorRatingInfo,
+        bookmarkInfo?: { isBookmarked: boolean },
+        reviewInfo?: { isReviewed: boolean },
+    ): ActorDetailsDto {
+        return {
+            id: actor.id,
+            fullname: actor.fullname,
+            description: actor.description ? truncateText(actor.description, 200) : undefined,
+            photoSrc: actor.photoSrc,
+            photoSrcProd: actor.photoSrcProd,
+            debut: actor.debut,
+            birthDate: actor.debut ?? null,
+            birthPlace: null,
+            movies:
+                actor.starredMovies?.map((c: any) => ({
+                    id: c.movie.id,
+                    title: c.movie.title,
+                    photoSrc: c.movie.photoSrc ?? null,
+                })) ?? [],
+            series:
+                actor.starredSeries?.map((c: any) => ({
+                    id: c.serie.id,
+                    title: c.serie.title,
+                    photoSrc: c.serie.photoSrc ?? null,
+                })) ?? [],
+            ratings: ratingInfo
+                ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
+                : undefined,
+            isBookmarked: bookmarkInfo?.isBookmarked || false,
+            isReviewed: reviewInfo?.isReviewed || false,
+            reviews: actor.reviews?.map((review: any) => ({
+                id: review.id,
+                rating: review.rating,
+                content: review.content,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
+                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                _count: review._count,
+            })),
+        };
     }
 }
