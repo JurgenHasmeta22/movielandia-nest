@@ -1,4 +1,4 @@
-import { Link, router } from "@inertiajs/react";
+ï»¿import { Link, router } from "@inertiajs/react";
 import AppLayout from "../../layouts/AppLayout";
 import { MediaGrid } from "../../components/MediaGrid";
 import { SortControls } from "../../components/SortControls";
@@ -47,7 +47,6 @@ export default function GenresShow({ genre, filters = {} }: Props) {
     return (
         <AppLayout title={genre.name}>
             <div className="space-y-8">
-                {/* Header */}
                 <div>
                     <Link href="/genres" className="text-indigo-400 hover:text-indigo-300 text-sm font-medium">
                         &larr; All Genres
@@ -59,13 +58,12 @@ export default function GenresShow({ genre, filters = {} }: Props) {
                     {genre._count && (
                         <div className="flex gap-4 mt-2 text-sm text-gray-400">
                             <span>{genre._count.movies.toLocaleString()} movies</span>
-                            <span className="text-gray-600">·</span>
+                            <span className="text-gray-600">.</span>
                             <span>{genre._count.series.toLocaleString()} series</span>
                         </div>
                     )}
                 </div>
 
-                {/* Sort controls */}
                 <SortControls
                     sortBy={sortBy}
                     ascOrDesc={ascOrDesc}
@@ -81,7 +79,6 @@ export default function GenresShow({ genre, filters = {} }: Props) {
                     onPerPageChange={(p) => navigate({ perPage: Number(p), moviesPage: 1, seriesPage: 1 })}
                 />
 
-                {/* Movies */}
                 {(genre.movies ?? []).length > 0 ? (
                     <CollapsibleSection title="Movies" count={moviesPag?.total}>
                         <MediaGrid items={genre.movies ?? []} type="movies" />
@@ -96,7 +93,6 @@ export default function GenresShow({ genre, filters = {} }: Props) {
                     )
                 )}
 
-                {/* Series */}
                 {(genre.series ?? []).length > 0 ? (
                     <CollapsibleSection title="Series" count={seriesPag?.total}>
                         <MediaGrid items={genre.series ?? []} type="series" />
