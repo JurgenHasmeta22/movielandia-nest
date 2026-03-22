@@ -1,13 +1,9 @@
-import { Injectable, ExecutionContext } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
+import { Injectable, ExecutionContext, CanActivate } from "@nestjs/common";
 
+/** Passes silently whether or not the user is authenticated. */
 @Injectable()
-export class OptionalAuthGuard extends AuthGuard("jwt") {
-    handleRequest(err: any, user: any) {
-        return user;
-    }
-
-    canActivate(context: ExecutionContext) {
-        return super.canActivate(context);
+export class OptionalAuthGuard implements CanActivate {
+    canActivate(_context: ExecutionContext): boolean {
+        return true;
     }
 }

@@ -1,130 +1,70 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Put,
-    Delete,
-    Param,
-    Body,
-    Query,
-    ParseIntPipe,
-    HttpStatus,
-    HttpCode,
-    UseGuards,
-    ValidationPipe,
-} from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
+import { Controller, Get, Post, Put, Delete, Param, Body, Query, ParseIntPipe, Req, Res, UseGuards } from "@nestjs/common";
+import { Inertia } from "inertia-nestjs";
 import { SeasonService } from "./season.service";
 import { CreateSeasonDto } from "./dtos/create-season.dto";
 import { UpdateSeasonDto } from "./dtos/update-season.dto";
 import { SeasonQueryDto } from "./dtos/season-query.dto";
-import { SeasonListResponseDto, SeasonDetailsDto } from "./dtos/season-response.dto";
-import { User } from "@prisma/client";
-import { CurrentUser } from "../../auth/decorators/current-user.decorator";
-import { OptionalAuthGuard } from "../../auth/guards/optional-auth.guard";
 import { AuthGuard } from "../../auth/guards/auth.guard";
-import { ValidationError } from "../../utils/error.util";
+import { Request, Response } from "express";
 
-@ApiTags("Seasons")
 @Controller("seasons")
-@UseGuards(OptionalAuthGuard)
 export class SeasonController {
     constructor(private readonly seasonService: SeasonService) {}
 
     @Get()
-    @ApiOperation({ summary: "Get all seasons with filters and pagination" })
-    @ApiResponse({ status: HttpStatus.OK, description: "Seasons retrieved successfully", type: SeasonListResponseDto })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
-    async findAll(
-        @Query(new ValidationPipe({ transform: true })) query: SeasonQueryDto,
-        @CurrentUser() user?: User,
-    ): Promise<SeasonListResponseDto> {
-        try {
-            return await this.seasonService.findAll(query, user?.id);
-        } catch (error) {
-            throw new ValidationError("Failed to fetch seasons. Please check your query parameters.");
-        }
+    @Inertia("Seasons/Index")
+    async index(@Query() query: SeasonQueryDto, @Req() req: Request) {
+        const userId: number | undefined = req.session?.userId;
+        const data = await this.seasonService.findAll(query, userId);
+        return { seasons: data.seasons, count: data.count, filters: query };
     }
 
     @Get("search")
-    @ApiOperation({ summary: "Search seasons by title" })
-    @ApiResponse({
-        status: HttpStatus.OK,
-        description: "Seasons search results retrieved successfully",
-        type: SeasonListResponseDto,
-    })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
-    async search(
-        @Query("title") title: string,
-        @Query("page") page: number = 1,
-        @Query("perPage") perPage: number = 12,
-        @CurrentUser() user?: User,
-    ): Promise<SeasonListResponseDto> {
-        try {
-            return await this.seasonService.search(title, user?.id, Number(page), Number(perPage));
-        } catch (error) {
-            throw new ValidationError("Failed to search seasons. Please check your query parameters.");
-        }
+    @Inertia("Seasons/Index")
+    async search(@Query("title") title: string, @Query("page") page = 1, @Query("perPage") perPage = 12, @Req() req: Request) {
+        const userId: number | undefined = req.session?.userId;
+        const data = await this.seasonService.search(title, userId, Number(page), Number(perPage));
+        return { seasons: data.seasons, count: data.count, searchQuery: title };
     }
 
     @Get("serie/:serieId")
-    @ApiOperation({ summary: "Get all seasons for a specific serie" })
-    @ApiResponse({
-        status: HttpStatus.OK,
-        description: "Seasons retrieved successfully",
-        type: SeasonListResponseDto,
-    })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Serie not found" })
-    async findBySerieId(
-        @Param("serieId", ParseIntPipe) serieId: number,
-        @CurrentUser() user?: User,
-    ): Promise<SeasonListResponseDto> {
-        return this.seasonService.findBySerieId(serieId, user?.id);
+    @Inertia("Seasons/Index")
+    async bySerie(@Param("serieId", ParseIntPipe) serieId: number, @Req() req: Request) {
+        const userId: number | undefined = req.session?.userId;
+        const data = await this.seasonService.findBySerieId(serieId, userId);
+        return { seasons: data.seasons, count: data.count };
     }
 
     @Get(":id")
-    @ApiOperation({ summary: "Get season by ID" })
-    @ApiResponse({ status: HttpStatus.OK, description: "Season retrieved successfully", type: SeasonDetailsDto })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Season not found" })
-    async findOne(@Param("id", ParseIntPipe) id: number, @CurrentUser() user?: User): Promise<SeasonDetailsDto> {
-        return this.seasonService.findOne(id, user?.id);
+    @Inertia("Seasons/Show")
+    async show(@Param("id", ParseIntPipe) id: number, @Req() req: Request) {
+        const userId: number | undefined = req.session?.userId;
+        const season = await this.seasonService.findOne(id, userId);
+        return { season };
     }
 
     @Post()
     @UseGuards(AuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "Create a new season" })
-    @ApiResponse({ status: HttpStatus.CREATED, description: "Season created successfully", type: SeasonDetailsDto })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid season data" })
-    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: "Unauthorized" })
-    async create(@Body(ValidationPipe) createSeasonDto: CreateSeasonDto): Promise<SeasonDetailsDto> {
-        return this.seasonService.create(createSeasonDto);
+    async create(@Body() dto: CreateSeasonDto, @Req() req: Request, @Res() res: Response) {
+        await this.seasonService.create(dto);
+        (req.session as any).flash = { type: "success", message: "Season created." };
+        return res.redirect(303, "/seasons");
     }
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: "Update a season" })
-    @ApiResponse({ status: HttpStatus.OK, description: "Season updated successfully", type: SeasonDetailsDto })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Season not found" })
-    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: "Unauthorized" })
-    async update(
-        @Param("id", ParseIntPipe) id: number,
-        @Body(ValidationPipe) updateSeasonDto: UpdateSeasonDto,
-    ): Promise<SeasonDetailsDto> {
-        return this.seasonService.update(id, updateSeasonDto);
+    async update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateSeasonDto, @Req() req: Request, @Res() res: Response) {
+        await this.seasonService.update(id, dto);
+        (req.session as any).flash = { type: "success", message: "Season updated." };
+        return res.redirect(303, `/seasons/${id}`);
     }
 
     @Delete(":id")
     @UseGuards(AuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiOperation({ summary: "Delete a season" })
-    @ApiResponse({ status: HttpStatus.NO_CONTENT, description: "Season deleted successfully" })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Season not found" })
-    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: "Unauthorized" })
-    async delete(@Param("id", ParseIntPipe) id: number): Promise<void> {
-        return this.seasonService.delete(id);
+    async delete(@Param("id", ParseIntPipe) id: number, @Req() req: Request, @Res() res: Response) {
+        await this.seasonService.delete(id);
+        (req.session as any).flash = { type: "success", message: "Season deleted." };
+        return res.redirect(303, "/seasons");
     }
 }
+

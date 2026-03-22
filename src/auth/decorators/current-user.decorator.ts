@@ -1,9 +1,13 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
-import { User } from "@prisma/client";
 
-export const CurrentUser = createParamDecorator((data: keyof User | undefined, ctx: ExecutionContext) => {
+/** Returns req.session.userId — the session-stored user id. */
+export const CurrentUserId = createParamDecorator((_data: unknown, ctx: ExecutionContext): number | undefined => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user;
+    return request.session?.userId as number | undefined;
+});
 
-    return data ? user?.[data] : user;
+/** Backwards-compat alias — returns the whole resolved user from req.user if set. */
+export const CurrentUser = createParamDecorator((_data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user ?? null;
 });

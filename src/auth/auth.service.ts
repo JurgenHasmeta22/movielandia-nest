@@ -1,5 +1,4 @@
 import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../prisma.service";
 import * as bcrypt from "bcrypt";
 import { SignUpDto, SignInDto, ForgotPasswordDto, ResetPasswordDto, ActivateAccountDto } from "./dtos/auth.dto";
@@ -11,7 +10,6 @@ import { isValidEmail } from "../utils/validation.util";
 export class AuthService {
     constructor(
         private prisma: PrismaService,
-        private jwtService: JwtService,
         private emailService: EmailService,
     ) {}
 
@@ -35,55 +33,33 @@ export class AuthService {
 
         await this.prisma.$transaction(async (prisma) => {
             const newUser = await prisma.user.create({
-                data: {
-                    email,
-                    userName,
-                    password: hashedPassword,
-                    active: false,
-                },
+                data: { email, userName, password: hashedPassword, active: false },
             });
 
             await prisma.activateToken.create({
-                data: {
-                    token: activationToken,
-                    userId: newUser.id,
-                },
+                data: { token: activationToken, userId: newUser.id },
             });
 
             return newUser;
         });
 
         await this.emailService.sendActivationEmail(email, userName, activationToken);
-
-        return { message: "User created successfully. Please check your email to activate your account." };
     }
 
-    async signIn(signInDto: SignInDto) {
-        const { emailOrUsername, password } = signInDto;
-
+    /** Validate credentials, return the user id on success. */
+    async validateCredentials(emailOrUsername: string, password: string): Promise<number> {
         const isEmail = isValidEmail(emailOrUsername);
         const user = await this.prisma.user.findFirst({
             where: isEmail ? { email: emailOrUsername } : { userName: emailOrUsername },
         });
 
-        if (!user) {
-            throw new UnauthorizedException("Invalid credentials");
-        }
+        if (!user) throw new UnauthorizedException("Invalid credentials");
+        if (!user.active) throw new UnauthorizedException("Please activate your account first");
 
-        if (!user.active) {
-            throw new UnauthorizedException("Please activate your account first");
-        }
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) throw new UnauthorizedException("Invalid credentials");
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            throw new UnauthorizedException("Invalid credentials");
-        }
-
-        const payload = { id: user.id, email: user.email };
-        const accessToken = this.jwtService.sign(payload);
-
-        return { accessToken };
+        return user.id;
     }
 
     async activateAccount(activateAccountDto: ActivateAccountDto) {
@@ -94,9 +70,7 @@ export class AuthService {
             include: { user: true },
         });
 
-        if (!activateToken) {
-            throw new NotFoundException("Invalid or expired activation token");
-        }
+        if (!activateToken) throw new NotFoundException("Invalid or expired activation token");
 
         await this.prisma.$transaction(async (prisma) => {
             await prisma.user.update({
@@ -109,63 +83,44 @@ export class AuthService {
                 data: { activatedAt: new Date() },
             });
         });
-
-        return { message: "Account activated successfully" };
     }
 
     async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
         const { email } = forgotPasswordDto;
 
-        if (!isValidEmail(email)) {
-            throw new UnauthorizedException("Invalid email format");
-        }
+        if (!isValidEmail(email)) throw new UnauthorizedException("Invalid email format");
 
         const user = await this.prisma.user.findUnique({ where: { email } });
-
-        if (!user) {
-            throw new NotFoundException("User not found");
-        }
+        if (!user) throw new NotFoundException("User not found");
 
         const resetToken = randomBytes(32).toString("hex");
 
         await this.prisma.resetPasswordToken.create({
-            data: {
-                token: resetToken,
-                userId: user.id,
-            },
+            data: { token: resetToken, userId: user.id },
         });
 
         await this.emailService.sendPasswordResetEmail(email, user.userName, resetToken);
-
-        return { message: "Password reset instructions have been sent to your email" };
     }
 
     async resetPassword(resetPasswordDto: ResetPasswordDto) {
         const { token, password } = resetPasswordDto;
 
-        const resetToken = await this.prisma.resetPasswordToken.findUnique({
+        const resetTokenRecord = await this.prisma.resetPasswordToken.findUnique({
             where: { token },
             include: { user: true },
         });
 
-        if (!resetToken) {
-            throw new NotFoundException("Invalid or expired reset token");
-        }
+        if (!resetTokenRecord) throw new NotFoundException("Invalid or expired reset token");
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         await this.prisma.$transaction(async (prisma) => {
             await prisma.user.update({
-                where: { id: resetToken.userId },
+                where: { id: resetTokenRecord.userId },
                 data: { password: hashedPassword },
             });
 
-            await prisma.resetPasswordToken.update({
-                where: { id: resetToken.id },
-                data: { resetPasswordAt: new Date() },
-            });
+            await prisma.resetPasswordToken.delete({ where: { id: resetTokenRecord.id } });
         });
-
-        return { message: "Password reset successfully" };
     }
 }

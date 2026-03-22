@@ -1,42 +1,25 @@
-import { Controller, Get, Param, Query, ParseIntPipe, HttpStatus, UseGuards, ValidationPipe } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { Controller, Get, Param, Query, ParseIntPipe, Req, Res } from "@nestjs/common";
+import { Inertia } from "inertia-nestjs";
 import { ReviewService } from "./review.service";
-import { GetVotesQueryDto, VotesListResponseDto } from "./dtos/review-votes.dto";
-import { OptionalAuthGuard } from "../../auth/guards/optional-auth.guard";
+import { GetVotesQueryDto } from "./dtos/review-votes.dto";
+import { Request, Response } from "express";
 
-@ApiTags("Reviews")
 @Controller("reviews")
-@UseGuards(OptionalAuthGuard)
 export class ReviewController {
     constructor(private readonly reviewService: ReviewService) {}
 
     @Get(":reviewId/upvotes")
-    @ApiOperation({ summary: "Get upvotes for a review" })
-    @ApiResponse({
-        status: HttpStatus.OK,
-        description: "Upvotes retrieved successfully",
-        type: VotesListResponseDto,
-    })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
-    async getUpvotes(
-        @Param("reviewId", ParseIntPipe) reviewId: number,
-        @Query(new ValidationPipe({ transform: true })) query: GetVotesQueryDto,
-    ): Promise<VotesListResponseDto> {
-        return this.reviewService.getUpvotesByReviewId(reviewId, query.type, query.page || 1, query.perPage || 10);
+    @Inertia("Reviews/Votes")
+    async getUpvotes(@Param("reviewId", ParseIntPipe) reviewId: number, @Query() query: GetVotesQueryDto) {
+        const votes = await this.reviewService.getUpvotesByReviewId(reviewId, query.type, query.page || 1, query.perPage || 10);
+        return { reviewId, voteType: "up", votes };
     }
 
     @Get(":reviewId/downvotes")
-    @ApiOperation({ summary: "Get downvotes for a review" })
-    @ApiResponse({
-        status: HttpStatus.OK,
-        description: "Downvotes retrieved successfully",
-        type: VotesListResponseDto,
-    })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid query parameters" })
-    async getDownvotes(
-        @Param("reviewId", ParseIntPipe) reviewId: number,
-        @Query(new ValidationPipe({ transform: true })) query: GetVotesQueryDto,
-    ): Promise<VotesListResponseDto> {
-        return this.reviewService.getDownvotesByReviewId(reviewId, query.type, query.page || 1, query.perPage || 10);
+    @Inertia("Reviews/Votes")
+    async getDownvotes(@Param("reviewId", ParseIntPipe) reviewId: number, @Query() query: GetVotesQueryDto) {
+        const votes = await this.reviewService.getDownvotesByReviewId(reviewId, query.type, query.page || 1, query.perPage || 10);
+        return { reviewId, voteType: "down", votes };
     }
 }
+

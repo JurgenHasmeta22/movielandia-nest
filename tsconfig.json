@@ -20,5 +20,6 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "resources/**/*", "vite.config.ts", "tsconfig.client.json"]
 }

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        {{#each ssrHead}}
+            {{{this}}}
+        {{/each}}
+
+        <link rel="stylesheet" href="/build/app.css" />
+        <script type="module" src="/build/app.js" defer></script>
+    </head>
+    <body class="bg-gray-950 text-gray-100 min-h-screen">
+        {{#if ssrBody}}
+            <div id="app" data-page="{{{json page}}}">{{{ssrBody}}}</div>
+        {{else}}
+            <div id="app" data-page="{{{json page}}}"></div>
+        {{/if}}
+    </body>
+</html>
