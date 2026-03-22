@@ -14,7 +14,7 @@ export class AuthService {
     ) {}
 
     async signUp(signUpDto: SignUpDto) {
-        const { email, password, userName } = signUpDto;
+        const { email, password, userName, birthday, gender, phone, countryFrom } = signUpDto;
 
         if (!isValidEmail(email)) {
             throw new UnauthorizedException("Invalid email format");
@@ -33,7 +33,16 @@ export class AuthService {
 
         await this.prisma.$transaction(async (prisma) => {
             const newUser = await prisma.user.create({
-                data: { email, userName, password: hashedPassword, active: false },
+                data: {
+                    email,
+                    userName,
+                    password: hashedPassword,
+                    active: false,
+                    ...(birthday ? { birthday: new Date(birthday) } : {}),
+                    ...(gender ? { gender: gender as any } : {}),
+                    ...(phone ? { phone } : {}),
+                    ...(countryFrom ? { countryFrom } : {}),
+                },
             });
 
             await prisma.activateToken.create({

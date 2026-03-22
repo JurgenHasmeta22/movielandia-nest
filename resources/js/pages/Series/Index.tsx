@@ -3,6 +3,7 @@ import AppLayout from '../../layouts/AppLayout';
 import { MediaGrid } from '../../components/MediaGrid';
 import { SortControls } from '../../components/SortControls';
 import { PaginationBar } from '../../components/PaginationBar';
+import { CollapsibleSection } from '../../components/CollapsibleSection';
 import type { Pagination, SortFilters } from '../../types/media';
 
 interface Serie {
@@ -64,12 +65,13 @@ export default function SeriesIndex({
                     <p className="text-gray-400 text-sm">{pagination.total.toLocaleString()} series</p>
                 )}
 
-                <MediaGrid items={series} type="series" />
-
-                <PaginationBar
-                    pagination={pagination}
-                    urlBuilder={(p) => buildUrl({ sortBy, ascOrDesc, page: p, perPage })}
-                />
+                <CollapsibleSection title="Series" count={pagination?.total}>
+                    <MediaGrid items={series} type="series" />
+                    <PaginationBar
+                        pagination={pagination}
+                        urlBuilder={(p) => buildUrl({ sortBy, ascOrDesc, page: p, perPage })}
+                    />
+                </CollapsibleSection>
             </div>
         </AppLayout>
     );

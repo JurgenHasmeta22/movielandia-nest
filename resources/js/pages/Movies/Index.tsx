@@ -3,6 +3,7 @@ import AppLayout from '../../layouts/AppLayout';
 import { MediaGrid } from '../../components/MediaGrid';
 import { SortControls } from '../../components/SortControls';
 import { PaginationBar } from '../../components/PaginationBar';
+import { CollapsibleSection } from '../../components/CollapsibleSection';
 import type { Pagination, SortFilters } from '../../types/media';
 
 interface Movie {
@@ -64,12 +65,13 @@ export default function MoviesIndex({ movies, pagination, filters = {} }: Movies
                     <p className="text-gray-400 text-sm">{pagination.total.toLocaleString()} movies</p>
                 )}
 
-                <MediaGrid items={movies} type="movies" />
-
-                <PaginationBar
-                    pagination={pagination}
-                    urlBuilder={(p) => buildUrl({ sortBy, ascOrDesc, page: p, perPage })}
-                />
+                <CollapsibleSection title="Movies" count={pagination?.total}>
+                    <MediaGrid items={movies} type="movies" />
+                    <PaginationBar
+                        pagination={pagination}
+                        urlBuilder={(p) => buildUrl({ sortBy, ascOrDesc, page: p, perPage })}
+                    />
+                </CollapsibleSection>
             </div>
         </AppLayout>
     );

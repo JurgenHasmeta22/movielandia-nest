@@ -1,5 +1,10 @@
-import { IsEmail, IsString, MinLength, MaxLength, Matches } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsString, IsOptional, MinLength, MaxLength, Matches, IsDateString, IsEnum } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+
+export enum GenderEnum {
+    Male = "Male",
+    Female = "Female",
+}
 
 export class SignUpDto {
     @ApiProperty({
@@ -29,6 +34,26 @@ export class SignUpDto {
         message: "Password must contain uppercase, lowercase, number/special character",
     })
     password: string;
+
+    @ApiPropertyOptional({ example: "1995-06-15", description: "Birthday (YYYY-MM-DD)" })
+    @IsOptional()
+    @IsDateString()
+    birthday?: string;
+
+    @ApiPropertyOptional({ enum: GenderEnum, default: GenderEnum.Male })
+    @IsOptional()
+    @IsEnum(GenderEnum)
+    gender?: GenderEnum;
+
+    @ApiPropertyOptional({ example: "+11234567890" })
+    @IsOptional()
+    @IsString()
+    phone?: string;
+
+    @ApiPropertyOptional({ example: "United States" })
+    @IsOptional()
+    @IsString()
+    countryFrom?: string;
 }
 
 export class SignInDto {
