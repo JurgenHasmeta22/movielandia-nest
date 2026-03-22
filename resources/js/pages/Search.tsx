@@ -46,18 +46,22 @@ interface Pagination {
     perPage: number;
 }
 
-type TabId = 'all' | 'movies' | 'series' | 'actors' | 'crew' | 'users';
+type TabId = 'all' | 'movies' | 'series' | 'actors' | 'crew' | 'seasons' | 'episodes' | 'users';
 
 interface SearchProps {
     movies?: MediaItem[];
     series?: MediaItem[];
     actors?: PersonItem[];
     crew?: PersonItem[];
+    seasons?: MediaItem[];
+    episodes?: MediaItem[];
     users?: UserItem[];
     moviesPagination?: Pagination;
     seriesPagination?: Pagination;
     actorsPagination?: Pagination;
     crewPagination?: Pagination;
+    seasonsPagination?: Pagination;
+    episodesPagination?: Pagination;
     usersPagination?: Pagination;
     searchQuery?: string;
     tab?: TabId;
@@ -65,7 +69,7 @@ interface SearchProps {
 
 // ─── sub-components ───────────────────────────────────────────────────────────
 
-function MediaCard({ item, type }: { item: MediaItem; type: 'movies' | 'series' }) {
+function MediaCard({ item, type }: { item: MediaItem; type: 'movies' | 'series' | 'seasons' | 'episodes' }) {
     const src = imgSrc(item.photoSrc, type);
     return (
         <Link href={`/${type}/${item.id}`} className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-500 transition-colors">
@@ -178,12 +182,15 @@ const TABS: { id: TabId; label: string }[] = [
     { id: 'series', label: 'Series' },
     { id: 'actors', label: 'Actors' },
     { id: 'crew', label: 'Crew' },
+    { id: 'seasons', label: 'Seasons' },
+    { id: 'episodes', label: 'Episodes' },
     { id: 'users', label: 'Users' },
 ];
 
 export default function Search({
-    movies = [], series = [], actors = [], crew = [], users = [],
-    moviesPagination, seriesPagination, actorsPagination, crewPagination, usersPagination,
+    movies = [], series = [], actors = [], crew = [], seasons = [], episodes = [], users = [],
+    moviesPagination, seriesPagination, actorsPagination, crewPagination,
+    seasonsPagination, episodesPagination, usersPagination,
     searchQuery = '', tab = 'all',
 }: SearchProps) {
     const [query, setQuery] = useState(searchQuery);
@@ -210,6 +217,8 @@ export default function Search({
         (seriesPagination?.total ?? 0) +
         (actorsPagination?.total ?? 0) +
         (crewPagination?.total ?? 0) +
+        (seasonsPagination?.total ?? 0) +
+        (episodesPagination?.total ?? 0) +
         (usersPagination?.total ?? 0);
 
     return (
@@ -217,7 +226,20 @@ export default function Search({
             <div className="space-y-8">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-5">Search</h1>
+                    {hasSearched ? (
+                        <>
+                            <h1 className="text-3xl font-bold text-white mb-2">
+                                Search Results for &ldquo;{searchQuery}&rdquo;
+                            </h1>
+                            {totalResults > 0 && (
+                                <p className="text-gray-400 text-sm mb-5">
+                                    Found {totalResults.toLocaleString()} results across all categories
+                                </p>
+                            )}
+                        </>
+                    ) : (
+                        <h1 className="text-3xl font-bold text-white mb-5">Search</h1>
+                    )}
                     <form onSubmit={handleSearch} className="flex gap-3 max-w-2xl">
                         <input
                             type="text"
@@ -293,6 +315,20 @@ export default function Search({
                             <Section title="Crew" count={crewPagination?.total} viewAllHref={`/search?q=${q}&tab=crew`}>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
                                     {crew.map((c) => <PersonCard key={c.id} item={c} type="crew" />)}
+                                </div>
+                            </Section>
+                        )}
+                        {seasons.length > 0 && (
+                            <Section title="Seasons" count={seasonsPagination?.total} viewAllHref={`/search?q=${q}&tab=seasons`}>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                    {seasons.map((s) => <MediaCard key={s.id} item={s} type="seasons" />)}
+                                </div>
+                            </Section>
+                        )}
+                        {episodes.length > 0 && (
+                            <Section title="Episodes" count={episodesPagination?.total} viewAllHref={`/search?q=${q}&tab=episodes`}>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                    {episodes.map((e) => <MediaCard key={e.id} item={e} type="episodes" />)}
                                 </div>
                             </Section>
                         )}
@@ -381,6 +417,38 @@ export default function Search({
                                     {users.map((u) => <UserCard key={u.id} item={u} />)}
                                 </div>
                                 {usersPagination && <PaginationBar pagination={usersPagination} href={pageHref} />}
+                            </>
+                        )}
+                    </Section>
+                )}
+
+                {/* Seasons tab */}
+                {tab === 'seasons' && (
+                    <Section title="Seasons" count={seasonsPagination?.total}>
+                        {seasons.length === 0 ? (
+                            <p className="text-gray-500 text-sm py-4">No seasons found.</p>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                    {seasons.map((s) => <MediaCard key={s.id} item={s} type="seasons" />)}
+                                </div>
+                                {seasonsPagination && <PaginationBar pagination={seasonsPagination} href={pageHref} />}
+                            </>
+                        )}
+                    </Section>
+                )}
+
+                {/* Episodes tab */}
+                {tab === 'episodes' && (
+                    <Section title="Episodes" count={episodesPagination?.total}>
+                        {episodes.length === 0 ? (
+                            <p className="text-gray-500 text-sm py-4">No episodes found.</p>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                                    {episodes.map((e) => <MediaCard key={e.id} item={e} type="episodes" />)}
+                                </div>
+                                {episodesPagination && <PaginationBar pagination={episodesPagination} href={pageHref} />}
                             </>
                         )}
                     </Section>

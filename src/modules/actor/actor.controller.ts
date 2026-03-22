@@ -29,7 +29,15 @@ export class ActorController {
     async index(@Query() query: ActorQueryDto, @Req() req: Request) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.actorService.findAll(query, userId);
-        return { actors: data.actors, count: data.count, filters: query };
+        const perPage = Number(query.perPage ?? 12);
+        const page = Number(query.page ?? 1);
+        const pagination = {
+            total: data.count,
+            page,
+            totalPages: Math.ceil(data.count / perPage),
+            perPage,
+        };
+        return { actors: data.actors, pagination, filters: query };
     }
 
     @Get("search")

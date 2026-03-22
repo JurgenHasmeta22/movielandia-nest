@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { HeaderSearch } from '../components/HeaderSearch';
 
 interface AuthUser {
     id: number;
@@ -50,11 +51,11 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                                 <Link href="/actors" className="text-gray-300 hover:text-white transition-colors">Actors</Link>
                                 <Link href="/crew" className="text-gray-300 hover:text-white transition-colors">Crew</Link>
                                 <Link href="/forum" className="text-gray-300 hover:text-white transition-colors">Forum</Link>
-                                <Link href="/search" className="text-gray-300 hover:text-white transition-colors">Search</Link>
                             </div>
 
-                            {/* Auth */}
+                            {/* Auth + Search */}
                             <div className="flex items-center gap-3">
+                                <HeaderSearch />
                                 {user ? (
                                     <>
                                         <Link href="/users/me" className="text-sm text-gray-300 hover:text-white transition-colors">

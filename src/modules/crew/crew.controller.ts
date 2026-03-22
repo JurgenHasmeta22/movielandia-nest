@@ -29,7 +29,15 @@ export class CrewController {
     async index(@Query() query: CrewQueryDto, @Req() req: Request) {
         const userId: number | undefined = req.session?.userId;
         const data = await this.crewService.findAll(query, userId);
-        return { crew: data.crew, count: data.count, filters: query };
+        const perPage = Number(query.perPage ?? 12);
+        const page = Number(query.page ?? 1);
+        const pagination = {
+            total: data.count,
+            page,
+            totalPages: Math.ceil(data.count / perPage),
+            perPage,
+        };
+        return { crew: data.crew, pagination, filters: query };
     }
 
     @Get("search")

@@ -22,4 +22,12 @@ export class AppController {
     ) {
         return await this.appService.search(q, tab, Number(page), Number(perPage));
     }
+
+    @Get("search-quick")
+    async searchQuick(
+        @Query("q") q = "",
+        @Query("category") category = "all",
+    ) {
+        return await this.appService.searchQuick(q, category);
+    }
 }
