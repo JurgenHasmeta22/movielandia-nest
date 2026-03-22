@@ -30,9 +30,12 @@ export default function SeasonsShow({ season }: Props) {
             <div className="max-w-6xl mx-auto px-4 py-8">
                 <div className="flex gap-8 mb-10">
                     <img
-                        src={season.photoSrc || "/images/placeholder.jpg"}
+                        src={season.photoSrc
+                            ? (season.photoSrc.startsWith('http') ? season.photoSrc : `/images/series/${season.photoSrc}`)
+                            : '/images/placeholder.jpg'}
                         alt={season.title}
                         className="w-48 rounded-xl shadow-lg object-cover flex-shrink-0"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
                     />
                     <div className="flex-1">
                         <p className="text-indigo-400 text-sm mb-1">Season {season.seasonNumber}</p>

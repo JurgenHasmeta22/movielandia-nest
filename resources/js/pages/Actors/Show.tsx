@@ -19,10 +19,14 @@ export default function ActorShow({ actor }: { actor: Actor }) {
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row gap-8">
                     <div className="flex-shrink-0">
-                        {actor.photoSrc
-                            ? <img src={`/images/actors/${actor.photoSrc}`} alt={actor.fullname} className="w-48 rounded-2xl shadow-2xl" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
-                            : <div className="w-48 aspect-[3/4] bg-gray-800 rounded-2xl flex items-center justify-center text-6xl">👤</div>
-                        }
+                        <img
+                            src={actor.photoSrc
+                                ? (actor.photoSrc.startsWith('http') ? actor.photoSrc : `/images/actors/${actor.photoSrc}`)
+                                : '/images/placeholder.jpg'}
+                            alt={actor.fullname}
+                            className="w-48 rounded-2xl shadow-2xl"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
+                        />
                     </div>
                     <div className="flex-1 space-y-4">
                         <h1 className="text-4xl font-bold text-white">{actor.fullname}</h1>

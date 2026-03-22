@@ -16,9 +16,10 @@ export class AppController {
     @Inertia("Search")
     async search(
         @Query("q") q = "",
+        @Query("tab") tab = "all",
         @Query("page") page = 1,
         @Query("perPage") perPage = 12,
     ) {
-        return await this.appService.search(q, Number(page), Number(perPage));
+        return await this.appService.search(q, tab, Number(page), Number(perPage));
     }
 }

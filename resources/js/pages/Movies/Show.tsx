@@ -39,15 +39,14 @@ export default function MovieShow({ movie }: MovieShowProps) {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row gap-8">
                     <div className="flex-shrink-0">
-                        {movie.photoSrc ? (
-                            <img
-                                src={`/images/movies/${movie.photoSrc}`}
-                                alt={movie.title}
-                                className="w-56 rounded-2xl shadow-2xl"
-                            />
-                        ) : (
-                            <div className="w-56 aspect-[2/3] bg-gray-800 rounded-2xl flex items-center justify-center text-6xl">🎬</div>
-                        )}
+                        <img
+                            src={movie.photoSrc
+                                ? (movie.photoSrc.startsWith('http') ? movie.photoSrc : `/images/movies/${movie.photoSrc}`)
+                                : '/images/placeholder.jpg'}
+                            alt={movie.title}
+                            className="w-56 rounded-2xl shadow-2xl"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
+                        />
                     </div>
                     <div className="flex-1 space-y-4">
                         <h1 className="text-4xl font-bold text-white">{movie.title}</h1>

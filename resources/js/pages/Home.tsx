@@ -1,20 +1,8 @@
 /// <reference types="vite/client" />
 import { Link } from "@inertiajs/react";
 import AppLayout from "../layouts/AppLayout";
-
-interface Movie {
-    id: number;
-    title: string;
-    photoSrc?: string;
-    ratingImdb?: number;
-}
-
-interface Serie {
-    id: number;
-    title: string;
-    photoSrc?: string;
-    ratingImdb?: number;
-}
+import { MediaCarousel } from "../components/MediaCarousel";
+import type { MediaItem } from "../types/media";
 
 interface Genre {
     id: number;
@@ -23,54 +11,17 @@ interface Genre {
 }
 
 interface Props {
-    latestMovies: Movie[];
-    latestSeries: Serie[];
+    latestMovies: MediaItem[];
+    latestSeries: MediaItem[];
     genres: Genre[];
-}
-
-function MediaCard({ title, photoSrc, ratingImdb, href }: {
-    id: number; title: string; photoSrc?: string; ratingImdb?: number; href: string;
-}) {
-    return (
-        <Link href={href} className="group flex-shrink-0 w-36 sm:w-44">
-            <div className="relative rounded-xl overflow-hidden shadow-lg ring-1 ring-white/5 group-hover:ring-indigo-500 transition-all duration-300">
-                <img
-                    src={photoSrc ? `/images/movies/${photoSrc}` : "/images/placeholder.jpg"}
-                    alt={title}
-                    className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/images/placeholder.jpg"; }}
-                />
-                {ratingImdb != null && (
-                    <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-yellow-400 text-xs font-bold px-2 py-1 rounded-full">
-                        {ratingImdb.toFixed(1)}
-                    </div>
-                )}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3">
-                    <p className="text-white text-sm font-semibold leading-tight line-clamp-2">{title}</p>
-                </div>
-            </div>
-        </Link>
-    );
-}
-
-function Section({ title, href, children }: { title: string; href: string; children: React.ReactNode }) {
-    return (
-        <section className="mb-12">
-            <div className="flex items-center justify-between mb-5">
-                <h2 className="text-2xl font-bold text-white">{title}</h2>
-                <Link href={href} className="text-sm text-indigo-400 hover:text-indigo-300 transition font-medium">View all</Link>
-            </div>
-            <div className="flex gap-4 overflow-x-auto pb-2">{children}</div>
-        </section>
-    );
 }
 
 const GENRE_COLORS = [
     "from-purple-700 to-indigo-900", "from-pink-700 to-rose-900",
-    "from-blue-700 to-cyan-900",    "from-emerald-700 to-teal-900",
-    "from-orange-700 to-amber-900", "from-red-700 to-rose-900",
-    "from-violet-700 to-purple-900","from-sky-700 to-blue-900",
-    "from-green-700 to-emerald-900","from-fuchsia-700 to-pink-900",
+    "from-blue-700 to-cyan-900",     "from-emerald-700 to-teal-900",
+    "from-orange-700 to-amber-900",  "from-red-700 to-rose-900",
+    "from-violet-700 to-purple-900", "from-sky-700 to-blue-900",
+    "from-green-700 to-emerald-900", "from-fuchsia-700 to-pink-900",
 ];
 
 export default function Home({ latestMovies, latestSeries, genres }: Props) {
@@ -99,46 +50,43 @@ export default function Home({ latestMovies, latestSeries, genres }: Props) {
                 </div>
             </div>
 
-            {/* Main content */}
-            <div className="space-y-0">
-                {latestMovies.length > 0 && (
-                    <Section title="Latest Movies" href="/movies">
-                        {latestMovies.map((m) => <MediaCard key={m.id} {...m} href={`/movies/${m.id}`} />)}
-                    </Section>
-                )}
-                {latestSeries.length > 0 && (
-                    <Section title="Latest Series" href="/series">
-                        {latestSeries.map((s) => <MediaCard key={s.id} {...s} href={`/series/${s.id}`} />)}
-                    </Section>
-                )}
-                {genres.length > 0 && (
-                    <section className="mb-12">
-                        <div className="flex items-center justify-between mb-5">
-                            <h2 className="text-2xl font-bold text-white">Browse by Genre</h2>
-                            <Link href="/genres" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">All genres</Link>
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                            {genres.map((g, i) => (
-                                <Link key={g.id} href={`/genres/${g.id}`}>
-                                    <div className={`bg-gradient-to-br ${GENRE_COLORS[i % GENRE_COLORS.length]} rounded-xl p-5 hover:scale-105 transition-transform duration-200`}>
-                                        <p className="text-white font-bold capitalize">{g.name}</p>
-                                        {g._count && <p className="text-white/60 text-xs mt-1">{g._count.movies} movies &middot; {g._count.series} series</p>}
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </section>
-                )}
-                <section className="rounded-2xl bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/20 p-10 text-center">
-                    <h2 className="text-3xl font-bold text-white mb-3">Join the Community</h2>
-                    <p className="text-gray-400 max-w-xl mx-auto mb-6">Discuss your favourite films, rate episodes and share lists with other movie enthusiasts.</p>
-                    <div className="flex flex-wrap gap-4 justify-center">
-                        <Link href="/forum" className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition">Go to Forum</Link>
-                        <Link href="/register" className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition">Create Account</Link>
+            {/* Carousels */}
+            <MediaCarousel items={latestMovies} type="movies" title="Latest Movies" viewAllHref="/movies" />
+            <MediaCarousel items={latestSeries} type="series" title="Latest Series" viewAllHref="/series" />
+
+            {/* Genres grid */}
+            {genres.length > 0 && (
+                <section className="mb-12">
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 className="text-2xl font-bold text-white">Browse by Genre</h2>
+                        <Link href="/genres" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">All genres</Link>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {genres.map((g, i) => (
+                            <Link key={g.id} href={`/genres/${g.id}`}>
+                                <div className={`bg-gradient-to-br ${GENRE_COLORS[i % GENRE_COLORS.length]} rounded-xl p-5 hover:scale-105 transition-transform duration-200`}>
+                                    <p className="text-white font-bold capitalize">{g.name}</p>
+                                    {g._count && (
+                                        <p className="text-white/60 text-xs mt-1">
+                                            {g._count.movies} movies &middot; {g._count.series} series
+                                        </p>
+                                    )}
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 </section>
-            </div>
+            )}
+
+            {/* CTA */}
+            <section className="rounded-2xl bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/20 p-10 text-center">
+                <h2 className="text-3xl font-bold text-white mb-3">Join the Community</h2>
+                <p className="text-gray-400 max-w-xl mx-auto mb-6">Discuss your favourite films, rate episodes and share lists with other movie enthusiasts.</p>
+                <div className="flex flex-wrap gap-4 justify-center">
+                    <Link href="/forum" className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition">Go to Forum</Link>
+                    <Link href="/register" className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition">Create Account</Link>
+                </div>
+            </section>
         </AppLayout>
     );
 }
-

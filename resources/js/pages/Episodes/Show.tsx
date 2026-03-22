@@ -26,13 +26,14 @@ export default function EpisodesShow({ episode }: Props) {
         <AppLayout title={episode.title}>
             <div className="max-w-5xl mx-auto px-4 py-8">
                 <div className="flex gap-8 mb-8">
-                    {episode.photoSrc && (
-                        <img
-                            src={episode.photoSrc}
-                            alt={episode.title}
-                            className="w-64 rounded-xl shadow-lg object-cover flex-shrink-0"
-                        />
-                    )}
+                    <img
+                        src={episode.photoSrc
+                            ? (episode.photoSrc.startsWith('http') ? episode.photoSrc : `/images/series/${episode.photoSrc}`)
+                            : '/images/placeholder.jpg'}
+                        alt={episode.title}
+                        className="w-64 rounded-xl shadow-lg object-cover flex-shrink-0"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
+                    />
                     <div className="flex-1">
                         {episode.season?.serie && (
                             <Link href={`/series/${episode.season.serie.id}`} className="text-indigo-400 hover:underline text-sm">

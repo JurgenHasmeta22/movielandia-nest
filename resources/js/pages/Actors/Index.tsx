@@ -20,10 +20,14 @@ export default function ActorsIndex({ actors, pagination, searchQuery }: { actor
                     {actors.map((actor) => (
                         <Link key={actor.id} href={`/actors/${actor.id}`} className="group text-center">
                             <div className="aspect-[3/4] bg-gray-800 rounded-xl overflow-hidden mb-2 group-hover:border-2 group-hover:border-indigo-500 transition-all">
-                                {actor.photoSrc
-                                    ? <img src={`/images/actors/${actor.photoSrc}`} alt={actor.fullname} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                                    : <div className="w-full h-full flex items-center justify-center text-4xl text-gray-600">👤</div>
-                                }
+                                <img
+                                    src={actor.photoSrc
+                                        ? (actor.photoSrc.startsWith('http') ? actor.photoSrc : `/images/actors/${actor.photoSrc}`)
+                                        : '/images/placeholder.jpg'}
+                                    alt={actor.fullname}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
+                                />
                             </div>
                             <h3 className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors truncate">{actor.fullname}</h3>
                         </Link>

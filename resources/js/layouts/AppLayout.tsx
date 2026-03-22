@@ -48,6 +48,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                                 <Link href="/series" className="text-gray-300 hover:text-white transition-colors">Series</Link>
                                 <Link href="/genres" className="text-gray-300 hover:text-white transition-colors">Genres</Link>
                                 <Link href="/actors" className="text-gray-300 hover:text-white transition-colors">Actors</Link>
+                                <Link href="/crew" className="text-gray-300 hover:text-white transition-colors">Crew</Link>
                                 <Link href="/forum" className="text-gray-300 hover:text-white transition-colors">Forum</Link>
                                 <Link href="/search" className="text-gray-300 hover:text-white transition-colors">Search</Link>
                             </div>
@@ -120,6 +121,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                                     <li><Link href="/series" className="text-gray-500 hover:text-gray-300 transition-colors">Series</Link></li>
                                     <li><Link href="/genres" className="text-gray-500 hover:text-gray-300 transition-colors">Genres</Link></li>
                                     <li><Link href="/actors" className="text-gray-500 hover:text-gray-300 transition-colors">Actors</Link></li>
+                                    <li><Link href="/crew" className="text-gray-500 hover:text-gray-300 transition-colors">Crew</Link></li>
                                 </ul>
                             </div>
                             <div>
