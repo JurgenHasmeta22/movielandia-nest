@@ -16,6 +16,13 @@ import {
     DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Separator } from '../components/ui/separator';
+import {
+    NavigationMenu,
+    NavigationMenuList,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    navigationMenuTriggerStyle,
+} from '../components/ui/navigation-menu';
 
 interface AuthUser {
     id: number;
@@ -69,20 +76,27 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                             </Link>
 
                             {/* Primary nav */}
-                            <div className="hidden md:flex items-center gap-1 text-sm font-medium">
-                                {[
-                                    { href: '/movies', label: 'Movies' },
-                                    { href: '/series', label: 'Series' },
-                                    { href: '/genres', label: 'Genres' },
-                                    { href: '/actors', label: 'Actors' },
-                                    { href: '/crew', label: 'Crew' },
-                                    { href: '/forum', label: 'Forum' },
-                                ].map(({ href, label }) => (
-                                    <Button key={href} variant="ghost" size="sm" asChild>
-                                        <Link href={href}>{label}</Link>
-                                    </Button>
-                                ))}
-                            </div>
+                            <NavigationMenu className="hidden md:flex">
+                                <NavigationMenuList>
+                                    {[
+                                        { href: '/movies', label: 'Movies' },
+                                        { href: '/series', label: 'Series' },
+                                        { href: '/genres', label: 'Genres' },
+                                        { href: '/actors', label: 'Actors' },
+                                        { href: '/crew', label: 'Crew' },
+                                        { href: '/forum', label: 'Forum' },
+                                    ].map(({ href, label }) => (
+                                        <NavigationMenuItem key={href}>
+                                            <NavigationMenuLink
+                                                href={href}
+                                                className={navigationMenuTriggerStyle()}
+                                            >
+                                                {label}
+                                            </NavigationMenuLink>
+                                        </NavigationMenuItem>
+                                    ))}
+                                </NavigationMenuList>
+                            </NavigationMenu>
 
                             {/* Auth + Search */}
                             <div className="flex items-center gap-2">

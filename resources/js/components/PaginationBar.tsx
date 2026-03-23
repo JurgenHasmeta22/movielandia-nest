@@ -1,11 +1,18 @@
-import { Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from './ui/button';
+﻿import { Link } from '@inertiajs/react';
 import type { Pagination } from '../types/media';
+import {
+    Pagination as PaginationRoot,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from './ui/pagination';
 
 interface PaginationBarProps {
     pagination: Pagination;
-    /** Build a URL for a given page number — used for `<Link>` based navigation */
+    /** Build a URL for a given page number â€” used for `<Link>` based navigation */
     urlBuilder?: (page: number) => string;
     /** Callback for button-based navigation (e.g. inside Genres/Show) */
     onPageChange?: (page: number) => void;
@@ -31,66 +38,75 @@ export function PaginationBar({ pagination, urlBuilder, onPageChange }: Paginati
     // --- Link-based (URL) variant ---
     if (urlBuilder && !onPageChange) {
         return (
-            <nav className="flex flex-wrap justify-center items-center gap-1.5 pt-6" aria-label="Pagination">
-                {page > 1 && (
-                    <Button variant="outline" size="sm" asChild>
-                        <Link href={urlBuilder(page - 1)}>
-                            <ChevronLeft size={14} /> Prev
-                        </Link>
-                    </Button>
-                )}
-                {pageList.map((p, idx) =>
-                    p === 'gap' ? (
-                        <span key={`gap-${idx}`} className="text-muted-foreground text-sm px-1">…</span>
-                    ) : (
-                        <Button
-                            key={p}
-                            variant={p === page ? 'default' : 'outline'}
-                            size="sm"
-                            asChild
-                        >
-                            <Link href={urlBuilder(p as number)}>{p}</Link>
-                        </Button>
-                    ),
-                )}
-                {page < totalPages && (
-                    <Button variant="outline" size="sm" asChild>
-                        <Link href={urlBuilder(page + 1)}>
-                            Next <ChevronRight size={14} />
-                        </Link>
-                    </Button>
-                )}
-            </nav>
+            <PaginationRoot className="pt-6">
+                <PaginationContent>
+                    {page > 1 && (
+                        <PaginationItem>
+                            <PaginationPrevious href={urlBuilder(page - 1)} />
+                        </PaginationItem>
+                    )}
+                    {pageList.map((p, idx) =>
+                        p === 'gap' ? (
+                            <PaginationItem key={`gap-${idx}`}>
+                                <PaginationEllipsis />
+                            </PaginationItem>
+                        ) : (
+                            <PaginationItem key={p}>
+                                <PaginationLink href={urlBuilder(p as number)} isActive={p === page}>
+                                    {p}
+                                </PaginationLink>
+                            </PaginationItem>
+                        ),
+                    )}
+                    {page < totalPages && (
+                        <PaginationItem>
+                            <PaginationNext href={urlBuilder(page + 1)} />
+                        </PaginationItem>
+                    )}
+                </PaginationContent>
+            </PaginationRoot>
         );
     }
 
     // --- Button-based (callback) variant ---
     return (
-        <nav className="flex flex-wrap justify-center items-center gap-1.5 pt-6" aria-label="Pagination">
-            {page > 1 && (
-                <Button variant="outline" size="sm" onClick={() => onPageChange?.(page - 1)}>
-                    <ChevronLeft size={14} /> Prev
-                </Button>
-            )}
-            {pageList.map((p, idx) =>
-                p === 'gap' ? (
-                    <span key={`gap-${idx}`} className="text-muted-foreground text-sm px-1">…</span>
-                ) : (
-                    <Button
-                        key={p}
-                        variant={p === page ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => onPageChange?.(p as number)}
-                    >
-                        {p}
-                    </Button>
-                ),
-            )}
-            {page < totalPages && (
-                <Button variant="outline" size="sm" onClick={() => onPageChange?.(page + 1)}>
-                    Next <ChevronRight size={14} />
-                </Button>
-            )}
-        </nav>
+        <PaginationRoot className="pt-6">
+            <PaginationContent>
+                {page > 1 && (
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); onPageChange?.(page - 1); }}
+                        />
+                    </PaginationItem>
+                )}
+                {pageList.map((p, idx) =>
+                    p === 'gap' ? (
+                        <PaginationItem key={`gap-${idx}`}>
+                            <PaginationEllipsis />
+                        </PaginationItem>
+                    ) : (
+                        <PaginationItem key={p}>
+                            <PaginationLink
+                                href="#"
+                                isActive={p === page}
+                                onClick={(e) => { e.preventDefault(); onPageChange?.(p as number); }}
+                            >
+                                {p}
+                            </PaginationLink>
+                        </PaginationItem>
+                    ),
+                )}
+                {page < totalPages && (
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); onPageChange?.(page + 1); }}
+                        />
+                    </PaginationItem>
+                )}
+            </PaginationContent>
+        </PaginationRoot>
     );
 }
+

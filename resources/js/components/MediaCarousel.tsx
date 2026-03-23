@@ -1,10 +1,14 @@
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+﻿import Autoplay from 'embla-carousel-autoplay';
 import { Link } from '@inertiajs/react';
-import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from './ui/carousel';
 import type { MediaItem } from '../types/media';
 
 interface MediaCarouselProps {
@@ -15,108 +19,66 @@ interface MediaCarouselProps {
 }
 
 export function MediaCarousel({ items, type, title, viewAllHref }: MediaCarouselProps) {
-    const [emblaRef, emblaApi] = useEmblaCarousel(
-        { align: 'start', dragFree: true, containScroll: 'trimSnaps' },
-        [Autoplay({ delay: 4000, stopOnInteraction: true, stopOnMouseEnter: true })],
-    );
-
-    const [canScrollPrev, setCanScrollPrev] = useState(false);
-    const [canScrollNext, setCanScrollNext] = useState(true);
-
-    const onSelect = useCallback(() => {
-        if (!emblaApi) return;
-        setCanScrollPrev(emblaApi.canScrollPrev());
-        setCanScrollNext(emblaApi.canScrollNext());
-    }, [emblaApi]);
-
-    useEffect(() => {
-        if (!emblaApi) return;
-        onSelect();
-        emblaApi.on('select', onSelect);
-        emblaApi.on('reInit', onSelect);
-    }, [emblaApi, onSelect]);
-
-    const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
-    const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-
     if (items.length === 0) return null;
 
     return (
         <section className="mb-12">
-            {/* Section header */}
             <div className="flex items-center justify-between mb-5">
                 <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-                <div className="flex items-center gap-2">
-                    <Button variant="link" size="sm" asChild>
-                        <Link href={viewAllHref}>View all</Link>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={scrollPrev}
-                        disabled={!canScrollPrev}
-                        aria-label="Scroll left"
-                    >
-                        <ChevronLeft size={16} />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={scrollNext}
-                        disabled={!canScrollNext}
-                        aria-label="Scroll right"
-                    >
-                        <ChevronRight size={16} />
-                    </Button>
-                </div>
+                <Button variant="link" size="sm" asChild>
+                    <Link href={viewAllHref}>View all</Link>
+                </Button>
             </div>
 
-            {/* Embla viewport */}
-            <div className="overflow-hidden" ref={emblaRef}>
-                <div className="flex gap-4 select-none">
+            <Carousel
+                opts={{ align: 'start', dragFree: true, containScroll: 'trimSnaps' }}
+                plugins={[Autoplay({ delay: 4000, stopOnInteraction: true, stopOnMouseEnter: true })]}
+                className="w-full"
+            >
+                <CarouselContent className="-ml-4">
                     {items.map((item) => {
                         const imgSrc = item.photoSrc
                             ? `/images/${type}/${item.photoSrc}`
                             : '/images/placeholder.jpg';
-
                         return (
-                            <Link
-                                key={item.id}
-                                href={`/${type}/${item.id}`}
-                                className="group flex-shrink-0 w-36 sm:w-44"
-                                draggable={false}
-                            >
-                                <div className="relative rounded-xl overflow-hidden shadow-lg ring-1 ring-white/5 group-hover:ring-primary transition-all duration-300">
-                                    <img
-                                        src={imgSrc}
-                                        alt={item.title}
-                                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
-                                        draggable={false}
-                                        className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                    {item.ratingImdb != null && (
-                                        <div className="absolute top-2 left-2">
-                                            <Badge className="bg-black/70 backdrop-blur-sm text-yellow-400 border-0 text-xs font-bold">
-                                                {item.ratingImdb.toFixed(1)}
-                                            </Badge>
-                                        </div>
-                                    )}
-                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3">
-                                        <p className="text-white text-sm font-semibold leading-tight line-clamp-2">
-                                            {item.title}
-                                        </p>
-                                        {item.releaseYear && (
-                                            <p className="text-gray-400 text-xs mt-0.5">{item.releaseYear}</p>
+                            <CarouselItem key={item.id} className="pl-4 basis-[144px] sm:basis-[176px]">
+                                <Link
+                                    href={`/${type}/${item.id}`}
+                                    className="group block"
+                                    draggable={false}
+                                >
+                                    <div className="relative rounded-xl overflow-hidden shadow-lg ring-1 ring-white/5 group-hover:ring-primary transition-all duration-300">
+                                        <img
+                                            src={imgSrc}
+                                            alt={item.title}
+                                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
+                                            draggable={false}
+                                            className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                        {item.ratingImdb != null && (
+                                            <div className="absolute top-2 left-2">
+                                                <Badge className="bg-black/70 backdrop-blur-sm text-yellow-400 border-0 text-xs font-bold">
+                                                    {item.ratingImdb.toFixed(1)}
+                                                </Badge>
+                                            </div>
                                         )}
+                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3">
+                                            <p className="text-white text-sm font-semibold leading-tight line-clamp-2">
+                                                {item.title}
+                                            </p>
+                                            {item.releaseYear && (
+                                                <p className="text-gray-400 text-xs mt-0.5">{item.releaseYear}</p>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </Link>
+                                </Link>
+                            </CarouselItem>
                         );
                     })}
-                </div>
-            </div>
+                </CarouselContent>
+                <CarouselPrevious className="-left-4" />
+                <CarouselNext className="-right-4" />
+            </Carousel>
         </section>
     );
 }

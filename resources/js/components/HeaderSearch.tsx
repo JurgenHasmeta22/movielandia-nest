@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 
 type Category = 'all' | 'movies' | 'series' | 'actors' | 'crew' | 'seasons' | 'episodes' | 'users';
 
@@ -140,22 +141,20 @@ export function HeaderSearch() {
                         </form>
 
                         {/* Category tabs */}
-                        <div className="flex flex-wrap gap-1.5 px-4 py-3 border-b border-border">
-                            {CATEGORIES.map((cat) => (
-                                <button
-                                    key={cat.id}
-                                    type="button"
-                                    onClick={() => setCategory(cat.id)}
-                                    className={cn(
-                                        'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                                        category === cat.id
-                                            ? 'bg-foreground text-background'
-                                            : 'bg-secondary text-secondary-foreground hover:bg-accent',
-                                    )}
-                                >
-                                    {cat.label}
-                                </button>
-                            ))}
+                        <div className="px-4 py-2 border-b border-border">
+                            <Tabs value={category} onValueChange={(v) => setCategory(v as Category)}>
+                                <TabsList className="h-auto bg-transparent p-0 flex flex-wrap gap-1">
+                                    {CATEGORIES.map((cat) => (
+                                        <TabsTrigger
+                                            key={cat.id}
+                                            value={cat.id}
+                                            className="h-7 rounded-md px-3 text-xs data-[state=active]:bg-foreground data-[state=active]:text-background"
+                                        >
+                                            {cat.label}
+                                        </TabsTrigger>
+                                    ))}
+                                </TabsList>
+                            </Tabs>
                         </div>
 
                         {/* Results */}

@@ -7,6 +7,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -45,7 +55,7 @@ interface UserItem {
     countryFrom?: string | null;
 }
 
-interface Pagination {
+interface PaginationMeta {
     total: number;
     page: number;
     totalPages: number;
@@ -62,13 +72,13 @@ interface SearchProps {
     seasons?: MediaItem[];
     episodes?: MediaItem[];
     users?: UserItem[];
-    moviesPagination?: Pagination;
-    seriesPagination?: Pagination;
-    actorsPagination?: Pagination;
-    crewPagination?: Pagination;
-    seasonsPagination?: Pagination;
-    episodesPagination?: Pagination;
-    usersPagination?: Pagination;
+    moviesPagination?: PaginationMeta;
+    seriesPagination?: PaginationMeta;
+    actorsPagination?: PaginationMeta;
+    crewPagination?: PaginationMeta;
+    seasonsPagination?: PaginationMeta;
+    episodesPagination?: PaginationMeta;
+    usersPagination?: PaginationMeta;
     searchQuery?: string;
     tab?: TabId;
 }
@@ -125,27 +135,44 @@ function UserCard({ item }: { item: UserItem }) {
     );
 }
 
-function PaginationBar({ pagination, href }: { pagination: Pagination; href: (p: number) => string }) {
+function PaginationBar({ pagination, href }: { pagination: PaginationMeta; href: (p: number) => string }) {
     if (pagination.totalPages <= 1) return null;
-    const pages = Array.from({ length: Math.min(pagination.totalPages, 10) }, (_, i) => i + 1);
+    const { page, totalPages } = pagination;
+    const pageList = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
+        .reduce<(number | 'gap')[]>((acc, p, idx, arr) => {
+            if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('gap');
+            acc.push(p);
+            return acc;
+        }, []);
     return (
-        <div className="flex flex-wrap justify-center gap-2 mt-6">
-            {pagination.page > 1 && (
-                <Button variant="outline" size="sm" asChild>
-                    <Link href={href(pagination.page - 1)}>â† Prev</Link>
-                </Button>
-            )}
-            {pages.map((p) => (
-                <Button key={p} variant={p === pagination.page ? 'default' : 'outline'} size="sm" asChild>
-                    <Link href={href(p)}>{p}</Link>
-                </Button>
-            ))}
-            {pagination.page < pagination.totalPages && (
-                <Button variant="outline" size="sm" asChild>
-                    <Link href={href(pagination.page + 1)}>Next â†’</Link>
-                </Button>
-            )}
-        </div>
+        <Pagination className="mt-6">
+            <PaginationContent>
+                {page > 1 && (
+                    <PaginationItem>
+                        <PaginationPrevious href={href(page - 1)} />
+                    </PaginationItem>
+                )}
+                {pageList.map((p, idx) =>
+                    p === 'gap' ? (
+                        <PaginationItem key={`gap-${idx}`}>
+                            <PaginationEllipsis />
+                        </PaginationItem>
+                    ) : (
+                        <PaginationItem key={p}>
+                            <PaginationLink href={href(p as number)} isActive={p === page}>
+                                {p}
+                            </PaginationLink>
+                        </PaginationItem>
+                    ),
+                )}
+                {page < totalPages && (
+                    <PaginationItem>
+                        <PaginationNext href={href(page + 1)} />
+                    </PaginationItem>
+                )}
+            </PaginationContent>
+        </Pagination>
     );
 }
 
@@ -271,23 +298,28 @@ export default function Search({
 
                 {/* Tabs */}
                 {hasSearched && (
-                    <div className="flex flex-wrap gap-2 border-b border-border pb-0">
-                        {TABS.map((t) => (
-                            <Link
-                                key={t.id}
-                                href={tabHref(t.id)}
-                                className={cn(
-                                    "px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px",
-                                    tab === t.id
-                                        ? "text-primary border-primary bg-card"
-                                        : "text-muted-foreground border-transparent hover:text-foreground hover:border-border"
-                                )}
-                            >
-                                {t.label}
-                            </Link>
-                        ))}
+                    <div className="flex items-center gap-2 border-b border-border pb-0">
+                        <Tabs value={tab} className="w-auto">
+                            <TabsList className="h-auto bg-transparent p-0 gap-1 rounded-none">
+                                {TABS.map((t) => (
+                                    <TabsTrigger
+                                        key={t.id}
+                                        value={t.id}
+                                        onClick={() => router.visit(tabHref(t.id))}
+                                        className={cn(
+                                            'rounded-t-lg rounded-b-none border-b-2 -mb-px px-4 py-2.5 text-sm font-medium transition-colors data-[state=active]:shadow-none',
+                                            tab === t.id
+                                                ? 'border-primary text-primary bg-card data-[state=active]:bg-card'
+                                                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border data-[state=active]:bg-transparent',
+                                        )}
+                                    >
+                                        {t.label}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </Tabs>
                         {hasSearched && totalResults > 0 && (
-                            <span className="ml-auto text-sm text-muted-foreground self-center pb-2">
+                            <span className="ml-auto text-sm text-muted-foreground pb-2">
                                 {totalResults.toLocaleString()} total results
                             </span>
                         )}
