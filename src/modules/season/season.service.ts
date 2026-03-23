@@ -84,8 +84,15 @@ export class SeasonService {
             include: {
                 serie: { select: { id: true, title: true } },
                 episodes: {
-                    orderBy: { id: 'asc' },
-                    select: { id: true, title: true, photoSrc: true, description: true, duration: true, ratingImdb: true },
+                    orderBy: { id: "asc" },
+                    select: {
+                        id: true,
+                        title: true,
+                        photoSrc: true,
+                        description: true,
+                        duration: true,
+                        ratingImdb: true,
+                    },
                 },
                 reviews: {
                     include: {
@@ -99,7 +106,7 @@ export class SeasonService {
                             },
                         },
                     },
-                    orderBy: { createdAt: 'desc' },
+                    orderBy: { createdAt: "desc" },
                 },
             },
         });

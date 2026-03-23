@@ -102,7 +102,7 @@ export class EpisodeService {
                             },
                         },
                     },
-                    orderBy: { createdAt: 'desc' },
+                    orderBy: { createdAt: "desc" },
                 },
             },
         });
