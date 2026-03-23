@@ -1,10 +1,21 @@
-import { Link, usePage } from '@inertiajs/react';
+﻿import { Link, usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import { type ReactNode, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { HeaderSearch } from '../components/HeaderSearch';
 import { PageTransition } from '../components/PageTransition';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Button } from '../components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
+import { Separator } from '../components/ui/separator';
 
 interface AuthUser {
     id: number;
@@ -47,94 +58,97 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     return (
         <>
             {title && <Head title={title} />}
-            <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
+            <div className="min-h-screen bg-background text-foreground flex flex-col">
                 {/* Navbar */}
-                <nav className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+                <nav className="bg-card border-b border-border sticky top-0 z-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between h-16">
                             {/* Logo */}
-                            <Link href="/" className="text-2xl font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+                            <Link href="/" className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors">
                                 Movielandia24
                             </Link>
 
                             {/* Primary nav */}
-                            <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-                                <Link href="/movies" className="text-gray-300 hover:text-white transition-colors">Movies</Link>
-                                <Link href="/series" className="text-gray-300 hover:text-white transition-colors">Series</Link>
-                                <Link href="/genres" className="text-gray-300 hover:text-white transition-colors">Genres</Link>
-                                <Link href="/actors" className="text-gray-300 hover:text-white transition-colors">Actors</Link>
-                                <Link href="/crew" className="text-gray-300 hover:text-white transition-colors">Crew</Link>
-                                <Link href="/forum" className="text-gray-300 hover:text-white transition-colors">Forum</Link>
+                            <div className="hidden md:flex items-center gap-1 text-sm font-medium">
+                                {[
+                                    { href: '/movies', label: 'Movies' },
+                                    { href: '/series', label: 'Series' },
+                                    { href: '/genres', label: 'Genres' },
+                                    { href: '/actors', label: 'Actors' },
+                                    { href: '/crew', label: 'Crew' },
+                                    { href: '/forum', label: 'Forum' },
+                                ].map(({ href, label }) => (
+                                    <Button key={href} variant="ghost" size="sm" asChild>
+                                        <Link href={href}>{label}</Link>
+                                    </Button>
+                                ))}
                             </div>
 
                             {/* Auth + Search */}
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 <HeaderSearch />
                                 {user ? (
-                                    <details className="relative group">
-                                        <summary className="list-none flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-800/90 px-2 py-1.5 cursor-pointer hover:border-gray-600 transition-colors">
-                                            {avatarSrc ? (
-                                                <img
-                                                    src={avatarSrc}
-                                                    alt={user.userName}
-                                                    className="w-7 h-7 rounded-full object-cover"
-                                                    onError={(e) => {
-                                                        (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                                    }}
-                                                />
-                                            ) : (
-                                                <span className="w-7 h-7 rounded-full bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 text-xs font-semibold inline-flex items-center justify-center">
-                                                    {user.userName.slice(0, 1).toUpperCase()}
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="sm" className="gap-2 pl-2">
+                                                <Avatar className="h-7 w-7">
+                                                    {avatarSrc && (
+                                                        <AvatarImage
+                                                            src={avatarSrc}
+                                                            alt={user.userName}
+                                                        />
+                                                    )}
+                                                    <AvatarFallback>
+                                                        {user.userName.slice(0, 1).toUpperCase()}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <span className="hidden sm:inline max-w-28 truncate text-sm">
+                                                    {user.userName}
                                                 </span>
-                                            )}
-                                            <span className="text-sm text-gray-200 hidden sm:inline max-w-28 truncate">{user.userName}</span>
-                                        </summary>
-
-                                        <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-700 bg-gray-900 shadow-2xl p-2 z-50">
-                                            <div className="px-2 py-2 border-b border-gray-800">
-                                                <p className="text-sm font-medium text-white truncate">{user.userName}</p>
-                                                <p className="text-xs text-gray-400 truncate">{user.email}</p>
-                                            </div>
-                                            <div className="py-1">
-                                                <Link href="/users/me" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                                                    My Profile
-                                                </Link>
-                                                <Link href="/users/favorites/list" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                                                    Favorites
-                                                </Link>
-                                                <Link href="/users/reviews/list" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                                                    Reviews
-                                                </Link>
-                                                <Link href="/users/messages/inbox" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                                                    Messages
-                                                </Link>
-                                                <Link href="/lists" className="block px-2 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                                                    My Lists
-                                                </Link>
-                                            </div>
-                                            <div className="pt-1 border-t border-gray-800">
-                                                <form action="/logout" method="POST">
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-56">
+                                            <DropdownMenuLabel>
+                                                <p className="font-medium truncate">{user.userName}</p>
+                                                <p className="text-xs text-muted-foreground truncate font-normal">{user.email}</p>
+                                            </DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/users/me">My Profile</Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/users/favorites/list">Favorites</Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/users/reviews/list">Reviews</Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/users/messages/inbox">Messages</Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/lists">My Lists</Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem asChild>
+                                                <form action="/logout" method="POST" className="w-full">
                                                     <button
                                                         type="submit"
-                                                        className="w-full text-left px-2 py-2 text-sm text-red-300 hover:text-red-200 hover:bg-red-900/20 rounded-lg transition-colors"
+                                                        className="w-full text-left text-destructive focus:text-destructive"
                                                     >
                                                         Sign Out
                                                     </button>
                                                 </form>
-                                            </div>
-                                        </div>
-                                    </details>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 ) : (
                                     <>
-                                        <Link href="/login" className="text-sm text-gray-300 hover:text-white transition-colors">
-                                            Sign In
-                                        </Link>
-                                        <Link
-                                            href="/register"
-                                            className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition-colors"
-                                        >
-                                            Sign Up
-                                        </Link>
+                                        <Button variant="ghost" size="sm" asChild>
+                                            <Link href="/login">Sign In</Link>
+                                        </Button>
+                                        <Button size="sm" asChild>
+                                            <Link href="/register">Sign Up</Link>
+                                        </Button>
                                     </>
                                 )}
                             </div>
@@ -163,40 +177,41 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                 </main>
 
                 {/* Footer */}
-                <footer className="bg-gray-900 border-t border-gray-800 mt-auto">
+                <footer className="bg-card border-t border-border mt-auto">
                     <div className="max-w-7xl mx-auto px-6 py-10">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
                             <div>
-                                <p className="text-indigo-400 font-bold text-lg mb-3">Movielandia24</p>
-                                <p className="text-gray-500 text-sm">Your home for movies, series, ratings and community discussion.</p>
+                                <p className="text-primary font-bold text-lg mb-3">Movielandia24</p>
+                                <p className="text-muted-foreground text-sm">Your home for movies, series, ratings and community discussion.</p>
                             </div>
                             <div>
-                                <p className="text-gray-300 font-semibold text-sm mb-3 uppercase tracking-wider">Browse</p>
+                                <p className="text-foreground font-semibold text-sm mb-3 uppercase tracking-wider">Browse</p>
                                 <ul className="space-y-2 text-sm">
-                                    <li><Link href="/movies" className="text-gray-500 hover:text-gray-300 transition-colors">Movies</Link></li>
-                                    <li><Link href="/series" className="text-gray-500 hover:text-gray-300 transition-colors">Series</Link></li>
-                                    <li><Link href="/genres" className="text-gray-500 hover:text-gray-300 transition-colors">Genres</Link></li>
-                                    <li><Link href="/actors" className="text-gray-500 hover:text-gray-300 transition-colors">Actors</Link></li>
-                                    <li><Link href="/crew" className="text-gray-500 hover:text-gray-300 transition-colors">Crew</Link></li>
+                                    <li><Link href="/movies" className="text-muted-foreground hover:text-foreground transition-colors">Movies</Link></li>
+                                    <li><Link href="/series" className="text-muted-foreground hover:text-foreground transition-colors">Series</Link></li>
+                                    <li><Link href="/genres" className="text-muted-foreground hover:text-foreground transition-colors">Genres</Link></li>
+                                    <li><Link href="/actors" className="text-muted-foreground hover:text-foreground transition-colors">Actors</Link></li>
+                                    <li><Link href="/crew" className="text-muted-foreground hover:text-foreground transition-colors">Crew</Link></li>
                                 </ul>
                             </div>
                             <div>
-                                <p className="text-gray-300 font-semibold text-sm mb-3 uppercase tracking-wider">Community</p>
+                                <p className="text-foreground font-semibold text-sm mb-3 uppercase tracking-wider">Community</p>
                                 <ul className="space-y-2 text-sm">
-                                    <li><Link href="/forum" className="text-gray-500 hover:text-gray-300 transition-colors">Forum</Link></li>
-                                    <li><Link href="/lists" className="text-gray-500 hover:text-gray-300 transition-colors">Lists</Link></li>
-                                    <li><Link href="/search" className="text-gray-500 hover:text-gray-300 transition-colors">Search</Link></li>
+                                    <li><Link href="/forum" className="text-muted-foreground hover:text-foreground transition-colors">Forum</Link></li>
+                                    <li><Link href="/lists" className="text-muted-foreground hover:text-foreground transition-colors">Lists</Link></li>
+                                    <li><Link href="/search" className="text-muted-foreground hover:text-foreground transition-colors">Search</Link></li>
                                 </ul>
                             </div>
                             <div>
-                                <p className="text-gray-300 font-semibold text-sm mb-3 uppercase tracking-wider">Account</p>
+                                <p className="text-foreground font-semibold text-sm mb-3 uppercase tracking-wider">Account</p>
                                 <ul className="space-y-2 text-sm">
-                                    <li><Link href="/login" className="text-gray-500 hover:text-gray-300 transition-colors">Sign In</Link></li>
-                                    <li><Link href="/register" className="text-gray-500 hover:text-gray-300 transition-colors">Sign Up</Link></li>
+                                    <li><Link href="/login" className="text-muted-foreground hover:text-foreground transition-colors">Sign In</Link></li>
+                                    <li><Link href="/register" className="text-muted-foreground hover:text-foreground transition-colors">Sign Up</Link></li>
                                 </ul>
                             </div>
                         </div>
-                        <div className="border-t border-gray-800 pt-6 text-center text-xs text-gray-600">
+                        <Separator />
+                        <div className="pt-6 text-center text-xs text-muted-foreground">
                             &copy; {new Date().getFullYear()} Movielandia24. All rights reserved.
                         </div>
                     </div>

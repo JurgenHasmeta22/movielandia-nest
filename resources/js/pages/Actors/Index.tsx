@@ -4,6 +4,7 @@ import AppLayout from '../../layouts/AppLayout';
 import { SortControls } from '../../components/SortControls';
 import { PaginationBar } from '../../components/PaginationBar';
 import type { Pagination, SortFilters } from '../../types/media';
+import { Card } from '@/components/ui/card';
 
 interface Actor { id: number; fullname: string; photoSrc: string | null; debut?: string | null }
 
@@ -41,7 +42,7 @@ export default function ActorsIndex({
         <AppLayout title="Actors">
             <div className="space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                    <h1 className="text-3xl font-bold text-white">Actors</h1>
+                    <h1 className="text-3xl font-bold text-foreground">Actors</h1>
                     <SortControls
                         sortBy={sortBy}
                         ascOrDesc={ascOrDesc}
@@ -54,13 +55,13 @@ export default function ActorsIndex({
                 </div>
 
                 {pagination?.total > 0 && (
-                    <p className="text-gray-400 text-sm">{pagination.total.toLocaleString()} actors</p>
+                    <p className="text-muted-foreground text-sm">{pagination.total.toLocaleString()} actors</p>
                 )}
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-5">
                     {actors.map((actor) => (
-                        <Link key={actor.id} href={`/actors/${actor.id}`} className="group text-center">
-                            <div className="aspect-[3/4] bg-gray-800 rounded-xl overflow-hidden mb-2 group-hover:border-2 group-hover:border-indigo-500 transition-all">
+                        <Link key={actor.id} href={`/actors/${actor.id}`} className="group text-center block">
+                            <Card className="aspect-[3/4] overflow-hidden mb-2 border-border group-hover:border-primary transition-all">
                                 <img
                                     src={actor.photoSrc
                                         ? (actor.photoSrc.startsWith('http') ? actor.photoSrc : `/images/actors/${actor.photoSrc}`)
@@ -69,8 +70,8 @@ export default function ActorsIndex({
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
                                 />
-                            </div>
-                            <h3 className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors truncate">
+                            </Card>
+                            <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate">
                                 {actor.fullname}
                             </h3>
                         </Link>

@@ -1,4 +1,6 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { Button } from './ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 export interface SortOption {
     value: string;
@@ -28,59 +30,56 @@ export function SortControls({
     onPerPageChange,
     label,
 }: SortControlsProps) {
-    const selectCls =
-        'bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500 cursor-pointer';
-
     return (
         <div className="flex flex-wrap items-center gap-3">
-            {label && <span className="text-gray-400 text-sm">{label}</span>}
+            {label && <span className="text-muted-foreground text-sm">{label}</span>}
 
             {/* Sort field */}
-            <div className="relative flex items-center gap-1.5">
-                <ArrowUpDown size={14} className="text-gray-400 absolute left-2.5 pointer-events-none" />
-                <select
-                    value={sortBy}
-                    onChange={(e) => onSortChange(e.target.value)}
-                    className={`${selectCls} pl-8`}
-                >
+            <Select value={sortBy} onValueChange={onSortChange}>
+                <SelectTrigger className="w-[160px]">
+                    <ArrowUpDown size={14} className="mr-1.5 text-muted-foreground" />
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
                     {sortOptions.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                     ))}
-                </select>
-            </div>
+                </SelectContent>
+            </Select>
 
             {/* Asc / Desc toggle */}
-            <div className="flex rounded-lg overflow-hidden border border-gray-700">
-                <button
+            <div className="flex rounded-md overflow-hidden border border-border">
+                <Button
+                    variant={ascOrDesc === 'asc' ? 'default' : 'ghost'}
+                    size="sm"
                     onClick={() => onOrderChange('asc')}
                     title="Ascending"
-                    className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
-                        ascOrDesc === 'asc' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
+                    className="rounded-none"
                 >
                     <ArrowUp size={13} /> Asc
-                </button>
-                <button
+                </Button>
+                <Button
+                    variant={ascOrDesc === 'desc' ? 'default' : 'ghost'}
+                    size="sm"
                     onClick={() => onOrderChange('desc')}
                     title="Descending"
-                    className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
-                        ascOrDesc === 'desc' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
+                    className="rounded-none"
                 >
                     <ArrowDown size={13} /> Desc
-                </button>
+                </Button>
             </div>
 
             {/* Per page */}
-            <select
-                value={perPage}
-                onChange={(e) => onPerPageChange(e.target.value)}
-                className={selectCls}
-            >
-                {perPageOptions.map((n) => (
-                    <option key={n} value={n}>{n} / page</option>
-                ))}
-            </select>
+            <Select value={String(perPage)} onValueChange={onPerPageChange}>
+                <SelectTrigger className="w-[110px]">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {perPageOptions.map((n) => (
+                        <SelectItem key={n} value={String(n)}>{n} / page</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
         </div>
     );
 }

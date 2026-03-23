@@ -4,6 +4,7 @@ import AppLayout from "../../layouts/AppLayout";
 import { SortControls } from "../../components/SortControls";
 import { PaginationBar } from "../../components/PaginationBar";
 import type { Pagination, SortFilters } from "../../types/media";
+import { Card } from "@/components/ui/card";
 
 interface CrewMember {
     id: number;
@@ -52,7 +53,7 @@ export default function CrewIndex({
         <AppLayout title="Crew">
             <div className="space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                    <h1 className="text-3xl font-bold text-white">Crew</h1>
+                    <h1 className="text-3xl font-bold text-foreground">Crew</h1>
                     <SortControls
                         sortBy={sortBy}
                         ascOrDesc={ascOrDesc}
@@ -65,16 +66,16 @@ export default function CrewIndex({
                 </div>
 
                 {pagination?.total > 0 && (
-                    <p className="text-gray-400 text-sm">{pagination.total.toLocaleString()} crew members</p>
+                    <p className="text-muted-foreground text-sm">{pagination.total.toLocaleString()} crew members</p>
                 )}
 
                 {crew.length === 0 ? (
-                    <p className="text-gray-400 text-center py-16">No crew members found.</p>
+                    <p className="text-muted-foreground text-center py-16">No crew members found.</p>
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-5">
                         {crew.map((member) => (
-                            <Link key={member.id} href={`/crew/${member.id}`} className="group text-center">
-                                <div className="aspect-[3/4] bg-gray-800 rounded-xl overflow-hidden mb-2 group-hover:border-2 group-hover:border-indigo-500 transition-all">
+                            <Link key={member.id} href={`/crew/${member.id}`} className="group text-center block">
+                                <Card className="aspect-[3/4] overflow-hidden mb-2 border-border group-hover:border-primary transition-all">
                                     <img
                                         src={crewImgSrc(member.photoSrc)}
                                         alt={member.fullname}
@@ -83,12 +84,12 @@ export default function CrewIndex({
                                             (e.currentTarget as HTMLImageElement).src = "/images/placeholder.jpg";
                                         }}
                                     />
-                                </div>
-                                <h3 className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors truncate">
+                                </Card>
+                                <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate">
                                     {member.fullname}
                                 </h3>
                                 {(member.role || member.department) && (
-                                    <p className="text-xs text-gray-500 truncate">{member.role ?? member.department}</p>
+                                    <p className="text-xs text-muted-foreground/60 truncate">{member.role ?? member.department}</p>
                                 )}
                             </Link>
                         ))}

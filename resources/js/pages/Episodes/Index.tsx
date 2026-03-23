@@ -1,5 +1,8 @@
 import { Link, router } from "@inertiajs/react";
 import AppLayout from "../../layouts/AppLayout";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 interface Episode {
     id: number;
@@ -32,40 +35,39 @@ export default function EpisodesIndex({ episodes, count, filters, searchQuery }:
         <AppLayout title="Episodes">
             <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold text-white">Episodes</h1>
+                    <h1 className="text-3xl font-bold text-foreground">Episodes</h1>
                     <form onSubmit={handleSearch} className="flex gap-2">
-                        <input
+                        <Input
                             name="q"
                             defaultValue={searchQuery}
                             placeholder="Search episodes..."
-                            className="px-3 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-indigo-500"
                         />
-                        <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">Search</button>
+                        <Button type="submit">Search</Button>
                     </form>
                 </div>
 
                 {episodes.length === 0 ? (
-                    <p className="text-gray-400 text-center py-16">No episodes found.</p>
+                    <p className="text-muted-foreground text-center py-16">No episodes found.</p>
                 ) : (
                     <div className="space-y-3">
                         {episodes.map((ep) => (
                             <Link
                                 key={ep.id}
                                 href={`/episodes/${ep.id}`}
-                                className="flex items-center gap-4 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition"
+                                className="flex items-center gap-4 p-4 bg-card rounded-lg border border-border hover:border-primary transition"
                             >
                                 {ep.photoSrc && (
                                     <img src={ep.photoSrc} alt={ep.title} className="w-32 h-20 object-cover rounded" />
                                 )}
                                 <div className="flex-1">
-                                    <p className="text-white font-medium">{ep.title}</p>
+                                    <p className="text-foreground font-medium">{ep.title}</p>
                                     {ep.season && (
-                                        <p className="text-gray-400 text-sm">
+                                        <p className="text-muted-foreground text-sm">
                                             {ep.season.title} — Episode {ep.episodeNumber}
                                         </p>
                                     )}
                                     {ep.description && (
-                                        <p className="text-gray-500 text-sm line-clamp-2 mt-1">{ep.description}</p>
+                                        <p className="text-muted-foreground/60 text-sm line-clamp-2 mt-1">{ep.description}</p>
                                     )}
                                 </div>
                             </Link>
@@ -76,11 +78,12 @@ export default function EpisodesIndex({ episodes, count, filters, searchQuery }:
                 {totalPages > 1 && (
                     <div className="flex justify-center gap-2 mt-8">
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                            <button
+                            <Button
                                 key={p}
+                                variant={p === Number(page) ? 'default' : 'outline'}
+                                size="sm"
                                 onClick={() => router.get("/episodes", { ...filters, page: p })}
-                                className={`px-3 py-1 rounded ${p === Number(page) ? "bg-indigo-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`}
-                            >{p}</button>
+                            >{p}</Button>
                         ))}
                     </div>
                 )}

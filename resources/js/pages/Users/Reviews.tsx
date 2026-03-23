@@ -1,5 +1,6 @@
 import { Link } from "@inertiajs/react";
 import AppLayout from "../../layouts/AppLayout";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Review {
     id: number;
@@ -47,29 +48,31 @@ export default function UsersReviews({ reviews }: Props) {
     return (
         <AppLayout title="My Reviews">
             <div className="max-w-4xl mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold text-white mb-6">My Reviews</h1>
+                <h1 className="text-3xl font-bold text-foreground mb-6">My Reviews</h1>
 
                 {items.length === 0 ? (
-                    <p className="text-gray-400 text-center py-16">No reviews yet.</p>
+                    <p className="text-muted-foreground text-center py-16">No reviews yet.</p>
                 ) : (
                     <div className="space-y-4">
                         {items.map((review) => {
                             const href = getHref(review);
                             return (
-                                <div key={review.id} className="p-4 bg-gray-800 rounded-lg">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <Link href={href} className="text-indigo-400 hover:underline font-medium">
-                                            {review.itemTitle}
-                                        </Link>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-yellow-400 font-semibold">★ {review.rating.toFixed(1)}</span>
-                                            <span className="text-gray-500 text-sm">
-                                                {new Date(review.createdAt).toLocaleDateString()}
-                                            </span>
+                                <Card key={review.id}>
+                                    <CardContent className="p-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <Link href={href} className="text-primary hover:underline font-medium">
+                                                {review.itemTitle}
+                                            </Link>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-yellow-400 font-semibold">★ {review.rating.toFixed(1)}</span>
+                                                <span className="text-muted-foreground text-sm">
+                                                    {new Date(review.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <p className="text-gray-300 text-sm">{review.content}</p>
-                                </div>
+                                        <p className="text-foreground/80 text-sm">{review.content}</p>
+                                    </CardContent>
+                                </Card>
                             );
                         })}
                     </div>

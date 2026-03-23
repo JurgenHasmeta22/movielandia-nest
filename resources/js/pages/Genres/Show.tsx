@@ -48,17 +48,17 @@ export default function GenresShow({ genre, filters = {} }: Props) {
         <AppLayout title={genre.name}>
             <div className="space-y-8">
                 <div>
-                    <Link href="/genres" className="text-indigo-400 hover:text-indigo-300 text-sm font-medium">
+                    <Link href="/genres" className="text-primary hover:text-primary/80 text-sm font-medium">
                         &larr; All Genres
                     </Link>
-                    <h1 className="text-4xl font-bold text-white mt-2 capitalize">{genre.name}</h1>
+                    <h1 className="text-4xl font-bold text-foreground mt-2 capitalize">{genre.name}</h1>
                     {genre.description && (
-                        <p className="text-gray-300 mt-3 max-w-3xl">{genre.description}</p>
+                        <p className="text-muted-foreground mt-3 max-w-3xl">{genre.description}</p>
                     )}
                     {genre._count && (
-                        <div className="flex gap-4 mt-2 text-sm text-gray-400">
+                        <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
                             <span>{genre._count.movies.toLocaleString()} movies</span>
-                            <span className="text-gray-600">.</span>
+                            <span className="text-border">·</span>
                             <span>{genre._count.series.toLocaleString()} series</span>
                         </div>
                     )}

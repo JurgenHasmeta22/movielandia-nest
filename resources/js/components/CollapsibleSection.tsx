@@ -1,5 +1,8 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
 
 interface CollapsibleSectionProps {
     title: string;
@@ -21,18 +24,18 @@ export function CollapsibleSection({
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <section className="bg-gray-900/60 border border-gray-800 rounded-2xl overflow-hidden">
+        <section className="bg-card/60 border border-border rounded-2xl overflow-hidden">
             <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-800/50 transition-colors group"
+                className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-accent/50 transition-colors group"
             >
                 <div className="flex items-center gap-3">
-                    <span className="text-xl font-bold text-white">{title}</span>
+                    <span className="text-xl font-bold text-foreground">{title}</span>
                     {count !== undefined && (
-                        <span className="text-sm text-gray-400 bg-gray-800 rounded-full px-2.5 py-0.5 font-normal">
+                        <Badge variant="secondary" className="rounded-full font-normal">
                             {count.toLocaleString()}
-                        </span>
+                        </Badge>
                     )}
                 </div>
                 <div className="flex items-center gap-3">
@@ -40,15 +43,18 @@ export function CollapsibleSection({
                         <a
                             href={viewAllHref}
                             onClick={(e) => e.stopPropagation()}
-                            className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                            className="text-sm text-primary hover:text-primary/80 transition-colors"
                         >
-                            View all →
+                            View all â†’
                         </a>
                     )}
                     {action}
                     <ChevronDown
                         size={18}
-                        className={`text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                        className={cn(
+                            'text-muted-foreground transition-transform duration-200',
+                            open && 'rotate-180',
+                        )}
                     />
                 </div>
             </button>
@@ -60,3 +66,14 @@ export function CollapsibleSection({
         </section>
     );
 }
+
+
+interface CollapsibleSectionProps {
+    title: string;
+    count?: number;
+    defaultOpen?: boolean;
+    viewAllHref?: string;
+    action?: React.ReactNode;
+    children: React.ReactNode;
+}
+

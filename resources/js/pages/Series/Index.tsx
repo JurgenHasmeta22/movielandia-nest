@@ -49,7 +49,7 @@ export default function SeriesIndex({
         <AppLayout title="Series">
             <div className="space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                    <h1 className="text-3xl font-bold text-white">Series</h1>
+                    <h1 className="text-3xl font-bold text-foreground">Series</h1>
                     <SortControls
                         sortBy={sortBy}
                         ascOrDesc={ascOrDesc}
@@ -62,7 +62,7 @@ export default function SeriesIndex({
                 </div>
 
                 {pagination?.total > 0 && (
-                    <p className="text-gray-400 text-sm">{pagination.total.toLocaleString()} series</p>
+                    <p className="text-muted-foreground text-sm">{pagination.total.toLocaleString()} series</p>
                 )}
 
                 <CollapsibleSection title="Series" count={pagination?.total}>

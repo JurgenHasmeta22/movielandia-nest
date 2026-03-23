@@ -3,6 +3,11 @@ import { Link } from "@inertiajs/react";
 import { useState } from "react";
 import AppLayout from "../layouts/AppLayout";
 import { MediaCarousel } from "../components/MediaCarousel";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
 import type { MediaItem } from "../types/media";
 
 const TESTIMONIALS = [
@@ -88,50 +93,56 @@ function TestimonialsSection() {
     return (
         <section className="mb-16">
             <div className="text-center mb-10">
-                <p className="text-gray-400 text-sm uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                <p className="text-muted-foreground text-sm uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
                     <span>👥</span> User Testimonials
                 </p>
-                <h2 className="text-3xl font-bold text-white mb-3">What Our Community Says</h2>
-                <p className="text-gray-400 max-w-2xl mx-auto text-sm">
+                <h2 className="text-3xl font-bold text-foreground mb-3">What Our Community Says</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
                     Join thousands of satisfied users who have discovered their next favorite movies and shows through MovieLandia24.
                 </p>
             </div>
 
             <div className="relative">
-                <button
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 rounded-full"
                     onClick={() => setIdx((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-9 h-9 rounded-full bg-gray-800 border border-gray-700 hover:bg-gray-700 flex items-center justify-center text-gray-300 hover:text-white transition-colors"
                     aria-label="Previous"
                 >
                     ‹
-                </button>
+                </Button>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mx-4">
                     {visible.map((t, i) => (
-                        <div key={i} className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col">
-                            <span className="text-gray-600 text-3xl font-serif leading-none mb-4">"</span>
-                            <p className="text-gray-300 text-sm flex-1 italic">"{t.quote}"</p>
-                            <div className="mt-6 flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-sm">
-                                    {t.name[0]}
+                        <Card key={i} className="flex flex-col">
+                            <CardContent className="p-6 flex flex-col flex-1">
+                                <span className="text-muted-foreground text-3xl font-serif leading-none mb-4">"</span>
+                                <p className="text-muted-foreground text-sm flex-1 italic">"{t.quote}"</p>
+                                <div className="mt-6 flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground font-bold text-sm">
+                                        {t.name[0]}
+                                    </div>
+                                    <div>
+                                        <p className="text-foreground text-sm font-semibold">{t.name}</p>
+                                        <p className="text-muted-foreground text-xs">{t.role}</p>
+                                        <StarRating stars={t.stars} />
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-white text-sm font-semibold">{t.name}</p>
-                                    <p className="text-gray-500 text-xs">{t.role}</p>
-                                    <StarRating stars={t.stars} />
-                                </div>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     ))}
                 </div>
 
-                <button
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 rounded-full"
                     onClick={() => setIdx((i) => (i + 1) % TESTIMONIALS.length)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-9 h-9 rounded-full bg-gray-800 border border-gray-700 hover:bg-gray-700 flex items-center justify-center text-gray-300 hover:text-white transition-colors"
                     aria-label="Next"
                 >
                     ›
-                </button>
+                </Button>
             </div>
 
             <div className="flex justify-center gap-2 mt-6">
@@ -139,7 +150,7 @@ function TestimonialsSection() {
                     <button
                         key={d}
                         onClick={() => setIdx(d)}
-                        className={`w-2 h-2 rounded-full transition-colors ${d === idx % TESTIMONIALS.length ? "bg-indigo-500" : "bg-gray-700"}`}
+                        className={`w-2 h-2 rounded-full transition-colors ${d === idx % TESTIMONIALS.length ? "bg-primary" : "bg-border"}`}
                         aria-label={`Go to testimonial ${d + 1}`}
                     />
                 ))}
@@ -149,41 +160,34 @@ function TestimonialsSection() {
 }
 
 function FAQSection() {
-    const [open, setOpen] = useState<number | null>(null);
     return (
         <section className="mb-16">
             <div className="text-center mb-10">
-                <p className="text-gray-400 text-sm uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                <p className="text-muted-foreground text-sm uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
                     <span>💬</span> Frequently Asked Questions
                 </p>
-                <h2 className="text-3xl font-bold text-white mb-3">Got Questions? We&apos;ve Got Answers</h2>
-                <p className="text-gray-400 max-w-2xl mx-auto text-sm">
+                <h2 className="text-3xl font-bold text-foreground mb-3">Got Questions? We&apos;ve Got Answers</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
                     Find answers to the most common questions about MovieLandia24 and how to make the most of your experience.
                 </p>
             </div>
-            <div className="max-w-3xl mx-auto space-y-3">
-                {FAQ_ITEMS.map((item, i) => (
-                    <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-                        <button
-                            type="button"
-                            onClick={() => setOpen(open === i ? null : i)}
-                            className="w-full flex items-center justify-between px-6 py-4 text-left text-white font-medium text-sm hover:bg-gray-800/60 transition-colors"
+            <div className="max-w-3xl mx-auto">
+                <Accordion type="single" collapsible className="space-y-3">
+                    {FAQ_ITEMS.map((item, i) => (
+                        <AccordionItem
+                            key={i}
+                            value={`faq-${i}`}
+                            className="border border-border rounded-xl bg-card overflow-hidden px-6"
                         >
-                            {item.q}
-                            <span
-                                className="text-gray-400 ml-4 flex-shrink-0 transition-transform duration-200"
-                                style={{ transform: open === i ? "rotate(180deg)" : "rotate(0deg)" }}
-                            >
-                                ▾
-                            </span>
-                        </button>
-                        {open === i && (
-                            <div className="px-6 pb-4 text-gray-400 text-sm leading-relaxed">
+                            <AccordionTrigger className="text-left text-foreground font-medium hover:no-underline">
+                                {item.q}
+                            </AccordionTrigger>
+                            <AccordionContent className="text-muted-foreground leading-relaxed">
                                 {item.a}
-                            </div>
-                        )}
-                    </div>
-                ))}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
             </div>
         </section>
     );
@@ -213,24 +217,30 @@ export default function Home({ latestMovies, latestSeries, genres }: Props) {
     return (
         <AppLayout title="Home">
             {/* Hero */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-950 border-b border-white/5 -mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-12">
+            <div className="relative overflow-hidden bg-gradient-to-br from-card via-indigo-950 to-background border-b border-white/5 -mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-12">
                 <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute -bottom-20 right-0 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
                 <div className="relative max-w-7xl mx-auto px-6 py-20 text-center">
-                    <p className="text-indigo-400 font-semibold tracking-widest uppercase text-sm mb-4">Your Streaming Universe</p>
-                    <h1 className="text-5xl sm:text-7xl font-extrabold text-white mb-6 leading-tight">
+                    <p className="text-primary font-semibold tracking-widest uppercase text-sm mb-4">Your Streaming Universe</p>
+                    <h1 className="text-5xl sm:text-7xl font-extrabold text-foreground mb-6 leading-tight">
                         Discover{" "}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Movies</span>
                         {" & "}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Series</span>
                     </h1>
-                    <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-10">
+                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-10">
                         Track what you&#39;ve watched, rate your favourites, join the community forum and build your perfect watchlists.
                     </p>
                     <div className="flex flex-wrap gap-4 justify-center">
-                        <Link href="/movies" className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-900/40">Browse Movies</Link>
-                        <Link href="/series" className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition backdrop-blur-sm">Browse Series</Link>
-                        <Link href="/search" className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition backdrop-blur-sm">Search</Link>
+                        <Button size="lg" asChild>
+                            <Link href="/movies">Browse Movies</Link>
+                        </Button>
+                        <Button size="lg" variant="outline" asChild>
+                            <Link href="/series">Browse Series</Link>
+                        </Button>
+                        <Button size="lg" variant="outline" asChild>
+                            <Link href="/search">Search</Link>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -243,8 +253,10 @@ export default function Home({ latestMovies, latestSeries, genres }: Props) {
             {genres.length > 0 && (
                 <section className="mb-12">
                     <div className="flex items-center justify-between mb-5">
-                        <h2 className="text-2xl font-bold text-white">Browse by Genre</h2>
-                        <Link href="/genres" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">All genres</Link>
+                        <h2 className="text-2xl font-bold text-foreground">Browse by Genre</h2>
+                        <Button variant="link" size="sm" asChild>
+                            <Link href="/genres">All genres</Link>
+                        </Button>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                         {genres.map((g, i) => (
@@ -264,14 +276,20 @@ export default function Home({ latestMovies, latestSeries, genres }: Props) {
             )}
 
             {/* CTA */}
-            <section className="rounded-2xl bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border border-indigo-500/20 p-10 text-center mb-16">
-                <h2 className="text-3xl font-bold text-white mb-3">Join the Community</h2>
-                <p className="text-gray-400 max-w-xl mx-auto mb-6">Discuss your favourite films, rate episodes and share lists with other movie enthusiasts.</p>
-                <div className="flex flex-wrap gap-4 justify-center">
-                    <Link href="/forum" className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition">Go to Forum</Link>
-                    <Link href="/register" className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition">Create Account</Link>
-                </div>
-            </section>
+            <Card className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-indigo-500/20 p-10 text-center mb-16">
+                <CardContent className="p-0">
+                    <h2 className="text-3xl font-bold text-foreground mb-3">Join the Community</h2>
+                    <p className="text-muted-foreground max-w-xl mx-auto mb-6">Discuss your favourite films, rate episodes and share lists with other movie enthusiasts.</p>
+                    <div className="flex flex-wrap gap-4 justify-center">
+                        <Button asChild>
+                            <Link href="/forum">Go to Forum</Link>
+                        </Button>
+                        <Button variant="outline" asChild>
+                            <Link href="/register">Create Account</Link>
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
 
             <TestimonialsSection />
             <FAQSection />

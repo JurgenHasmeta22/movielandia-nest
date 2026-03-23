@@ -1,6 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import { Search, X } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Badge } from './ui/badge';
+import { cn } from '@/lib/utils';
 
 type Category = 'all' | 'movies' | 'series' | 'actors' | 'crew' | 'seasons' | 'episodes' | 'users';
 
@@ -90,13 +94,14 @@ export function HeaderSearch() {
 
     return (
         <>
-            <button
+            <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setOpen(true)}
-                className="text-gray-300 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-800"
                 aria-label="Open search"
             >
-                <Search size={20} />
-            </button>
+                <Search size={18} />
+            </Button>
 
             {open && (
                 <div
@@ -104,46 +109,49 @@ export function HeaderSearch() {
                     onClick={close}
                 >
                     <div
-                        className="w-full max-w-xl bg-gray-900 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden"
+                        className="w-full max-w-xl bg-card rounded-2xl shadow-2xl border border-border overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Search input */}
-                        <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 py-3 border-b border-gray-800">
-                            <Search size={18} className="text-gray-400 flex-shrink-0" />
-                            <input
+                        <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 py-3 border-b border-border">
+                            <Search size={18} className="text-muted-foreground flex-shrink-0" />
+                            <Input
                                 ref={inputRef}
                                 type="text"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search..."
-                                className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
+                                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 h-auto py-0 px-0 placeholder:text-muted-foreground"
                             />
                             {query && (
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
                                     onClick={() => { setQuery(''); setResults([]); inputRef.current?.focus(); }}
-                                    className="text-gray-400 hover:text-white transition-colors"
                                 >
-                                    <X size={16} />
-                                </button>
+                                    <X size={14} />
+                                </Button>
                             )}
                             <button type="submit" className="flex-shrink-0" aria-label="Submit">
-                                <span className="border border-gray-600 rounded px-1.5 py-0.5 text-xs text-gray-400">↵</span>
+                                <span className="border border-border rounded px-1.5 py-0.5 text-xs text-muted-foreground">â†µ</span>
                             </button>
                         </form>
 
                         {/* Category tabs */}
-                        <div className="flex flex-wrap gap-1.5 px-4 py-3 border-b border-gray-800">
+                        <div className="flex flex-wrap gap-1.5 px-4 py-3 border-b border-border">
                             {CATEGORIES.map((cat) => (
                                 <button
                                     key={cat.id}
                                     type="button"
                                     onClick={() => setCategory(cat.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                    className={cn(
+                                        'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
                                         category === cat.id
-                                            ? 'bg-white text-gray-900'
-                                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                                    }`}
+                                            ? 'bg-foreground text-background'
+                                            : 'bg-secondary text-secondary-foreground hover:bg-accent',
+                                    )}
                                 >
                                     {cat.label}
                                 </button>
@@ -154,15 +162,15 @@ export function HeaderSearch() {
                         <div className="max-h-80 overflow-y-auto">
                             {!query.trim() ? (
                                 <div className="py-10 text-center">
-                                    <p className="text-gray-400 text-sm">Select a category and start typing to search</p>
-                                    <p className="text-gray-600 text-xs mt-1">
+                                    <p className="text-muted-foreground text-sm">Select a category and start typing to search</p>
+                                    <p className="text-muted-foreground/60 text-xs mt-1">
                                         You can search across movies, series, actors, and more
                                     </p>
                                 </div>
                             ) : loading ? (
-                                <div className="py-8 text-center text-gray-500 text-sm">Searching…</div>
+                                <div className="py-8 text-center text-muted-foreground text-sm">Searchingâ€¦</div>
                             ) : results.length === 0 ? (
-                                <div className="py-8 text-center text-gray-500 text-sm">
+                                <div className="py-8 text-center text-muted-foreground text-sm">
                                     No results for &ldquo;{query}&rdquo;
                                 </div>
                             ) : (
@@ -172,9 +180,9 @@ export function HeaderSearch() {
                                             key={`${r.type}-${r.id}`}
                                             href={r.href}
                                             onClick={close}
-                                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-800 transition-colors group"
+                                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-accent transition-colors group"
                                         >
-                                            <div className="w-10 h-14 bg-gray-800 rounded overflow-hidden flex-shrink-0">
+                                            <div className="w-10 h-14 bg-secondary rounded overflow-hidden flex-shrink-0">
                                                 {r.photo && (
                                                     <img
                                                         src={r.photo}
@@ -187,19 +195,20 @@ export function HeaderSearch() {
                                                 )}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-white text-sm font-semibold truncate group-hover:text-indigo-300 transition-colors">
+                                                <p className="text-foreground text-sm font-semibold truncate group-hover:text-primary transition-colors">
                                                     {r.title}
                                                     {r.year ? ` (${r.year})` : ''}
                                                 </p>
                                                 {r.subtitle && (
-                                                    <p className="text-gray-500 text-xs">{r.subtitle}</p>
+                                                    <p className="text-muted-foreground text-xs">{r.subtitle}</p>
                                                 )}
                                                 {r.description && (
-                                                    <p className="text-gray-600 text-xs mt-0.5 line-clamp-2">
+                                                    <p className="text-muted-foreground/70 text-xs mt-0.5 line-clamp-2">
                                                         {r.description}
                                                     </p>
                                                 )}
                                             </div>
+                                            <Badge variant="secondary" className="text-[10px] shrink-0">{r.type}</Badge>
                                         </a>
                                     ))}
                                 </div>

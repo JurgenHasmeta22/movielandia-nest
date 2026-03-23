@@ -3,6 +3,8 @@ import Autoplay from 'embla-carousel-autoplay';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import type { MediaItem } from '../types/media';
 
 interface MediaCarouselProps {
@@ -43,31 +45,31 @@ export function MediaCarousel({ items, type, title, viewAllHref }: MediaCarousel
         <section className="mb-12">
             {/* Section header */}
             <div className="flex items-center justify-between mb-5">
-                <h2 className="text-2xl font-bold text-white">{title}</h2>
-                <div className="flex items-center gap-3">
-                    <Link
-                        href={viewAllHref}
-                        className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
-                    >
-                        View all
-                    </Link>
-                    {/* Nav buttons */}
-                    <button
+                <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+                <div className="flex items-center gap-2">
+                    <Button variant="link" size="sm" asChild>
+                        <Link href={viewAllHref}>View all</Link>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
                         onClick={scrollPrev}
                         disabled={!canScrollPrev}
-                        className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         aria-label="Scroll left"
                     >
                         <ChevronLeft size={16} />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
                         onClick={scrollNext}
                         disabled={!canScrollNext}
-                        className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         aria-label="Scroll right"
                     >
                         <ChevronRight size={16} />
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -86,7 +88,7 @@ export function MediaCarousel({ items, type, title, viewAllHref }: MediaCarousel
                                 className="group flex-shrink-0 w-36 sm:w-44"
                                 draggable={false}
                             >
-                                <div className="relative rounded-xl overflow-hidden shadow-lg ring-1 ring-white/5 group-hover:ring-indigo-500 transition-all duration-300">
+                                <div className="relative rounded-xl overflow-hidden shadow-lg ring-1 ring-white/5 group-hover:ring-primary transition-all duration-300">
                                     <img
                                         src={imgSrc}
                                         alt={item.title}
@@ -95,8 +97,10 @@ export function MediaCarousel({ items, type, title, viewAllHref }: MediaCarousel
                                         className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
                                     {item.ratingImdb != null && (
-                                        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-yellow-400 text-xs font-bold px-2 py-1 rounded-full">
-                                            {item.ratingImdb.toFixed(1)}
+                                        <div className="absolute top-2 left-2">
+                                            <Badge className="bg-black/70 backdrop-blur-sm text-yellow-400 border-0 text-xs font-bold">
+                                                {item.ratingImdb.toFixed(1)}
+                                            </Badge>
                                         </div>
                                     )}
                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3">

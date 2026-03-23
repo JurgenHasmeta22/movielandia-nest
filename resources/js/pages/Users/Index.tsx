@@ -1,5 +1,6 @@
 import { Link } from "@inertiajs/react";
 import AppLayout from "../../layouts/AppLayout";
+import { Card } from "@/components/ui/card";
 
 interface User {
     id: number;
@@ -18,17 +19,17 @@ export default function UsersIndex({ users }: Props) {
     return (
         <AppLayout title="Users">
             <div className="max-w-5xl mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold text-white mb-6">Community Members</h1>
+                <h1 className="text-3xl font-bold text-foreground mb-6">Community Members</h1>
 
                 {users.length === 0 ? (
-                    <p className="text-gray-400 text-center py-16">No users found.</p>
+                    <p className="text-muted-foreground text-center py-16">No users found.</p>
                 ) : (
                     <div className="space-y-3">
                         {users.map((user) => (
                             <Link
                                 key={user.id}
                                 href={`/users/${user.id}`}
-                                className="flex items-center gap-4 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition"
+                                className="flex items-center gap-4 p-4 bg-card rounded-lg border border-border hover:border-primary transition"
                             >
                                 <img
                                     src={user.avatar?.photoSrc || "/images/placeholder.jpg"}
@@ -36,9 +37,9 @@ export default function UsersIndex({ users }: Props) {
                                     className="w-12 h-12 rounded-full object-cover"
                                 />
                                 <div className="flex-1">
-                                    <p className="text-white font-medium">{user.userName}</p>
+                                    <p className="text-foreground font-medium">{user.userName}</p>
                                     {user._count && (
-                                        <p className="text-gray-400 text-sm">
+                                        <p className="text-muted-foreground text-sm">
                                             {user._count.favorites} favorites · {user._count.reviews} reviews
                                         </p>
                                     )}

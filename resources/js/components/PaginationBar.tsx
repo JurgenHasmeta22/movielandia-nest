@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from './ui/button';
 import type { Pagination } from '../types/media';
 
 interface PaginationBarProps {
@@ -21,12 +22,6 @@ function pages(pagination: Pagination): (number | 'gap')[] {
         }, []);
 }
 
-const btnBase =
-    'inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg text-sm font-medium transition-colors';
-const btnActive = 'bg-indigo-600 text-white';
-const btnIdle = 'bg-gray-800 text-gray-300 hover:bg-gray-700';
-const btnNav = 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white gap-1 px-3';
-
 export function PaginationBar({ pagination, urlBuilder, onPageChange }: PaginationBarProps) {
     if (pagination.totalPages <= 1) return null;
 
@@ -38,27 +33,32 @@ export function PaginationBar({ pagination, urlBuilder, onPageChange }: Paginati
         return (
             <nav className="flex flex-wrap justify-center items-center gap-1.5 pt-6" aria-label="Pagination">
                 {page > 1 && (
-                    <Link href={urlBuilder(page - 1)} className={`${btnBase} ${btnNav}`}>
-                        <ChevronLeft size={14} /> Prev
-                    </Link>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link href={urlBuilder(page - 1)}>
+                            <ChevronLeft size={14} /> Prev
+                        </Link>
+                    </Button>
                 )}
                 {pageList.map((p, idx) =>
                     p === 'gap' ? (
-                        <span key={`gap-${idx}`} className="text-gray-600 text-sm px-1">…</span>
+                        <span key={`gap-${idx}`} className="text-muted-foreground text-sm px-1">…</span>
                     ) : (
-                        <Link
+                        <Button
                             key={p}
-                            href={urlBuilder(p as number)}
-                            className={`${btnBase} ${p === page ? btnActive : btnIdle}`}
+                            variant={p === page ? 'default' : 'outline'}
+                            size="sm"
+                            asChild
                         >
-                            {p}
-                        </Link>
+                            <Link href={urlBuilder(p as number)}>{p}</Link>
+                        </Button>
                     ),
                 )}
                 {page < totalPages && (
-                    <Link href={urlBuilder(page + 1)} className={`${btnBase} ${btnNav}`}>
-                        Next <ChevronRight size={14} />
-                    </Link>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link href={urlBuilder(page + 1)}>
+                            Next <ChevronRight size={14} />
+                        </Link>
+                    </Button>
                 )}
             </nav>
         );
@@ -68,27 +68,28 @@ export function PaginationBar({ pagination, urlBuilder, onPageChange }: Paginati
     return (
         <nav className="flex flex-wrap justify-center items-center gap-1.5 pt-6" aria-label="Pagination">
             {page > 1 && (
-                <button onClick={() => onPageChange?.(page - 1)} className={`${btnBase} ${btnNav}`}>
+                <Button variant="outline" size="sm" onClick={() => onPageChange?.(page - 1)}>
                     <ChevronLeft size={14} /> Prev
-                </button>
+                </Button>
             )}
             {pageList.map((p, idx) =>
                 p === 'gap' ? (
-                    <span key={`gap-${idx}`} className="text-gray-600 text-sm px-1">…</span>
+                    <span key={`gap-${idx}`} className="text-muted-foreground text-sm px-1">…</span>
                 ) : (
-                    <button
+                    <Button
                         key={p}
+                        variant={p === page ? 'default' : 'outline'}
+                        size="sm"
                         onClick={() => onPageChange?.(p as number)}
-                        className={`${btnBase} ${p === page ? btnActive : btnIdle}`}
                     >
                         {p}
-                    </button>
+                    </Button>
                 ),
             )}
             {page < totalPages && (
-                <button onClick={() => onPageChange?.(page + 1)} className={`${btnBase} ${btnNav}`}>
+                <Button variant="outline" size="sm" onClick={() => onPageChange?.(page + 1)}>
                     Next <ChevronRight size={14} />
-                </button>
+                </Button>
             )}
         </nav>
     );

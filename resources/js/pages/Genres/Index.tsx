@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import AppLayout from '../../layouts/AppLayout';
+import { Button } from '../../components/ui/button';
 
 interface Genre {
     id: number;
@@ -21,7 +22,7 @@ export default function GenresIndex({ genres, pagination }: { genres: Genre[]; p
     return (
         <AppLayout title="Genres">
             <div className="space-y-6">
-                <h1 className="text-3xl font-bold text-white">Genres</h1>
+                <h1 className="text-3xl font-bold text-foreground">Genres</h1>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {genres.map((genre, i) => (
                         <Link key={genre.id} href={`/genres/${genre.id}`}
@@ -41,7 +42,14 @@ export default function GenresIndex({ genres, pagination }: { genres: Genre[]; p
                 {pagination?.totalPages > 1 && (
                     <div className="flex justify-center gap-2 pt-4">
                         {Array.from({ length: Math.min(pagination.totalPages, 10) }, (_, i) => i + 1).map((p) => (
-                            <Link key={p} href={`/genres?page=${p}`} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${p === pagination.page ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}>{p}</Link>
+                            <Button
+                                key={p}
+                                variant={p === pagination.page ? 'default' : 'outline'}
+                                size="sm"
+                                asChild
+                            >
+                                <Link href={`/genres?page=${p}`}>{p}</Link>
+                            </Button>
                         ))}
                     </div>
                 )}

@@ -1,5 +1,7 @@
 import { Link } from "@inertiajs/react";
 import AppLayout from "../../layouts/AppLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Message {
     id: number;
@@ -34,47 +36,43 @@ export default function UsersMessages({ messages, box }: Props) {
         <AppLayout title="Messages">
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold text-white">Messages</h1>
+                    <h1 className="text-3xl font-bold text-foreground">Messages</h1>
                     <div className="flex gap-2">
-                        <Link
-                            href="/users/messages/inbox"
-                            className={`px-4 py-2 rounded-lg text-sm ${box === "inbox" ? "bg-indigo-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`}
-                        >
-                            Inbox
-                        </Link>
-                        <Link
-                            href="/users/messages/sent"
-                            className={`px-4 py-2 rounded-lg text-sm ${box === "sent" ? "bg-indigo-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`}
-                        >
-                            Sent
-                        </Link>
+                        <Button variant={box === "inbox" ? "default" : "outline"} size="sm" asChild>
+                            <Link href="/users/messages/inbox">Inbox</Link>
+                        </Button>
+                        <Button variant={box === "sent" ? "default" : "outline"} size="sm" asChild>
+                            <Link href="/users/messages/sent">Sent</Link>
+                        </Button>
                     </div>
                 </div>
 
                 {items.length === 0 ? (
-                    <p className="text-gray-400 text-center py-16">No messages in {box}.</p>
+                    <p className="text-muted-foreground text-center py-16">No messages in {box}.</p>
                 ) : (
                     <div className="space-y-3">
                         {items.map((msg) => {
                             const contact = box === "inbox" ? msg.sender : msg.receiver;
                             return (
-                                <div key={msg.id} className="flex items-start gap-4 p-4 bg-gray-800 rounded-lg">
-                                    <img
-                                        src={resolveAvatar(contact?.avatar)}
-                                        alt={contact?.userName || ""}
-                                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
-                                    />
-                                    <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <p className="text-white font-medium">{contact?.userName}</p>
-                                            <p className="text-gray-500 text-xs">
-                                                {new Date(msg.createdAt).toLocaleDateString()}
-                                            </p>
+                                <Card key={msg.id}>
+                                    <CardContent className="p-4 flex items-start gap-4">
+                                        <img
+                                            src={resolveAvatar(contact?.avatar)}
+                                            alt={contact?.userName || ""}
+                                            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder.jpg'; }}
+                                        />
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <p className="text-foreground font-medium">{contact?.userName}</p>
+                                                <p className="text-muted-foreground text-xs">
+                                                    {new Date(msg.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <p className="text-foreground/80 text-sm">{msg.text}</p>
                                         </div>
-                                        <p className="text-gray-300 text-sm">{msg.text}</p>
-                                    </div>
-                                </div>
+                                    </CardContent>
+                                </Card>
                             );
                         })}
                     </div>

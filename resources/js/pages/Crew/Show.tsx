@@ -3,6 +3,12 @@ import { Film, Heart, Pencil, Star, Trash2, Tv } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import AppLayout from '../../layouts/AppLayout';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Credit {
     id: number;
@@ -77,8 +83,7 @@ export default function CrewShow({ member }: Props) {
         });
     }
 
-    const cardClass =
-        'group rounded-xl border border-gray-800 bg-gray-900/60 p-2 transition hover:-translate-y-0.5 hover:border-gray-700 hover:bg-gray-900';
+    const cardClass = '';  // unused - kept to avoid removing business logic
 
     return (
         <AppLayout title={member.fullname}>
@@ -91,7 +96,7 @@ export default function CrewShow({ member }: Props) {
                 confirmLabel="Delete"
             />
             <div className="space-y-10">
-                <div className="rounded-2xl border border-gray-800 bg-gray-900/70 p-6 md:p-8">
+                <Card className="bg-card border-border p-6 md:p-8">
                     <div className="flex flex-col md:flex-row gap-8">
                         <div className="flex-shrink-0">
                             <img
@@ -104,12 +109,10 @@ export default function CrewShow({ member }: Props) {
                             />
                         </div>
                         <div className="flex-1 space-y-4">
-                            <h1 className="text-4xl font-bold text-white tracking-tight">{member.fullname}</h1>
-                            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-400">
+                            <h1 className="text-4xl font-bold text-foreground tracking-tight">{member.fullname}</h1>
+                            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
                                 {member.department && (
-                                    <span className="inline-flex rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 px-3 py-1 text-sm font-medium">
-                                        {member.department}
-                                    </span>
+                                    <Badge variant="indigo">{member.department}</Badge>
                                 )}
                                 {member.ratings && member.ratings.totalReviews > 0 && (
                                     <span className="flex items-center gap-1.5 text-yellow-400">
@@ -117,50 +120,47 @@ export default function CrewShow({ member }: Props) {
                                     </span>
                                 )}
                             </div>
-                            {member.description && <p className="text-gray-300 leading-relaxed max-w-3xl">{member.description}</p>}
+                            {member.description && <p className="text-muted-foreground leading-relaxed max-w-3xl">{member.description}</p>}
                             {auth.user && (
                                 <div className="pt-2">
                                     <form onSubmit={handleFavToggle}>
-                                        <button
+                                        <Button
                                             type="submit"
                                             disabled={favForm.processing}
-                                            className={`inline-flex items-center gap-2 text-sm font-semibold px-5 py-2 rounded-xl transition-all duration-200 disabled:opacity-60 ${
-                                                member.isBookmarked
-                                                    ? 'bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/30 hover:border-yellow-400'
-                                                    : 'bg-gradient-to-r from-yellow-500 to-amber-400 text-gray-900 hover:from-yellow-400 hover:to-amber-300 shadow-lg shadow-yellow-500/20'
-                                            }`}
+                                            variant={member.isBookmarked ? 'outline' : 'default'}
+                                            className={member.isBookmarked ? 'border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/10' : 'bg-gradient-to-r from-yellow-500 to-amber-400 text-gray-900 hover:from-yellow-400 hover:to-amber-300'}
                                         >
                                             <Heart size={14} className={member.isBookmarked ? 'fill-yellow-300' : ''} />
                                             {member.isBookmarked ? 'Favorited' : 'Add to Favorites'}
-                                        </button>
+                                        </Button>
                                     </form>
                                 </div>
                             )}
                         </div>
                     </div>
-                </div>
+                </Card>
 
                 <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-white">Produced Movies</h2>
-                        <span className="text-sm text-gray-400">{movieCredits.length} Movies</span>
+                        <h2 className="text-2xl font-bold text-foreground">Produced Movies</h2>
+                        <span className="text-sm text-muted-foreground">{movieCredits.length} Movies</span>
                     </div>
                     {movieCredits.length === 0 ? (
-                        <p className="rounded-xl border border-dashed border-gray-800 bg-gray-900/40 px-4 py-6 text-center text-gray-400">
+                        <p className="rounded-xl border border-dashed border-border bg-card/40 px-4 py-6 text-center text-muted-foreground">
                             No produced movies available yet.
                         </p>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                             {movieCredits.slice(0, 18).map((credit) => (
-                                <Link key={credit.id} href={`/movies/${credit.id}`} className="group">
-                                    <div className={cardClass}>
+                                <Link key={credit.id} href={`/movies/${credit.id}`} className="group block">
+                                    <Card className="border-border bg-card/60 p-2 transition hover:-translate-y-0.5 hover:border-border/80">
                                         {credit.photoSrc
                                             ? <img src={`/images/movies/${credit.photoSrc}`} alt={credit.title} className="w-full aspect-[2/3] rounded-lg object-cover group-hover:scale-[1.02] transition-transform duration-300" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
-                                            : <div className="w-full aspect-[2/3] rounded-lg bg-gray-800 flex items-center justify-center text-gray-600"><Film size={28} /></div>
+                                            : <div className="w-full aspect-[2/3] rounded-lg bg-muted flex items-center justify-center text-muted-foreground"><Film size={28} /></div>
                                         }
-                                        <p className="mt-2 text-xs text-gray-300 group-hover:text-white truncate transition-colors">{credit.title}</p>
-                                        {credit.role && <p className="text-[11px] text-gray-500 truncate">{credit.role}</p>}
-                                    </div>
+                                        <p className="mt-2 text-xs text-muted-foreground group-hover:text-foreground truncate transition-colors">{credit.title}</p>
+                                        {credit.role && <p className="text-[11px] text-muted-foreground/60 truncate">{credit.role}</p>}
+                                    </Card>
                                 </Link>
                             ))}
                         </div>
@@ -169,25 +169,25 @@ export default function CrewShow({ member }: Props) {
 
                 <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-white">Produced Series</h2>
-                        <span className="text-sm text-gray-400">{serieCredits.length} Series</span>
+                        <h2 className="text-2xl font-bold text-foreground">Produced Series</h2>
+                        <span className="text-sm text-muted-foreground">{serieCredits.length} Series</span>
                     </div>
                     {serieCredits.length === 0 ? (
-                        <p className="rounded-xl border border-dashed border-gray-800 bg-gray-900/40 px-4 py-6 text-center text-gray-400">
+                        <p className="rounded-xl border border-dashed border-border bg-card/40 px-4 py-6 text-center text-muted-foreground">
                             No produced series available yet.
                         </p>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                             {serieCredits.slice(0, 18).map((credit) => (
-                                <Link key={credit.id} href={`/series/${credit.id}`} className="group">
-                                    <div className={cardClass}>
+                                <Link key={credit.id} href={`/series/${credit.id}`} className="group block">
+                                    <Card className="border-border bg-card/60 p-2 transition hover:-translate-y-0.5 hover:border-border/80">
                                         {credit.photoSrc
                                             ? <img src={`/images/series/${credit.photoSrc}`} alt={credit.title} className="w-full aspect-[2/3] rounded-lg object-cover group-hover:scale-[1.02] transition-transform duration-300" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
-                                            : <div className="w-full aspect-[2/3] rounded-lg bg-gray-800 flex items-center justify-center text-gray-600"><Tv size={28} /></div>
+                                            : <div className="w-full aspect-[2/3] rounded-lg bg-muted flex items-center justify-center text-muted-foreground"><Tv size={28} /></div>
                                         }
-                                        <p className="mt-2 text-xs text-gray-300 group-hover:text-white truncate transition-colors">{credit.title}</p>
-                                        {credit.role && <p className="text-[11px] text-gray-500 truncate">{credit.role}</p>}
-                                    </div>
+                                        <p className="mt-2 text-xs text-muted-foreground group-hover:text-foreground truncate transition-colors">{credit.title}</p>
+                                        {credit.role && <p className="text-[11px] text-muted-foreground/60 truncate">{credit.role}</p>}
+                                    </Card>
                                 </Link>
                             ))}
                         </div>
@@ -195,83 +195,84 @@ export default function CrewShow({ member }: Props) {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-bold text-white">Reviews</h2>
+                    <h2 className="text-2xl font-bold text-foreground">Reviews</h2>
                     {auth.user && (
                         <>
                             {myReview && !editMode && (
-                                <div className="bg-indigo-950/60 border border-indigo-500/30 rounded-xl p-5">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-semibold text-indigo-300">Your Review</span>
-                                        <span className="flex items-center gap-1 text-yellow-400 text-sm font-medium">
-                                            <Star size={12} className="fill-yellow-400" /> {myReview.rating}/10
-                                        </span>
-                                    </div>
-                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{myReview.content}</p>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => { editForm.setData('content', myReview.content); editForm.setData('rating', myReview.rating); setEditMode(true); }}
-                                            className="inline-flex items-center gap-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded-lg transition-colors">
-                                            <Pencil size={11} /> Edit
-                                        </button>
-                                        <button
-                                            onClick={() => setShowDeleteModal(true)}
-                                            disabled={deleteForm.processing}
-                                            className="inline-flex items-center gap-1.5 text-xs bg-red-900/40 hover:bg-red-900/70 text-red-300 border border-red-700/40 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60">
-                                            <Trash2 size={11} /> Delete
-                                        </button>
-                                    </div>
-                                </div>
+                                <Card className="bg-indigo-950/60 border-indigo-500/30">
+                                    <CardContent className="p-5">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-semibold text-primary">Your Review</span>
+                                            <span className="flex items-center gap-1 text-yellow-400 text-sm font-medium">
+                                                <Star size={12} className="fill-yellow-400" /> {myReview.rating}/10
+                                            </span>
+                                        </div>
+                                        <p className="text-muted-foreground text-sm leading-relaxed mb-4">{myReview.content}</p>
+                                        <div className="flex gap-2">
+                                            <Button size="sm" variant="secondary" onClick={() => { editForm.setData('content', myReview.content); editForm.setData('rating', myReview.rating); setEditMode(true); }}>
+                                                <Pencil size={11} /> Edit
+                                            </Button>
+                                            <Button size="sm" variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={deleteForm.processing}>
+                                                <Trash2 size={11} /> Delete
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             )}
 
                             {myReview && editMode && (
-                                <form onSubmit={submitEdit} className="bg-gray-900 border border-indigo-600/40 rounded-xl p-5 space-y-3">
-                                    <h3 className="font-medium text-gray-200">Edit Your Review</h3>
-                                    <textarea value={editForm.data.content} onChange={(e) => editForm.setData('content', e.target.value)} rows={3}
-                                        className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 text-sm resize-none" required />
-                                    <div className="flex items-center gap-4">
-                                        <label className="text-sm text-gray-400">Rating:</label>
-                                        <input type="number" min={1} max={10} step={1} value={editForm.data.rating} onChange={(e) => editForm.setData('rating', Number(e.target.value))}
-                                            className="w-20 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
-                                        <div className="ml-auto flex gap-2">
-                                            <button type="button" onClick={() => setEditMode(false)} className="text-sm text-gray-400 hover:text-gray-200 px-3 py-1.5 rounded-lg transition-colors">Cancel</button>
-                                            <button type="submit" disabled={editForm.processing} className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">Save</button>
-                                        </div>
-                                    </div>
-                                </form>
+                                <Card className="bg-card border-primary/40">
+                                    <CardContent className="p-5">
+                                        <form onSubmit={submitEdit} className="space-y-3">
+                                            <h3 className="font-medium text-foreground">Edit Your Review</h3>
+                                            <Textarea value={editForm.data.content} onChange={(e) => editForm.setData('content', e.target.value)} rows={3} required />
+                                            <div className="flex items-center gap-4">
+                                                <Label className="text-muted-foreground">Rating:</Label>
+                                                <Input type="number" min={1} max={10} step={1} value={editForm.data.rating} onChange={(e) => editForm.setData('rating', Number(e.target.value))} className="w-20" />
+                                                <div className="ml-auto flex gap-2">
+                                                    <Button type="button" variant="ghost" size="sm" onClick={() => setEditMode(false)}>Cancel</Button>
+                                                    <Button type="submit" size="sm" disabled={editForm.processing}>Save</Button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </CardContent>
+                                </Card>
                             )}
 
                             {!myReview && (
-                                <form onSubmit={submitReview} className="bg-gray-900 border border-gray-700 rounded-xl p-5 space-y-3">
-                                    <h3 className="font-medium text-gray-200">Write a Review</h3>
-                                    <textarea value={reviewForm.data.content} onChange={(e) => reviewForm.setData('content', e.target.value)} rows={3}
-                                        placeholder="Share your thoughts..."
-                                        className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 text-sm resize-none" required />
-                                    <div className="flex items-center gap-4">
-                                        <label className="text-sm text-gray-400">Rating:</label>
-                                        <input type="number" min={1} max={10} step={1} value={reviewForm.data.rating} onChange={(e) => reviewForm.setData('rating', Number(e.target.value))}
-                                            className="w-20 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
-                                        <button type="submit" disabled={reviewForm.processing} className="ml-auto bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                                            Submit
-                                        </button>
-                                    </div>
-                                </form>
+                                <Card className="bg-card border-border">
+                                    <CardContent className="p-5">
+                                        <form onSubmit={submitReview} className="space-y-3">
+                                            <h3 className="font-medium text-foreground">Write a Review</h3>
+                                            <Textarea value={reviewForm.data.content} onChange={(e) => reviewForm.setData('content', e.target.value)} rows={3} placeholder="Share your thoughts..." required />
+                                            <div className="flex items-center gap-4">
+                                                <Label className="text-muted-foreground">Rating:</Label>
+                                                <Input type="number" min={1} max={10} step={1} value={reviewForm.data.rating} onChange={(e) => reviewForm.setData('rating', Number(e.target.value))} className="w-20" />
+                                                <Button type="submit" disabled={reviewForm.processing} className="ml-auto">Submit</Button>
+                                            </div>
+                                        </form>
+                                    </CardContent>
+                                </Card>
                             )}
                         </>
                     )}
 
                     {(member.reviews ?? []).length === 0 ? (
-                        <p className="text-gray-500 text-sm">No reviews yet. Be the first!</p>
+                        <p className="text-muted-foreground text-sm">No reviews yet. Be the first!</p>
                     ) : (
                         <div className="space-y-4">
                             {(member.reviews ?? []).slice(0, 5).map((review) => (
-                                <div key={review.id} className="bg-gray-900 border border-gray-700 rounded-xl p-5">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="font-medium text-gray-200">{review.user.userName}</span>
-                                        <span className="flex items-center gap-1 text-yellow-400 text-sm font-medium">
-                                            <Star size={12} className="fill-yellow-400" /> {review.rating}/10
-                                        </span>
-                                    </div>
-                                    <p className="text-gray-400 text-sm leading-relaxed">{review.content}</p>
-                                </div>
+                                <Card key={review.id} className="bg-card border-border">
+                                    <CardContent className="p-5">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="font-medium text-foreground">{review.user.userName}</span>
+                                            <span className="flex items-center gap-1 text-yellow-400 text-sm font-medium">
+                                                <Star size={12} className="fill-yellow-400" /> {review.rating}/10
+                                            </span>
+                                        </div>
+                                        <p className="text-muted-foreground text-sm leading-relaxed">{review.content}</p>
+                                    </CardContent>
+                                </Card>
                             ))}
                         </div>
                     )}

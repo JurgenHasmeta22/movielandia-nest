@@ -1,5 +1,6 @@
 import { Link, useForm } from "@inertiajs/react";
 import AppLayout from "../../layouts/AppLayout";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ListItem {
     id: number;
@@ -28,19 +29,19 @@ export default function ListsShow({ list }: Props) {
         <AppLayout title={list.name}>
             <div className="max-w-6xl mx-auto px-4 py-8">
                 <div className="mb-8">
-                    <Link href="/lists" className="text-indigo-400 hover:underline text-sm">← My Lists</Link>
+                    <Link href="/lists" className="text-primary hover:underline text-sm">← My Lists</Link>
                     <div className="flex items-start justify-between mt-2">
                         <div>
-                            <h1 className="text-3xl font-bold text-white">{list.name}</h1>
+                            <h1 className="text-3xl font-bold text-foreground">{list.name}</h1>
                             {list.description && (
-                                <p className="text-gray-300 mt-2">{list.description}</p>
+                                <p className="text-foreground/80 mt-2">{list.description}</p>
                             )}
                             <div className="flex items-center gap-3 mt-2">
-                                <span className={`text-xs px-2 py-1 rounded-full ${list.isPublic ? "bg-green-900 text-green-300" : "bg-gray-700 text-gray-400"}`}>
+                                <span className={`text-xs px-2 py-1 rounded-full ${list.isPublic ? "bg-green-900/50 text-green-300" : "bg-muted text-muted-foreground"}`}>
                                     {list.isPublic ? "Public" : "Private"}
                                 </span>
                                 {list._count && (
-                                    <span className="text-gray-400 text-sm">{list._count.items} items</span>
+                                    <span className="text-muted-foreground text-sm">{list._count.items} items</span>
                                 )}
                             </div>
                         </div>
@@ -54,22 +55,22 @@ export default function ListsShow({ list }: Props) {
                             const href = item.movie ? `/movies/${item.movie.id}` : `/series/${item.serie!.id}`;
                             return (
                                 <Link key={item.id} href={href} className="group">
-                                    <div className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-indigo-500 transition">
+                                    <Card className="overflow-hidden border-border group-hover:border-primary transition-colors">
                                         <img
                                             src={subject?.photoSrc || "/images/placeholder.jpg"}
                                             alt={subject?.title || ""}
                                             className="w-full aspect-[2/3] object-cover"
                                         />
-                                        <div className="p-2">
-                                            <p className="text-white text-sm font-medium truncate">{subject?.title}</p>
-                                        </div>
-                                    </div>
+                                        <CardContent className="p-2">
+                                            <p className="text-foreground text-sm font-medium truncate">{subject?.title}</p>
+                                        </CardContent>
+                                    </Card>
                                 </Link>
                             );
                         })}
                     </div>
                 ) : (
-                    <p className="text-gray-400 text-center py-16">This list is empty. Add some movies or series!</p>
+                    <p className="text-muted-foreground text-center py-16">This list is empty. Add some movies or series!</p>
                 )}
             </div>
         </AppLayout>

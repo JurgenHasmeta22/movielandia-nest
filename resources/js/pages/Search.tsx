@@ -1,8 +1,14 @@
-import { Link, router } from '@inertiajs/react';
+﻿import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppLayout from '../layouts/AppLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { ChevronDown } from 'lucide-react';
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function imgSrc(photoSrc: string | null | undefined, subDir: string): string {
     if (!photoSrc) return '/images/placeholder.jpg';
@@ -14,7 +20,7 @@ function onImgError(e: React.SyntheticEvent<HTMLImageElement>) {
     e.currentTarget.src = '/images/placeholder.jpg';
 }
 
-// ─── types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface MediaItem {
     id: number;
@@ -67,22 +73,24 @@ interface SearchProps {
     tab?: TabId;
 }
 
-// ─── sub-components ───────────────────────────────────────────────────────────
+// â”€â”€â”€ sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function MediaCard({ item, type }: { item: MediaItem; type: 'movies' | 'series' | 'seasons' | 'episodes' }) {
     const src = imgSrc(item.photoSrc, type);
     return (
-        <Link href={`/${type}/${item.id}`} className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-500 transition-colors">
-            <div className="aspect-[2/3] bg-gray-800 overflow-hidden">
-                <img src={src} alt={item.title} onError={onImgError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            </div>
-            <div className="p-3">
-                <p className="text-white text-sm font-medium truncate">{item.title}</p>
-                <div className="flex items-center justify-between mt-1">
-                    {item.releaseYear && <span className="text-xs text-gray-400">{item.releaseYear}</span>}
-                    {item.ratingImdb != null && <span className="text-xs text-yellow-400 font-medium">{item.ratingImdb.toFixed(1)}</span>}
+        <Link href={`/${type}/${item.id}`} className="group block">
+            <Card className="overflow-hidden border-border hover:border-primary transition-colors bg-card">
+                <div className="aspect-[2/3] bg-muted overflow-hidden">
+                    <img src={src} alt={item.title} onError={onImgError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 </div>
-            </div>
+                <CardContent className="p-3">
+                    <p className="text-foreground text-sm font-medium truncate">{item.title}</p>
+                    <div className="flex items-center justify-between mt-1">
+                        {item.releaseYear && <span className="text-xs text-muted-foreground">{item.releaseYear}</span>}
+                        {item.ratingImdb != null && <Badge variant="secondary" className="text-xs text-yellow-400 px-1.5 py-0">{item.ratingImdb.toFixed(1)}</Badge>}
+                    </div>
+                </CardContent>
+            </Card>
         </Link>
     );
 }
@@ -90,12 +98,14 @@ function MediaCard({ item, type }: { item: MediaItem; type: 'movies' | 'series' 
 function PersonCard({ item, type }: { item: PersonItem; type: 'actors' | 'crew' }) {
     const src = imgSrc(item.photoSrc, type);
     return (
-        <Link href={`/${type}/${item.id}`} className="group text-center">
-            <div className="aspect-[3/4] bg-gray-800 rounded-xl overflow-hidden mb-2 border border-gray-700 group-hover:border-indigo-500 transition-colors">
-                <img src={src} alt={item.fullname} onError={onImgError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            </div>
-            <p className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors truncate">{item.fullname}</p>
-            {item.role && <p className="text-xs text-gray-500 truncate">{item.role}</p>}
+        <Link href={`/${type}/${item.id}`} className="group text-center block">
+            <Card className="overflow-hidden border-border group-hover:border-primary transition-colors bg-card mb-2">
+                <div className="aspect-[3/4] overflow-hidden">
+                    <img src={src} alt={item.fullname} onError={onImgError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                </div>
+            </Card>
+            <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate">{item.fullname}</p>
+            {item.role && <p className="text-xs text-muted-foreground/60 truncate">{item.role}</p>}
         </Link>
     );
 }
@@ -103,13 +113,13 @@ function PersonCard({ item, type }: { item: PersonItem; type: 'actors' | 'crew' 
 function UserCard({ item }: { item: UserItem }) {
     const src = imgSrc(item.avatar, 'avatars');
     return (
-        <Link href={`/users/${item.id}`} className="group flex items-center gap-3 bg-gray-900 rounded-xl p-3 border border-gray-700 hover:border-indigo-500 transition-colors">
-            <div className="w-12 h-12 rounded-full bg-gray-800 overflow-hidden flex-shrink-0">
+        <Link href={`/users/${item.id}`} className="group flex items-center gap-3 bg-card rounded-xl p-3 border border-border hover:border-primary transition-colors">
+            <div className="w-12 h-12 rounded-full bg-muted overflow-hidden flex-shrink-0">
                 <img src={src} alt={item.userName} onError={onImgError} className="w-full h-full object-cover" />
             </div>
             <div className="min-w-0">
-                <p className="text-white text-sm font-medium truncate group-hover:text-indigo-300 transition-colors">{item.userName}</p>
-                {item.countryFrom && <p className="text-xs text-gray-500 truncate">{item.countryFrom}</p>}
+                <p className="text-foreground text-sm font-medium truncate group-hover:text-primary transition-colors">{item.userName}</p>
+                {item.countryFrom && <p className="text-xs text-muted-foreground truncate">{item.countryFrom}</p>}
             </div>
         </Link>
     );
@@ -121,13 +131,19 @@ function PaginationBar({ pagination, href }: { pagination: Pagination; href: (p:
     return (
         <div className="flex flex-wrap justify-center gap-2 mt-6">
             {pagination.page > 1 && (
-                <Link href={href(pagination.page - 1)} className="px-3 py-1.5 rounded-lg text-sm bg-gray-800 text-gray-300 hover:bg-gray-700">← Prev</Link>
+                <Button variant="outline" size="sm" asChild>
+                    <Link href={href(pagination.page - 1)}>â† Prev</Link>
+                </Button>
             )}
             {pages.map((p) => (
-                <Link key={p} href={href(p)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${p === pagination.page ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}>{p}</Link>
+                <Button key={p} variant={p === pagination.page ? 'default' : 'outline'} size="sm" asChild>
+                    <Link href={href(p)}>{p}</Link>
+                </Button>
             ))}
             {pagination.page < pagination.totalPages && (
-                <Link href={href(pagination.page + 1)} className="px-3 py-1.5 rounded-lg text-sm bg-gray-800 text-gray-300 hover:bg-gray-700">Next →</Link>
+                <Button variant="outline" size="sm" asChild>
+                    <Link href={href(pagination.page + 1)}>Next â†’</Link>
+                </Button>
             )}
         </div>
     );
@@ -144,16 +160,16 @@ interface SectionProps {
 function Section({ title, count, viewAllHref, defaultOpen = true, children }: SectionProps) {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <section className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+        <Card className="bg-card border-border overflow-hidden">
             <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-800/50 transition-colors"
+                className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-muted/30 transition-colors"
             >
                 <div className="flex items-center gap-3">
-                    <span className="text-xl font-bold text-white">{title}</span>
+                    <span className="text-xl font-bold text-foreground">{title}</span>
                     {count !== undefined && (
-                        <span className="text-sm text-gray-400 font-normal">({count.toLocaleString()} results)</span>
+                        <span className="text-sm text-muted-foreground font-normal">({count.toLocaleString()} results)</span>
                     )}
                 </div>
                 <div className="flex items-center gap-3">
@@ -161,20 +177,20 @@ function Section({ title, count, viewAllHref, defaultOpen = true, children }: Se
                         <Link
                             href={viewAllHref}
                             onClick={(e) => e.stopPropagation()}
-                            className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                            className="text-sm text-primary hover:text-primary/80 transition-colors"
                         >
-                            View all →
+                            View all â†’
                         </Link>
                     )}
-                    <span className="text-gray-400 transition-transform duration-200" style={{ display: 'inline-block', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", open && "rotate-180")} />
                 </div>
             </button>
             {open && <div className="px-6 pb-6">{children}</div>}
-        </section>
+        </Card>
     );
 }
 
-// ─── main page ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TABS: { id: TabId; label: string }[] = [
     { id: 'all', label: 'All' },
@@ -228,51 +244,50 @@ export default function Search({
                 <div>
                     {hasSearched ? (
                         <>
-                            <h1 className="text-3xl font-bold text-white mb-2">
+                            <h1 className="text-3xl font-bold text-foreground mb-2">
                                 Search Results for &ldquo;{searchQuery}&rdquo;
                             </h1>
                             {totalResults > 0 && (
-                                <p className="text-gray-400 text-sm mb-5">
+                                <p className="text-muted-foreground text-sm mb-5">
                                     Found {totalResults.toLocaleString()} results across all categories
                                 </p>
                             )}
                         </>
                     ) : (
-                        <h1 className="text-3xl font-bold text-white mb-5">Search</h1>
+                        <h1 className="text-3xl font-bold text-foreground mb-5">Search</h1>
                     )}
                     <form onSubmit={handleSearch} className="flex gap-3 max-w-2xl">
-                        <input
+                        <Input
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search movies, series, actors, crew, users…"
-                            className="flex-1 bg-gray-800 border border-gray-600 rounded-xl px-5 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 text-base"
+                            placeholder="Search movies, series, actors, crew, usersâ€¦"
+                            className="flex-1 text-base"
                             autoFocus
                         />
-                        <button type="submit" className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-colors">
-                            Search
-                        </button>
+                        <Button type="submit">Search</Button>
                     </form>
                 </div>
 
                 {/* Tabs */}
                 {hasSearched && (
-                    <div className="flex flex-wrap gap-2 border-b border-gray-800 pb-0">
+                    <div className="flex flex-wrap gap-2 border-b border-border pb-0">
                         {TABS.map((t) => (
                             <Link
                                 key={t.id}
                                 href={tabHref(t.id)}
-                                className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px ${
+                                className={cn(
+                                    "px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px",
                                     tab === t.id
-                                        ? 'text-indigo-400 border-indigo-400 bg-gray-900'
-                                        : 'text-gray-400 border-transparent hover:text-white hover:border-gray-600'
-                                }`}
+                                        ? "text-primary border-primary bg-card"
+                                        : "text-muted-foreground border-transparent hover:text-foreground hover:border-border"
+                                )}
                             >
                                 {t.label}
                             </Link>
                         ))}
                         {hasSearched && totalResults > 0 && (
-                            <span className="ml-auto text-sm text-gray-500 self-center pb-2">
+                            <span className="ml-auto text-sm text-muted-foreground self-center pb-2">
                                 {totalResults.toLocaleString()} total results
                             </span>
                         )}
@@ -281,13 +296,13 @@ export default function Search({
 
                 {/* No results */}
                 {hasSearched && totalResults === 0 && (
-                    <div className="text-center py-20 text-gray-500">
+                    <div className="text-center py-20 text-muted-foreground">
                         <p className="text-xl mb-2">No results found</p>
                         <p className="text-sm">Try a different search term.</p>
                     </div>
                 )}
 
-                {/* All tab — collapsible sections */}
+                {/* All tab â€” collapsible sections */}
                 {tab === 'all' && (
                     <div className="space-y-4">
                         {movies.length > 0 && (
@@ -346,7 +361,7 @@ export default function Search({
                 {tab === 'movies' && (
                     <Section title="Movies" count={moviesPagination?.total}>
                         {movies.length === 0 ? (
-                            <p className="text-gray-500 text-sm py-4">No movies found.</p>
+                            <p className="text-muted-foreground text-sm py-4">No movies found.</p>
                         ) : (
                             <>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -362,7 +377,7 @@ export default function Search({
                 {tab === 'series' && (
                     <Section title="Series" count={seriesPagination?.total}>
                         {series.length === 0 ? (
-                            <p className="text-gray-500 text-sm py-4">No series found.</p>
+                            <p className="text-muted-foreground text-sm py-4">No series found.</p>
                         ) : (
                             <>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -378,7 +393,7 @@ export default function Search({
                 {tab === 'actors' && (
                     <Section title="Actors" count={actorsPagination?.total}>
                         {actors.length === 0 ? (
-                            <p className="text-gray-500 text-sm py-4">No actors found.</p>
+                            <p className="text-muted-foreground text-sm py-4">No actors found.</p>
                         ) : (
                             <>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
@@ -394,7 +409,7 @@ export default function Search({
                 {tab === 'crew' && (
                     <Section title="Crew" count={crewPagination?.total}>
                         {crew.length === 0 ? (
-                            <p className="text-gray-500 text-sm py-4">No crew found.</p>
+                            <p className="text-muted-foreground text-sm py-4">No crew found.</p>
                         ) : (
                             <>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
@@ -410,7 +425,7 @@ export default function Search({
                 {tab === 'users' && (
                     <Section title="Users" count={usersPagination?.total}>
                         {users.length === 0 ? (
-                            <p className="text-gray-500 text-sm py-4">No users found.</p>
+                            <p className="text-muted-foreground text-sm py-4">No users found.</p>
                         ) : (
                             <>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -426,7 +441,7 @@ export default function Search({
                 {tab === 'seasons' && (
                     <Section title="Seasons" count={seasonsPagination?.total}>
                         {seasons.length === 0 ? (
-                            <p className="text-gray-500 text-sm py-4">No seasons found.</p>
+                            <p className="text-muted-foreground text-sm py-4">No seasons found.</p>
                         ) : (
                             <>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -442,7 +457,7 @@ export default function Search({
                 {tab === 'episodes' && (
                     <Section title="Episodes" count={episodesPagination?.total}>
                         {episodes.length === 0 ? (
-                            <p className="text-gray-500 text-sm py-4">No episodes found.</p>
+                            <p className="text-muted-foreground text-sm py-4">No episodes found.</p>
                         ) : (
                             <>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
