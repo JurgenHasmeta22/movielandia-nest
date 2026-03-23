@@ -2,6 +2,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { generateDynamicSeedData, SeedStep } from "./dynamicSeed";
+import { runAutomaticSeed } from "./automaticSeed";
 import { movies } from "./data/movies";
 import { series } from "./data/series";
 import { seasons } from "./data/seasons";
@@ -234,10 +235,13 @@ async function baseSeeding() {
 }
 // #endregion
 
+// "base"      → manual, hand-crafted data from data/ files (original)
+// "dynamic"   → faker-based, large dataset (100+ movies/series etc.)
+// "automatic" → faker-based, exact counts: 100 movies, 30 series × 2 seasons × 5 eps, full forum
 const config = {
-    useDynamicSeeding: false, // Set to false to use base seeding instead
-    deleteBeforeSeeding: true, // Set to true to delete all data before seeding
-    dynamicSeedingStartStep: SeedStep.Movies // Which step to start from for dynamic seeding
+    seedMode: "automatic" as "base" | "dynamic" | "automatic",
+    deleteBeforeSeeding: true,
+    dynamicSeedingStartStep: SeedStep.Movies,
 };
 
 async function main() {
@@ -246,10 +250,13 @@ async function main() {
             await deleteData();
         }
 
-        if (config.useDynamicSeeding) {
+        if (config.seedMode === "dynamic") {
             console.log(`Starting dynamic seeding from ${SeedStep[config.dynamicSeedingStartStep]} step...`);
             await generateDynamicSeedData(config.dynamicSeedingStartStep);
             console.log("Dynamic database seeding completed successfully.");
+        } else if (config.seedMode === "automatic") {
+            await runAutomaticSeed();
+            console.log("Automatic database seeding completed successfully.");
         } else {
             console.log("Using base seeding...");
             await baseSeeding();

@@ -142,12 +142,12 @@ export default function ActorShow({ actor }: { actor: Actor }) {
 
                 <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-white">Movies</h2>
-                        <span className="text-sm text-gray-400">{movies.length} credits</span>
+                        <h2 className="text-2xl font-bold text-white">Starred Movies</h2>
+                        <span className="text-sm text-gray-400">{movies.length} Movies</span>
                     </div>
                     {movies.length === 0 ? (
                         <p className="rounded-xl border border-dashed border-gray-800 bg-gray-900/40 px-4 py-6 text-center text-gray-400">
-                            No movie credits available yet.
+                            No starred movies available yet.
                         </p>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -168,12 +168,12 @@ export default function ActorShow({ actor }: { actor: Actor }) {
 
                 <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-white">Series</h2>
-                        <span className="text-sm text-gray-400">{series.length} credits</span>
+                        <h2 className="text-2xl font-bold text-white">Starred Series</h2>
+                        <span className="text-sm text-gray-400">{series.length} Series</span>
                     </div>
                     {series.length === 0 ? (
                         <p className="rounded-xl border border-dashed border-gray-800 bg-gray-900/40 px-4 py-6 text-center text-gray-400">
-                            No series credits available yet.
+                            No starred series available yet.
                         </p>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
