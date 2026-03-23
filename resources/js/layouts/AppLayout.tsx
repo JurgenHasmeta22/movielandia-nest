@@ -1,6 +1,8 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { HeaderSearch } from '../components/HeaderSearch';
 import { PageTransition } from '../components/PageTransition';
 
@@ -30,6 +32,14 @@ interface AppLayoutProps {
 export default function AppLayout({ children, title }: AppLayoutProps) {
     const { auth, flash } = usePage<SharedProps>().props;
     const user = auth?.user;
+
+    useEffect(() => {
+        if (!flash) return;
+        const fn = flash.type === 'success' ? toast.success
+                 : flash.type === 'error'   ? toast.error
+                 : toast.info;
+        fn(flash.message);
+    }, [flash]);
     const avatarSrc = user?.avatar
         ? (user.avatar.startsWith('http') ? user.avatar : `/images/users/${user.avatar}`)
         : null;
@@ -132,16 +142,18 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                     </div>
                 </nav>
 
-                {/* Flash messages */}
-                {flash && (
-                    <div className={`px-4 py-3 text-sm font-medium text-center ${
-                        flash.type === 'success' ? 'bg-green-800 text-green-100' :
-                        flash.type === 'error' ? 'bg-red-800 text-red-100' :
-                        'bg-blue-800 text-blue-100'
-                    }`}>
-                        {flash.message}
-                    </div>
-                )}
+                {/* Flash toasts */}
+                <ToastContainer
+                    position="top-right"
+                    autoClose={4000}
+                    hideProgressBar={false}
+                    newestOnTop
+                    closeOnClick
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="dark"
+                />
 
                 {/* Page content */}
                 <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">

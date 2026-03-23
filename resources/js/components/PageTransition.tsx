@@ -1,4 +1,5 @@
 import { usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 
 interface PageTransitionProps {
@@ -6,17 +7,18 @@ interface PageTransitionProps {
     className?: string;
 }
 
-/**
- * Wraps page content with a CSS-driven enter animation on every Inertia navigation.
- * Uses `usePage().component` as the React key — when the key changes React remounts
- * the element from scratch, which re-fires the CSS animation.
- */
 export function PageTransition({ children, className }: PageTransitionProps) {
-    const { component } = usePage();
-    
+    const { url } = usePage();
+
     return (
-        <div key={component} className={`page-transition-enter${className ? ` ${className}` : ''}`}>
+        <motion.div
+            key={url}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className={className}
+        >
             {children}
-        </div>
+        </motion.div>
     );
 }

@@ -119,15 +119,25 @@ export class UserController {
     @Post("favorites")
     @UseGuards(AuthGuard)
     async addFavorite(@Body() dto: AddFavoriteDto, @Req() req: Request, @Res() res: Response) {
-        await this.userService.addFavorite(req.session!.userId!, dto.itemId, dto.type);
-        return res.redirect(303, "/users/favorites/list");
+        try {
+            await this.userService.addFavorite(req.session!.userId!, dto.itemId, dto.type);
+            (req.session as any).flash = { type: "success", message: "Added to favorites!" };
+        } catch {
+            (req.session as any).flash = { type: "error", message: "Already in your favorites." };
+        }
+        return res.redirect(303, req.headers.referer || "/");
     }
 
     @Delete("favorites")
     @UseGuards(AuthGuard)
     async removeFavorite(@Body() dto: RemoveFavoriteDto, @Req() req: Request, @Res() res: Response) {
-        await this.userService.removeFavorite(req.session!.userId!, dto.itemId, dto.type);
-        return res.redirect(303, "/users/favorites/list");
+        try {
+            await this.userService.removeFavorite(req.session!.userId!, dto.itemId, dto.type);
+            (req.session as any).flash = { type: "success", message: "Removed from favorites." };
+        } catch {
+            (req.session as any).flash = { type: "error", message: "Favorite not found." };
+        }
+        return res.redirect(303, req.headers.referer || "/");
     }
 
     // ─── Follow ─────────────────────────────────────────────────────────────────
