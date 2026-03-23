@@ -8,8 +8,6 @@ import { Request, Response } from "express";
 export class AuthController {
     constructor(private authService: AuthService) {}
 
-    // ─── Sign In ────────────────────────────────────────────────────────────
-
     @Get("login")
     @Inertia("Auth/Login")
     loginPage() {
@@ -28,8 +26,6 @@ export class AuthController {
             return res.redirect(303, "/login");
         }
     }
-
-    // ─── Register ───────────────────────────────────────────────────────────
 
     @Get("register")
     @Inertia("Auth/Register")
@@ -52,8 +48,6 @@ export class AuthController {
         }
     }
 
-    // ─── Logout ─────────────────────────────────────────────────────────────
-
     @Post("logout")
     async logout(@Req() req: Request, @Res() res: Response) {
         req.session.destroy(() => {
@@ -61,8 +55,6 @@ export class AuthController {
             res.redirect(303, "/login");
         });
     }
-
-    // ─── Activate account ───────────────────────────────────────────────────
 
     @Get("activate")
     @Inertia("Auth/Activate")
@@ -80,8 +72,6 @@ export class AuthController {
         }
         return res.redirect(303, "/login");
     }
-
-    // ─── Forgot / Reset password ─────────────────────────────────────────────
 
     @Get("forgot-password")
     @Inertia("Auth/ForgotPassword")

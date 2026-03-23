@@ -42,8 +42,6 @@ function assetVersion(): string {
                 bundlePath: "bootstrap/ssr/ssr.js",
             },
         }),
-
-        // Feature modules
         MovieModule,
         SerieModule,
         SeasonModule,
