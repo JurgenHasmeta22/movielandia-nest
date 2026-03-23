@@ -81,6 +81,12 @@ export class EpisodeDetailsDto {
     seasonId: number;
 
     @ApiProperty({
+        description: "Parent season info",
+        required: false,
+    })
+    season?: { id: number; title: string; serie?: { id: number; title: string } };
+
+    @ApiProperty({
         type: EpisodeRatingInfo,
         description: "User ratings information",
         required: false,

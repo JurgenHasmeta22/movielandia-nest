@@ -83,11 +83,18 @@ export class EpisodeService {
         const episode = await this.prisma.episode.findFirst({
             where: { id },
             include: {
+                season: {
+                    select: {
+                        id: true,
+                        title: true,
+                        serie: { select: { id: true, title: true } },
+                    },
+                },
                 reviews: {
                     include: {
                         user: true,
-                        upvotes: { select: { user: true } },
-                        downvotes: { select: { user: true } },
+                        upvotes: { select: { userId: true } },
+                        downvotes: { select: { userId: true } },
                         _count: {
                             select: {
                                 upvotes: true,
@@ -95,6 +102,7 @@ export class EpisodeService {
                             },
                         },
                     },
+                    orderBy: { createdAt: 'desc' },
                 },
             },
         });
@@ -107,7 +115,7 @@ export class EpisodeService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(id, userId) : { isBookmarked: false };
         const reviewInfo = userId ? await this.getReviewStatus(id, userId) : { isReviewed: false };
 
-        return this.mapToDetails(episode, ratingsInfo[id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(episode, ratingsInfo[id], bookmarkInfo, reviewInfo, userId);
     }
 
     async findBySeasonId(seasonId: number, userId?: number): Promise<EpisodeListResponseDto> {
@@ -276,6 +284,7 @@ export class EpisodeService {
         ratingInfo?: IEpisodeRatingInfo,
         bookmarkInfo?: { isBookmarked: boolean },
         reviewInfo?: { isReviewed: boolean },
+        userId?: number,
     ): EpisodeDetailsDto {
         return {
             id: episode.id,
@@ -288,6 +297,7 @@ export class EpisodeService {
             dateAired: episode.dateAired,
             duration: episode.duration,
             seasonId: episode.seasonId,
+            season: episode.season ?? undefined,
             ratings: ratingInfo
                 ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
                 : undefined,
@@ -300,8 +310,8 @@ export class EpisodeService {
                 createdAt: review.createdAt,
                 updatedAt: review.updatedAt,
                 user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
-                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
-                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isUpvoted: userId ? review.upvotes?.some((v: any) => v.userId === userId) || false : false,
+                isDownvoted: userId ? review.downvotes?.some((v: any) => v.userId === userId) || false : false,
                 _count: review._count,
             })),
         };
