@@ -6,6 +6,7 @@ import AppLayout from '../../layouts/AppLayout';
 
 interface Genre { id: number; name: string }
 interface ActorCredit { id: number; fullname: string; photoSrc: string | null }
+interface CrewCredit { id: number; fullname: string; photoSrc: string | null; role: string | null }
 interface ReviewUser { id: number; userName: string }
 interface Review { id: number; content: string; rating: number; user: ReviewUser }
 
@@ -19,6 +20,7 @@ interface Movie {
     description: string | null;
     genres: Genre[];
     actors: ActorCredit[];
+    crew: CrewCredit[];
     averageRating: number | null;
     reviews: Review[];
     isBookmarked?: boolean;
@@ -172,6 +174,29 @@ export default function MovieShow({ movie }: MovieShowProps) {
                     </section>
                 )}
 
+                {movie.crew && movie.crew.length > 0 && (
+                    <section>
+                        <h2 className="text-xl font-bold text-white mb-4">Crew</h2>
+                        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 gap-4">
+                            {movie.crew.slice(0, 8).map((member) => (
+                                <Link key={member.id} href={`/crew/${member.id}`} className="text-center group">
+                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-800 mx-auto mb-1">
+                                        {member.photoSrc ? (
+                                            <img src={`/images/crew/${member.photoSrc}`} alt={member.fullname} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                                <User size={22} />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-400 group-hover:text-white truncate transition-colors">{member.fullname}</p>
+                                    {member.role && <p className="text-xs text-indigo-400 truncate">{member.role}</p>}
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 <section>
                     <h2 className="text-xl font-bold text-white mb-4">Reviews</h2>
                     {auth.user && (
@@ -220,7 +245,7 @@ export default function MovieShow({ movie }: MovieShowProps) {
                                     <div className="flex items-center gap-4">
                                         <label className="text-sm text-gray-400">Rating:</label>
                                         <input
-                                            type="number" min={1} max={10} step={0.5}
+                                            type="number" min={1} max={10} step={1}
                                             value={editForm.data.rating}
                                             onChange={(e) => editForm.setData('rating', Number(e.target.value))}
                                             className="w-20 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-indigo-500 text-sm"
@@ -247,7 +272,7 @@ export default function MovieShow({ movie }: MovieShowProps) {
                                     <div className="flex items-center gap-4">
                                         <label className="text-sm text-gray-400">Rating:</label>
                                         <input
-                                            type="number" min={1} max={10} step={0.5}
+                                            type="number" min={1} max={10} step={1}
                                             value={reviewForm.data.rating}
                                             onChange={(e) => reviewForm.setData('rating', Number(e.target.value))}
                                             className="w-20 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-indigo-500 text-sm"

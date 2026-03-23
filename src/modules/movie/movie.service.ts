@@ -86,11 +86,12 @@ export class MovieService {
             include: {
                 genres: { select: { genre: true } },
                 cast: { include: { actor: true } },
+                crew: { include: { crew: true } },
                 reviews: {
                     include: {
                         user: true,
-                        upvotes: { select: { user: true } },
-                        downvotes: { select: { user: true } },
+                        upvotes: { select: { userId: true } },
+                        downvotes: { select: { userId: true } },
                         _count: {
                             select: {
                                 upvotes: true,
@@ -110,7 +111,7 @@ export class MovieService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(movie.id, userId) : { isBookmarked: false };
         const reviewInfo = userId ? await this.getReviewStatus(movie.id, userId) : { isReviewed: false };
 
-        return this.mapToDetails(movie, ratingsInfo[movie.id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(movie, ratingsInfo[movie.id], bookmarkInfo, reviewInfo, userId);
     }
 
     async findLatest(userId?: number): Promise<MovieDetailsDto[]> {
@@ -324,6 +325,7 @@ export class MovieService {
         ratingInfo?: IMovieRatingInfo,
         bookmarkInfo?: { isBookmarked: boolean },
         reviewInfo?: { isReviewed: boolean },
+        userId?: number,
     ): MovieDetailsDto {
         return {
             id: movie.id,
@@ -344,6 +346,14 @@ export class MovieService {
                     fullname: c.actor.fullname,
                     photoSrc: c.actor.photoSrc ?? null,
                 })) ?? [],
+            crew:
+                movie.crew?.map((c: any) => ({
+                    id: c.crew.id,
+                    fullname: c.crew.fullname,
+                    photoSrc: c.crew.photoSrc ?? null,
+                    role: c.crew.role ?? null,
+                })) ?? [],
+
             ratings: ratingInfo
                 ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
                 : undefined,
@@ -356,8 +366,8 @@ export class MovieService {
                 createdAt: review.createdAt,
                 updatedAt: review.updatedAt,
                 user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
-                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
-                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isUpvoted: userId ? review.upvotes?.some((v: any) => v.userId === userId) || false : false,
+                isDownvoted: userId ? review.downvotes?.some((v: any) => v.userId === userId) || false : false,
                 _count: review._count,
             })),
         };

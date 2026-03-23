@@ -229,7 +229,7 @@ export default function CrewShow({ member }: Props) {
                                         className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 text-sm resize-none" required />
                                     <div className="flex items-center gap-4">
                                         <label className="text-sm text-gray-400">Rating:</label>
-                                        <input type="number" min={1} max={10} step={0.5} value={editForm.data.rating} onChange={(e) => editForm.setData('rating', Number(e.target.value))}
+                                        <input type="number" min={1} max={10} step={1} value={editForm.data.rating} onChange={(e) => editForm.setData('rating', Number(e.target.value))}
                                             className="w-20 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
                                         <div className="ml-auto flex gap-2">
                                             <button type="button" onClick={() => setEditMode(false)} className="text-sm text-gray-400 hover:text-gray-200 px-3 py-1.5 rounded-lg transition-colors">Cancel</button>
@@ -247,7 +247,7 @@ export default function CrewShow({ member }: Props) {
                                         className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 text-sm resize-none" required />
                                     <div className="flex items-center gap-4">
                                         <label className="text-sm text-gray-400">Rating:</label>
-                                        <input type="number" min={1} max={10} step={0.5} value={reviewForm.data.rating} onChange={(e) => reviewForm.setData('rating', Number(e.target.value))}
+                                        <input type="number" min={1} max={10} step={1} value={reviewForm.data.rating} onChange={(e) => reviewForm.setData('rating', Number(e.target.value))}
                                             className="w-20 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
                                         <button type="submit" disabled={reviewForm.processing} className="ml-auto bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                                             Submit

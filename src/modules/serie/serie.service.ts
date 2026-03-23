@@ -86,12 +86,13 @@ export class SerieService {
             include: {
                 genres: { select: { genre: true } },
                 cast: { include: { actor: true } },
+                crew: { include: { crew: true } },
                 seasons: { select: { id: true, title: true } },
                 reviews: {
                     include: {
                         user: true,
-                        upvotes: { select: { user: true } },
-                        downvotes: { select: { user: true } },
+                        upvotes: { select: { userId: true } },
+                        downvotes: { select: { userId: true } },
                         _count: {
                             select: {
                                 upvotes: true,
@@ -111,7 +112,7 @@ export class SerieService {
         const bookmarkInfo = userId ? await this.getBookmarkStatus(serie.id, userId) : { isBookmarked: false };
         const reviewInfo = userId ? await this.getReviewStatus(serie.id, userId) : { isReviewed: false };
 
-        return this.mapToDetails(serie, ratingsInfo[serie.id], bookmarkInfo, reviewInfo);
+        return this.mapToDetails(serie, ratingsInfo[serie.id], bookmarkInfo, reviewInfo, userId);
     }
 
     async findLatest(userId?: number): Promise<SerieDetailsDto[]> {
@@ -323,6 +324,7 @@ export class SerieService {
         ratingInfo?: ISerieRatingInfo,
         bookmarkInfo?: { isBookmarked: boolean },
         reviewInfo?: { isReviewed: boolean },
+        userId?: number,
     ): SerieDetailsDto {
         return {
             id: serie.id,
@@ -336,6 +338,19 @@ export class SerieService {
             releaseYear: serie.dateAired ? new Date(serie.dateAired).getFullYear() : null,
             averageRating: ratingInfo?.averageRating ?? null,
             genres: serie.genres?.map((g: any) => ({ id: g.genre.id, name: g.genre.name })) ?? [],
+            actors:
+                serie.cast?.map((c: any) => ({
+                    id: c.actor.id,
+                    fullname: c.actor.fullname,
+                    photoSrc: c.actor.photoSrc ?? null,
+                })) ?? [],
+            crew:
+                serie.crew?.map((c: any) => ({
+                    id: c.crew.id,
+                    fullname: c.crew.fullname,
+                    photoSrc: c.crew.photoSrc ?? null,
+                    role: c.crew.role ?? null,
+                })) ?? [],
             seasons: serie.seasons?.map((s: any) => ({ id: s.id, title: s.title })) ?? [],
             ratings: ratingInfo
                 ? { averageRating: ratingInfo.averageRating, totalReviews: ratingInfo.totalReviews }
@@ -349,8 +364,8 @@ export class SerieService {
                 createdAt: review.createdAt,
                 updatedAt: review.updatedAt,
                 user: { id: review.user.id, userName: review.user.userName, avatar: review.user.avatar },
-                isUpvoted: review.upvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
-                isDownvoted: review.downvotes?.some((v: any) => v.user?.id === bookmarkInfo?.isBookmarked) || false,
+                isUpvoted: userId ? review.upvotes?.some((v: any) => v.userId === userId) || false : false,
+                isDownvoted: userId ? review.downvotes?.some((v: any) => v.userId === userId) || false : false,
                 _count: review._count,
             })),
         };

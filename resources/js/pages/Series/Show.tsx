@@ -1,11 +1,13 @@
 ﻿import { Link, useForm, usePage } from '@inertiajs/react';
-import { Calendar, FolderOpen, Heart, Pencil, Star, Trash2 } from 'lucide-react';
+import { Calendar, FolderOpen, Heart, Pencil, Star, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import AppLayout from '../../layouts/AppLayout';
 
 interface Genre { id: number; name: string }
 interface Season { id: number; title: string }
+interface ActorCredit { id: number; fullname: string; photoSrc: string | null }
+interface CrewCredit { id: number; fullname: string; photoSrc: string | null; role: string | null }
 interface ReviewUser { id: number; userName: string }
 interface Review { id: number; content: string; rating: number; user: ReviewUser }
 
@@ -17,6 +19,8 @@ interface Serie {
     releaseYear: number | null;
     description: string | null;
     genres: Genre[];
+    actors: ActorCredit[];
+    crew: CrewCredit[];
     seasons: Season[];
     averageRating: number | null;
     isBookmarked?: boolean;
@@ -149,6 +153,47 @@ export default function SerieShow({ serie }: { serie: Serie }) {
                     </section>
                 )}
 
+                {serie.actors && serie.actors.length > 0 && (
+                    <section>
+                        <h2 className="text-xl font-bold text-white mb-4">Cast</h2>
+                        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 gap-4">
+                            {serie.actors.slice(0, 8).map((actor) => (
+                                <Link key={actor.id} href={`/actors/${actor.id}`} className="text-center group">
+                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-800 mx-auto mb-1">
+                                        {actor.photoSrc ? (
+                                            <img src={actor.photoSrc.startsWith('http') ? actor.photoSrc : `/images/actors/${actor.photoSrc}`} alt={actor.fullname} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={22} /></div>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-400 group-hover:text-white truncate transition-colors">{actor.fullname}</p>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {serie.crew && serie.crew.length > 0 && (
+                    <section>
+                        <h2 className="text-xl font-bold text-white mb-4">Crew</h2>
+                        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 gap-4">
+                            {serie.crew.slice(0, 8).map((member) => (
+                                <Link key={member.id} href={`/crew/${member.id}`} className="text-center group">
+                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-800 mx-auto mb-1">
+                                        {member.photoSrc ? (
+                                            <img src={member.photoSrc.startsWith('http') ? member.photoSrc : `/images/crew/${member.photoSrc}`} alt={member.fullname} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.jpg'; }} />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-500"><User size={22} /></div>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-400 group-hover:text-white truncate transition-colors">{member.fullname}</p>
+                                    {member.role && <p className="text-xs text-indigo-400 truncate">{member.role}</p>}
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 <section>
                     <h2 className="text-xl font-bold text-white mb-4">Reviews</h2>
                     {auth.user && (
@@ -184,7 +229,7 @@ export default function SerieShow({ serie }: { serie: Serie }) {
                                         className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 text-sm resize-none" required />
                                     <div className="flex items-center gap-4">
                                         <label className="text-sm text-gray-400">Rating:</label>
-                                        <input type="number" min={1} max={10} step={0.5} value={editForm.data.rating} onChange={(e) => editForm.setData('rating', Number(e.target.value))}
+                                        <input type="number" min={1} max={10} step={1} value={editForm.data.rating} onChange={(e) => editForm.setData('rating', Number(e.target.value))}
                                             className="w-20 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
                                         <div className="ml-auto flex gap-2">
                                             <button type="button" onClick={() => setEditMode(false)} className="text-sm text-gray-400 hover:text-gray-200 px-3 py-1.5 rounded-lg transition-colors">Cancel</button>
@@ -202,7 +247,7 @@ export default function SerieShow({ serie }: { serie: Serie }) {
                                         className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 text-sm resize-none" required />
                                     <div className="flex items-center gap-4">
                                         <label className="text-sm text-gray-400">Rating:</label>
-                                        <input type="number" min={1} max={10} step={0.5} value={reviewForm.data.rating} onChange={(e) => reviewForm.setData('rating', Number(e.target.value))}
+                                        <input type="number" min={1} max={10} step={1} value={reviewForm.data.rating} onChange={(e) => reviewForm.setData('rating', Number(e.target.value))}
                                             className="w-20 bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
                                         <button type="submit" disabled={reviewForm.processing} className="ml-auto bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                                             Submit

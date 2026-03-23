@@ -27,7 +27,7 @@ const prisma = new PrismaClient({
 
 // #region "Helpers"
 function randomRating(): number {
-    return Number((Math.random() * (9.9 - 1.0) + 1.0).toFixed(1));
+    return Math.floor(Math.random() * 10) + 1; // 1-10 integer
 }
 
 function randomDate(): Date {
@@ -352,8 +352,8 @@ async function seedSeries(
                 },
             });
 
-            // Season reviews + votes
-            const seasonReviewers = pickRandom(userIds, randomDuration(1, 2));
+            // Season reviews + votes — variable: 1-6 reviewers
+            const seasonReviewers = pickRandom(userIds, randomDuration(1, 6));
             for (const userId of seasonReviewers) {
                 const review = await prisma.seasonReview.create({
                     data: { userId, seasonId: season.id, content: faker.lorem.paragraph(), rating: randomRating() },
@@ -392,8 +392,8 @@ async function seedSeries(
                     },
                 });
 
-                // Episode reviews + votes
-                const epReviewers = pickRandom(userIds, randomDuration(0, 2));
+                // Episode reviews + votes — variable: 0-5 reviewers
+                const epReviewers = pickRandom(userIds, randomDuration(0, 5));
                 for (const userId of epReviewers) {
                     const review = await prisma.episodeReview.create({
                         data: { userId, episodeId: episode.id, content: faker.lorem.paragraph(), rating: randomRating() },
@@ -422,6 +422,95 @@ async function seedSeries(
     }
 
     console.log(`Finished seeding ${count} series.`);
+}
+// #endregion
+
+// #region "Seed Actor & Crew Reviews"
+async function seedActorAndCrewReviews(actorIds: number[], crewIds: number[], userIds: number[]): Promise<void> {
+    console.log("Seeding actor reviews...");
+    const usedActorReviews = new Set<string>();
+
+    for (const actorId of actorIds) {
+        // Each actor gets 1-5 reviews
+        const reviewerPool = pickRandom(userIds, randomDuration(1, 5));
+        for (const userId of reviewerPool) {
+            const key = `${actorId}-${userId}`;
+            if (usedActorReviews.has(key)) continue;
+            usedActorReviews.add(key);
+
+            try {
+                const review = await prisma.actorReview.create({
+                    data: { userId, actorId, content: faker.lorem.paragraph(), rating: randomRating() },
+                });
+
+                // upvotes
+                await Promise.all(
+                    pickRandom(userIds.filter((id) => id !== userId), randomDuration(0, 4)).map((uid) =>
+                        prisma.upvoteActorReview
+                            .create({ data: { userId: uid, actorId, actorReviewId: review.id } })
+                            .catch(() => {}),
+                    ),
+                );
+            } catch {
+                // skip duplicate unique constraint hits
+            }
+        }
+
+        // Actor ratings + favorites
+        const raters = pickRandom(userIds, randomDuration(1, 4));
+        const ratedActors = new Set<number>();
+        for (const userId of raters) {
+            if (ratedActors.has(userId)) continue;
+            ratedActors.add(userId);
+            await prisma.userActorRating.create({ data: { userId, actorId, rating: randomRating() } }).catch(() => {});
+            if (Math.random() > 0.6) {
+                await prisma.userActorFavorite.create({ data: { userId, actorId } }).catch(() => {});
+            }
+        }
+    }
+
+    console.log("Seeding crew reviews...");
+    const usedCrewReviews = new Set<string>();
+
+    for (const crewId of crewIds) {
+        // Each crew member gets 1-4 reviews
+        const reviewerPool = pickRandom(userIds, randomDuration(1, 4));
+        for (const userId of reviewerPool) {
+            const key = `${crewId}-${userId}`;
+            if (usedCrewReviews.has(key)) continue;
+            usedCrewReviews.add(key);
+
+            try {
+                const review = await prisma.crewReview.create({
+                    data: { userId, crewId, content: faker.lorem.paragraph(), rating: randomRating() },
+                });
+
+                await Promise.all(
+                    pickRandom(userIds.filter((id) => id !== userId), randomDuration(0, 3)).map((uid) =>
+                        prisma.upvoteCrewReview
+                            .create({ data: { userId: uid, crewId, crewReviewId: review.id } })
+                            .catch(() => {}),
+                    ),
+                );
+            } catch {
+                // skip duplicate
+            }
+        }
+
+        // Crew ratings + favorites
+        const raters = pickRandom(userIds, randomDuration(1, 3));
+        const ratedCrew = new Set<number>();
+        for (const userId of raters) {
+            if (ratedCrew.has(userId)) continue;
+            ratedCrew.add(userId);
+            await prisma.userCrewRating.create({ data: { userId, crewId, rating: randomRating() } }).catch(() => {});
+            if (Math.random() > 0.65) {
+                await prisma.userCrewFavorite.create({ data: { userId, crewId } }).catch(() => {});
+            }
+        }
+    }
+
+    console.log("Actor & crew reviews seeded.");
 }
 // #endregion
 
@@ -610,6 +699,7 @@ export async function runAutomaticSeed(): Promise<void> {
 
     await seedMovies(MOVIES_COUNT, genreIds, actorIds, crewIds, userIds);
     await seedSeries(SERIES_COUNT, SEASONS_PER_SERIE, EPISODES_PER_SEASON, genreIds, actorIds, crewIds, userIds);
+    await seedActorAndCrewReviews(actorIds, crewIds, userIds);
     await seedForum(userIds);
 
     console.log("=== Automatic Seed Complete ===");

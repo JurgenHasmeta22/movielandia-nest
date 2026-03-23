@@ -106,6 +106,9 @@ export class MovieDetailsDto {
     @ApiProperty({ description: "Actors in this movie", isArray: true, required: false })
     actors?: { id: number; fullname: string; photoSrc: string | null }[];
 
+    @ApiProperty({ description: "Crew members for this movie", isArray: true, required: false })
+    crew?: { id: number; fullname: string; photoSrc: string | null; role: string | null }[];
+
     @ApiProperty({
         description: "List of reviews for this movie",
         isArray: true,

@@ -97,6 +97,12 @@ export class SerieDetailsDto {
     @ApiProperty({ description: "Genres associated with this serie", isArray: true, required: false })
     genres?: { id: number; name: string }[];
 
+    @ApiProperty({ description: "Actors in this serie", isArray: true, required: false })
+    actors?: { id: number; fullname: string; photoSrc: string | null }[];
+
+    @ApiProperty({ description: "Crew members for this serie", isArray: true, required: false })
+    crew?: { id: number; fullname: string; photoSrc: string | null; role: string | null }[];
+
     @ApiProperty({ description: "Seasons of this serie", isArray: true, required: false })
     seasons?: { id: number; title: string }[];
 
